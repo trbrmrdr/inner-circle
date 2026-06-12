@@ -1,0 +1,19 @@
+HTTrack3.49-2 launched on Fri, 12 Jun 2026 19:28:29 at https://www.schloss-freudenfels.ch/
+(httrack https://www.schloss-freudenfels.ch/ -O /Users/trbrmrdr/Documents/Project/hirvosti-master/schloss-freudenfels-local -w -n -r20 -%e0 -d -x -c4 -R2 -T30 -%k -%v )
+
+Information, Warnings and Errors reported for this mirror:
+note:	the hts-log.txt file, and hts-cache folder, may contain sensitive information,
+	such as username/password authentication for websites mirrored in this project
+	do not share these files/folders if you want these information to remain private
+
+19:28:31	Warning: 	Found for https://www.schloss-freudenfels.ch/
+19:28:31	Warning: 	File has moved from https://www.schloss-freudenfels.ch/ to /en/
+19:30:52	Error: 	"Accepted" (202) at link https://queue.simpleanalyticscdn.com/noscript.gif (from https://www.schloss-freudenfels.ch/en/)
+19:30:52	Error: 	"Not Found" (404) at link https://www.schloss-freudenfels.ch/de/lieferanten/www.tgmost.ch (from https://www.schloss-freudenfels.ch/de/lieferanten/index.html)
+19:30:52	Error: 	"Not Found" (404) at link https://www.schloss-freudenfels.ch/en/sommerfrische/www.causewecare.ch (from https://www.schloss-freudenfels.ch/en/sommerfrische/index.html)
+19:30:52	Error: 	"Forbidden" (403) at link https://schloss-freudenfels.cdn.prismic.io/schloss-freudenfels/aXYHXgIvOtkhB6pH_SFSeminarFactsheet+Preisliste2026.pdf (from https://www.schloss-freudenfels.ch/de/seminar/index.html)
+19:30:52	Error: 	"Not Found" (404) at link https://www.schloss-freudenfels.ch/en/lieferanten/www.tgmost.ch (from https://www.schloss-freudenfels.ch/en/lieferanten/index.html)
+19:30:54	Error: 	"Not Found" (404) at link https://www.schloss-freudenfels.ch/de/e-mail-formular/?id=%2B8kDZnsSQb1%2BM1RofXQkSRWzX8rezw4H (from https://www.schloss-freudenfels.ch/en/legal/index.html)
+
+HTTrack Website Copier/3.49-2 mirror complete in 2 minutes 25 seconds : 156 links scanned, 148 files written (29526694 bytes overall) [22590055 bytes received at 155793 bytes/sec], 28701302 bytes transferred using HTTP compression in 138 files, ratio 75%, 1.0 requests per connection
+(6 errors, 2 warnings, 0 messages)

@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Живые эксперименты — Home Lab</title>
+    <meta name="description" content="Живые эксперименты Home Lab: малые образцы выращивания клубники в закрытых условиях, земля, аэропоника, свет, микроклимат и автоматизация на стадии прототипирования.">
+    <link rel="stylesheet" href="../src/styles.css">
+    <script src="../src/main.js" defer></script>
+  </head>
+  <body>
+    <header class="site-header" aria-label="Навигация">
+      <a class="brand" href="/" aria-label="Home Lab">
+        <span class="brand__mark"></span>
+        <span class="brand__text">
+          <strong>Home Lab</strong>
+          <span>дом-лаборатория у Петербурга</span>
+        </span>
+      </a>
+      <nav class="site-nav" aria-label="Разделы сайта">
+        <a href="/#concept">О проекте</a>
+        <a href="/formats/">Форматы</a>
+        <a href="/space/">Пространство</a>
+        <a href="/#pricing">Стоимость</a>
+        <a href="/sound-visual/">Кино и звук</a>
+        <a href="/code/">Культура</a>
+        <a href="/#application">Заявка</a>
+      </nav>
+      <a class="header-cta" href="/#application">Оставить заявку</a>
+      <button class="menu-toggle" type="button" aria-label="Открыть меню" aria-expanded="false" aria-controls="mobile-nav">
+        <span></span>
+        <span></span>
+      </button>
+    </header>
+
+    <div class="mobile-nav" id="mobile-nav" aria-hidden="true">
+      <a href="/#concept">О проекте</a>
+      <a href="/formats/">Форматы</a>
+      <a href="/space/">Пространство</a>
+      <a href="/#pricing">Стоимость</a>
+      <a href="/sound-visual/">Кино и звук</a>
+      <a href="/code/">Культура</a>
+      <a href="/#application">Заявка</a>
+    </div>
+
+    <main>
+      <section class="page-hero section-shell" aria-labelledby="page-title">
+        <p class="eyebrow">Живые эксперименты</p>
+        <h1 id="page-title">Зона живых экспериментов</h1>
+        <p class="page-hero__lead">В доме развивается небольшое направление с выращиванием клубники в закрытых условиях. Сейчас это стадия прототипирования, а не готовая ферма, не экскурсионный формат и не образовательная программа.</p>
+      </section>
+
+      <section class="experiment section-shell" aria-labelledby="experiment-title">
+        <div class="lab-card">
+          <div>
+            <p class="eyebrow">Прототипирование</p>
+            <h2 id="experiment-title">Клубника в закрытых условиях</h2>
+          </div>
+          <div class="copy-stack">
+            <p>Мы собираем и тестируем малые образцы в разных вариантах: земля, аэропоника и другие подходы. Нас интересует не эффект готового продукта, а практическое наблюдение за тем, как система живёт внутри частного пространства.</p>
+            <p>В фокусе — свет, влажность, питание, микроклимат, конструкция систем и автоматизация. Эти тесты помогают смотреть на дом как на среду, где рядом существуют код, звук, свет, растения и люди.</p>
+            <p>Мы не обещаем промышленное выращивание, урожай как продукт, экскурсии или готовый образовательный курс. Это экспериментальный контур внутри общей идеи Home Lab.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section-shell detail-section" aria-labelledby="topics-title">
+        <div class="section-heading">
+          <p class="eyebrow">Что тестируется</p>
+          <h2 id="topics-title">Направления наблюдения</h2>
+        </div>
+        <div class="detail-grid">
+          <article class="detail-card reveal">
+            <span class="detail-card__meta">Среда</span>
+            <h2>Земля</h2>
+            <p>Образцы выращивания в земле как понятная базовая среда для сравнения с другими вариантами.</p>
+          </article>
+          <article class="detail-card reveal">
+            <span class="detail-card__meta">Система</span>
+            <h2>Аэропоника</h2>
+            <p>Тестирование конструкций, питания и поведения растений в закрытой системе без обещания готовой технологии.</p>
+          </article>
+          <article class="detail-card reveal">
+            <span class="detail-card__meta">Свет</span>
+            <h2>Световые сценарии</h2>
+            <p>Наблюдение за тем, как свет влияет на развитие образцов и как такие системы встраиваются в дом.</p>
+          </article>
+          <article class="detail-card reveal">
+            <span class="detail-card__meta">Климат</span>
+            <h2>Микроклимат</h2>
+            <p>Влажность, температура, питание и другие параметры, которые важно учитывать даже в малом эксперименте.</p>
+          </article>
+          <article class="detail-card reveal">
+            <span class="detail-card__meta">Инженерия</span>
+            <h2>Автоматизация</h2>
+            <p>Датчики, контроль параметров и небольшие инженерные решения, которые можно тестировать в реальной среде.</p>
+          </article>
+          <article class="detail-card reveal">
+            <span class="detail-card__meta">Граница</span>
+            <h2>Без лишних обещаний</h2>
+            <p>Это не ферма, не экскурсия, не промышленное выращивание и не образовательный продукт. Это живая зона прототипирования.</p>
+          </article>
+        </div>
+        <div class="section-cta">
+          <a class="button button--primary" href="/#application">Обсудить заезд</a>
+          <a class="button button--secondary" href="/">Вернуться на главную</a>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div>
+        <strong class="site-footer__title">Home Lab</strong>
+        <p>Дом, где идеи обретают форму.</p>
+        <p>Приватный дом-лаборатория у Петербурга для работы, отдыха, экспериментов и камерных встреч.</p>
+      </div>
+      <nav class="footer-nav" aria-label="Навигация в футере">
+        <a href="/">Главная</a>
+        <a href="/formats/">Форматы</a>
+        <a href="/space/">Пространство</a>
+        <a href="/sound-visual/">Кино и звук</a>
+        <a href="/code/">Культура</a>
+      </nav>
+    </footer>
+    <a class="mobile-sticky-cta" href="/#application">Заявка</a>
+  </body>
+</html>
