@@ -497,6 +497,7 @@ button {
   position: fixed;
   top: 0;
   left: 0;
+  z-index: 300;
   width: 100vw;
   overflow: hidden;
   pointer-events: none;
@@ -934,6 +935,17 @@ button {
   ._6cb22c {
     scroll-snap-align: unset;
   }
+}
+
+.route-transition-cover {
+  position: fixed;
+  inset: 0;
+  z-index: 150;
+  pointer-events: none;
+  opacity: 0;
+  display: none;
+  background: var(--background);
+  will-change: opacity;
 }
 
 /* css-modules:css-modules://src_components_stage_stage */

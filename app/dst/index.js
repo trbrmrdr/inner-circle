@@ -3166,10 +3166,11 @@
         }).start();
       });
     }
-    async hide() {
-      await this.closeMenu();
-      await Promise.all([this.hideLogo(), this.hideButton(), this.hideItems()]);
-    }
+	    async hide() {
+	      await this.closeMenu();
+	      this.group.removeAll();
+	      await Promise.all([this.hideLogo(), this.hideButton(), this.hideItems()]);
+	    }
     async hideItems() {
       await Promise.all(
         this.items.map((item, index) => {
@@ -24400,13 +24401,15 @@
     previewRef;
     hasPreview;
     group = new Group();
-    stage;
-    observer;
-    main;
-    inner;
-    controllers = [];
-    isBodyFixed = true;
-    needsScrollUpdate = false;
+	    stage;
+	    observer;
+	    main;
+	    inner;
+	    routeTransition;
+	    controllers = [];
+	    isNavigating = false;
+	    isBodyFixed = true;
+	    needsScrollUpdate = false;
     intersectionObserver;
     router;
     pointerX = 0;
@@ -24419,10 +24422,13 @@
     constructor() {
       super();
       this.update = this.update.bind(this);
-      history.replaceState("", document.title, `${window.location.pathname}${window.location.search}`);
-      this.main = document.querySelector(`.${Page_default.Main}`);
-      this.inner = document.querySelector(`.${Page_default.Inner}`);
-      this.isBodyFixed = document.body.classList.contains(Body_default.IsFixed);
+	      history.replaceState("", document.title, `${window.location.pathname}${window.location.search}`);
+	      this.main = document.querySelector(`.${Page_default.Main}`);
+	      this.inner = document.querySelector(`.${Page_default.Inner}`);
+	      this.routeTransition = document.createElement("div");
+	      this.routeTransition.className = "route-transition-cover";
+	      document.body.appendChild(this.routeTransition);
+	      this.isBodyFixed = document.body.classList.contains(Body_default.IsFixed);
       const scrollbarWidth = getScrollbarWidth();
       document.body.style.setProperty("--scrollbar", `${scrollbarWidth}px`);
       this.router = new Router();
@@ -24453,6 +24459,8 @@
       document.addEventListener("pointermove", this.onPointerMove.bind(this));
       window.addEventListener("scroll", this.onScroll.bind(this));
       this.initControllers();
+      this.onResize();
+      this.onScroll();
       const animate = this.main?.dataset?.animate === "true";
       await Promise.all(
         [
@@ -24474,47 +24482,63 @@
       this.pointerY = event.y;
     }
 	    onDocumentClick(event) {
+	      if (event.defaultPrevented || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+	        return;
+	      }
 	      let target = event.target;
-	      while (target && target.parentNode) {
-	        if (target.tagName === "A") {
-	          if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
-	            break;
-	          }
-	          const { origin, pathname, hash } = new URL(target.href);
-	          if (origin === window.location.origin && !(hash && pathname === window.location.pathname)) {
-	            event.preventDefault();
-	            const href = target.getAttribute("href");
-            if (href) {
-              this.router.push(href);
-            }
-          }
-          break;
-        }
-        target = target.parentNode;
-      }
-    }
-    async onNavigate(route) {
-      this.setBodyFixed();
-      const [html] = await Promise.all([
-        this.loadPage(route),
-        this.stage.hide(),
-        this.fadeOut(),
-        ...this.controllers.map((controller) => controller.hide?.()).filter(Boolean)
-      ]);
-      if (!html) {
-        return;
-      }
+	      while (target && target.nodeType !== 1) {
+	        target = target.parentNode;
+	      }
+	      const link = target?.closest?.("a");
+	      if (!link) {
+	        return;
+	      }
+	      const href = link.getAttribute("href");
+	      if (!href || href.startsWith("#") || href.startsWith("mailto:") || href.startsWith("tel:") || link.hasAttribute("download") || link.target && link.target !== "_self") {
+	        return;
+	      }
+	      const { origin, pathname, search, hash } = new URL(link.href);
+	      if (origin !== window.location.origin || hash && pathname === window.location.pathname || !this.router.routes.includes(pathname)) {
+	        return;
+	      }
+	      event.preventDefault();
+	      if (this.isNavigating) {
+	        return;
+	      }
+	      this.router.push(`${pathname}${search}${hash}`);
+	    }
+	    async onNavigate(route) {
+	      if (this.isNavigating) {
+	        return;
+	      }
+	      this.isNavigating = true;
+	      this.setBodyFixed();
+	      const [html] = await Promise.all([
+	        this.loadPage(route),
+	        this.stage.hide(),
+	        this.showRouteTransition(),
+	        this.fadeOut(),
+	        ...this.controllers.map((controller) => controller.hide?.()).filter(Boolean)
+	      ]);
+	      if (!html) {
+	        await this.hideRouteTransition();
+	        this.unsetBodyFixed();
+	        this.isNavigating = false;
+	        return;
+	      }
       this.stage.dispose();
       this.controllers.forEach((controller) => controller.dispose?.());
       this.updatePage(html);
       const animate = this.main?.dataset?.animate === "true";
       this.initControllers();
       await Promise.all([...this.controllers.map((controller) => controller.load?.()), this.stage.load()]);
-      this.controllers.forEach((controller) => controller.show?.(animate));
-      this.stage.show(animate);
-      this.unsetBodyFixed();
-      this.onResize();
-    }
+	      this.controllers.forEach((controller) => controller.show?.(animate));
+	      this.stage.show(animate);
+	      this.unsetBodyFixed();
+	      this.onResize();
+	      await this.hideRouteTransition();
+	      this.isNavigating = false;
+	    }
     async loadPage(route) {
       if (this.hasPreview && this.previewRef) {
         return await getPreview(this.previewRef, route);
@@ -24575,15 +24599,35 @@
       this.inner?.style.removeProperty("transform");
       window.scrollTo(0, this.scrollY);
     }
-    async fadeOut() {
-      return new Promise(
-        (resolve) => new Tween({ opacity: 1 }, this.group).to({ opacity: 0 }, 250).onUpdate(({ opacity }) => this.inner?.style.setProperty("opacity", `${opacity}`)).onComplete(() => {
-          this.inner?.style.setProperty("opacity", "0");
-          resolve();
-        }).start()
-      );
-    }
-    onResize() {
+	    async fadeOut() {
+	      return new Promise(
+	        (resolve) => new Tween({ opacity: 1 }, this.group).to({ opacity: 0 }, 250).onUpdate(({ opacity }) => this.inner?.style.setProperty("opacity", `${opacity}`)).onComplete(() => {
+	          this.inner?.style.setProperty("opacity", "0");
+	          resolve();
+	        }).start()
+	      );
+	    }
+	    async showRouteTransition() {
+	      const background = getComputedStyle(document.body).getPropertyValue("--background").trim();
+	      this.routeTransition.style.setProperty("background", background || "var(--background)");
+	      this.routeTransition.style.setProperty("display", "block");
+	      return new Promise(
+	        (resolve) => new Tween({ opacity: 0 }, this.group).to({ opacity: 1 }, 350).easing(Easing.Cubic.Out).onUpdate(({ opacity }) => this.routeTransition.style.setProperty("opacity", `${opacity}`)).onComplete(() => {
+	          this.routeTransition.style.setProperty("opacity", "1");
+	          resolve();
+	        }).start()
+	      );
+	    }
+	    async hideRouteTransition() {
+	      return new Promise(
+	        (resolve) => new Tween({ opacity: 1 }, this.group).to({ opacity: 0 }, 450).easing(Easing.Cubic.InOut).onUpdate(({ opacity }) => this.routeTransition.style.setProperty("opacity", `${opacity}`)).onComplete(() => {
+	          this.routeTransition.style.setProperty("opacity", "0");
+	          this.routeTransition.style.setProperty("display", "none");
+	          resolve();
+	        }).start()
+	      );
+	    }
+	    onResize() {
       const { width, height } = this.main.getBoundingClientRect();
       if (this.bodyWidth !== width || this.bodyHeight !== height) {
         this.windowWidth = window.innerWidth;
