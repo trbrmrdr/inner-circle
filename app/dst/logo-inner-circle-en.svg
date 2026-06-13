@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 217 47" fill="currentColor" role="img" aria-labelledby="inner-circle-en-title">
+  <title id="inner-circle-en-title">Inner Circle</title>
+  <style>
+    text { font-family: Grafier, Georgia, serif; font-size: 30px; letter-spacing: 0; }
+  </style>
+  <text x="0" y="32">Inner</text>
+  <text x="217" y="32" text-anchor="end">Circle</text>
+</svg>

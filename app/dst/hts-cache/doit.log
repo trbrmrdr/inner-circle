@@ -1,8 +1,0 @@
-https://www.schloss-freudenfels.ch/ -O /Users/trbrmrdr/Documents/Project/hirvosti-master/schloss-freudenfels-local -w -n -r20 -%e0 -d -x -c4 -R2 -T30 -%k -%v
-File generated automatically on Fri, 12 Jun 2026 19:28:29, do NOT edit
-
-To update a mirror, just launch httrack without any parameters
-The existing cache will be used (and modified)
-To have other options, retype all parameters and launch HTTrack
-To continue an interrupted mirror, just launch httrack without any parameters
-

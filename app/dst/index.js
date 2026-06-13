@@ -2654,7 +2654,7 @@
   var api = init(defaultConverter, { path: "/" });
 
   // config.json
-  var repo_name = "schloss-freudenfels";
+  var repo_name = "inner-circle";
   var preview_document_id_cookie = "io.prismic.preview.documentId";
 
   // src/Body.module.css
@@ -21801,9 +21801,11 @@
       this.mesh.frustumCulled = false;
       this.object.add(this.mesh);
       parent.add(this.object);
+      this.onImageError = this.onImageError.bind(this);
       this.app.on("intersect", this.onIntersect);
       this.app.intersectionObserver.observe(this.node);
       this.image?.addEventListener("load", this.onImageLoad);
+      this.image?.addEventListener("error", this.onImageError);
       if (this.image?.complete) {
         this.onImageLoad();
       }
@@ -21830,6 +21832,7 @@
     renderTarget;
     texture = null;
     inView = false;
+    hasFinishedLoad = false;
     show() {
       this.group.removeAll();
       this.tween = new Tween({ bloomAmount: 1, waveAmount: this.uniforms.waveAmount.value, alpha: 0 }, this.group).to({ bloomAmount: 0, waveAmount: 0, alpha: 1 }, 2500 + Math.random() * 1e3).easing(Easing.Quintic.Out).onStart(() => this.mesh.visible = true).onUpdate(({ bloomAmount, waveAmount, alpha }) => {
@@ -21884,14 +21887,33 @@
       this.texture?.dispose();
       const loader = new TextureLoader(this.stage.loadingManager);
       loader.setCrossOrigin("anonymous");
-      this.texture = await loader.loadAsync(this.currentSrc);
-      this.texture.minFilter = LinearFilter;
-      this.texture.generateMipmaps = false;
-      const width = this.texture?.image.naturalWidth || 256;
-      const height = this.texture?.image.naturalHeight || 256;
-      this.renderTarget.setSize(width, height);
-      this.uniforms.resolution.value.set(width, height);
-      this.uniforms.map.value = this.texture;
+      try {
+        this.texture = await loader.loadAsync(this.currentSrc);
+        this.texture.minFilter = LinearFilter;
+        this.texture.generateMipmaps = false;
+        const width = this.texture?.image.naturalWidth || 256;
+        const height = this.texture?.image.naturalHeight || 256;
+        this.renderTarget.setSize(width, height);
+        this.uniforms.resolution.value.set(width, height);
+        this.uniforms.map.value = this.texture;
+        this.finishLoad();
+      } catch (error) {
+        this.showFallback();
+        this.finishLoad();
+      }
+    }
+    onImageError() {
+      this.showFallback();
+      this.finishLoad();
+    }
+    showFallback() {
+      this.mesh.visible = false;
+      this.image?.style.setProperty("opacity", "1");
+    }
+    finishLoad() {
+      if (this.hasFinishedLoad)
+        return;
+      this.hasFinishedLoad = true;
       this.onLoadCb();
     }
     setBloomMap() {
@@ -21954,6 +21976,7 @@
       this.mesh.geometry?.dispose();
       this.mesh.material.dispose();
       this.image?.removeEventListener("load", this.onImageLoad);
+      this.image?.removeEventListener("error", this.onImageError);
       this.app.removeListener("intersect", this.onIntersect);
       this.app.intersectionObserver.unobserve(this.node);
       this.parent.remove(this.object);
@@ -22103,13 +22126,29 @@
     async load() {
       if (this.images.length === 0)
         return;
-      return new Promise((resolve) => this.resolve = resolve);
+      return new Promise((resolve) => {
+        let isResolved = false;
+        this.resolve = () => {
+          if (isResolved)
+            return;
+          isResolved = true;
+          resolve();
+        };
+        window.setTimeout(() => {
+          this.images.forEach((image) => {
+            if (!image.texture) {
+              image.showFallback();
+            }
+          });
+          this.resolve();
+        }, 3500);
+      });
     }
     onLoad() {
       this.imageLoaded++;
       if (this.imageLoaded === this.images.length) {
         this.stage.renderer.compile(this.scene, this.camera);
-        this.images.forEach((image) => this.renderBloom(image));
+        this.images.filter((image) => image.texture).forEach((image) => this.renderBloom(image));
         this.resolve();
       }
     }
@@ -22678,6 +22717,62 @@
       }
     }
   };
+  var StageFallback = class {
+    constructor(container, loader, app) {
+      this.container = container;
+      this.loader = loader;
+      this.app = app;
+      this.pointer = new Vector2();
+      this.loadingManager = new LoadingManager();
+      this.width = window.innerWidth;
+      this.height = window.innerHeight;
+      document.body.classList.add("no-webgl");
+      this.loader?.style.setProperty("display", "none");
+      this.container?.remove();
+      document.addEventListener("pointermove", this.onPointerMove.bind(this));
+    }
+    container;
+    loader;
+    app;
+    pointer;
+    loadingManager;
+    loaded = false;
+    width = 0;
+    height = 0;
+    async load() {
+      this.loaded = true;
+    }
+    async show() {
+      this.loader?.style.setProperty("display", "none");
+    }
+    async hide() {
+      this.loader?.style.setProperty("display", "none");
+    }
+    setIntroNode() {
+    }
+    setImageNodes(nodes) {
+      nodes.forEach((node) => {
+        node.querySelector("img")?.style.setProperty("opacity", "1");
+      });
+    }
+    onPointerMove(event) {
+      this.pointer.set(event.x, event.y);
+    }
+    scroll() {
+    }
+    resize() {
+      this.width = window.innerWidth;
+      this.height = window.innerHeight;
+    }
+    setFixed() {
+    }
+    unsetFixed() {
+    }
+    dispose() {
+    }
+    update() {
+    }
+  };
 
   // src/pages/Page.module.css
   var Page_default = { "Main": "_7abbf3", "Inner": "_b28a1c", "Lang": "_b29fee" };
@@ -22737,23 +22832,23 @@
 
   // src/const.ts
   var Lang = /* @__PURE__ */ ((Lang6) => {
-    Lang6["de"] = "de-li";
+    Lang6["ru"] = "ru-ru";
     Lang6["en"] = "en-eu";
     return Lang6;
   })(Lang || {});
   var ShortLang = /* @__PURE__ */ ((ShortLang2) => {
-    ShortLang2["de-li"] = "de";
+    ShortLang2["ru-ru"] = "ru";
     ShortLang2["en-eu"] = "en";
     return ShortLang2;
   })(ShortLang || {});
   var LangLabel = /* @__PURE__ */ ((LangLabel2) => {
-    LangLabel2["de-li"] = "DE";
+    LangLabel2["ru-ru"] = "RU";
     LangLabel2["en-eu"] = "EN";
     return LangLabel2;
   })(LangLabel || {});
   var EmailToFormID = /* @__PURE__ */ ((EmailToFormID2) => {
     EmailToFormID2["mario.winiker@kilokilo.ch"] = "xgejkzko";
-    EmailToFormID2["info@schloss-freudenfels.ch"] = "xgejkzko";
+    EmailToFormID2["hello@inner-circle.local"] = "xgejkzko";
     return EmailToFormID2;
   })(EmailToFormID || {});
   var IMAGE_SIZES = [480, 960, 1440, 1920, 2560, 3800];
@@ -23817,6 +23912,11 @@
 	<path d="M211.688 37.4754C213.837 37.4754 215.097 36.4378 215.097 34.8813C215.097 33.7325 214.467 33.0531 212.96 32.4355L211.503 31.8426C210.218 31.3114 209.675 30.7556 209.675 29.965C209.675 28.9891 210.329 28.2109 211.355 28.2109C212.837 28.2109 213.8 29.2485 214.245 31.3361L214.492 31.2991L214.122 28.2109H213.875C213.259 28.2109 212.825 28.1401 212.421 28.0743C212.071 28.0172 211.744 27.9639 211.342 27.9639C209.65 27.9639 208.563 28.9027 208.563 30.3232C208.563 31.4967 209.168 32.139 210.601 32.7443L212.158 33.399C213.207 33.8437 213.875 34.3502 213.875 35.2148C213.875 36.3636 212.948 37.216 211.688 37.216C209.897 37.216 208.946 36.166 208.439 33.4978L208.192 33.5225L208.563 37.2283H208.81C209.413 37.2283 209.879 37.2936 210.332 37.357C210.761 37.417 211.178 37.4754 211.688 37.4754Z"/>
 </svg>
 `;
+  function SiteLogo(lang) {
+    const code = ShortLang[lang] === "ru" ? "ru" : "en";
+    const title = code === "ru" ? "Ближний круг" : "Inner Circle";
+    return `<img class="site-logo-image site-logo-image--left" src="/logo-${code}-left.svg" alt="${title}" decoding="async" /><img class="site-logo-image site-logo-image--right" src="/logo-${code}-right.svg" alt="" aria-hidden="true" decoding="async" />`;
+  }
   function Header(props) {
     const { lang, data, alternate, route } = props;
     return (
@@ -23824,7 +23924,7 @@
       `
 		<header class="${Header_default.Main}">
 			<div class="${Header_default.Bar}">
-				<a class="${Header_default.Logo}" href="/${ShortLang[lang]}/"> ${LogoTop} ${LogoBottom} </a>
+				<a class="${Header_default.Logo}" href="/${ShortLang[lang]}/">${SiteLogo(lang)}</a>
 				<button class="${Header_default.Button}">Navigation</button>
 			</div>
 			<div class="${Header_default.Menu}">
@@ -24237,7 +24337,7 @@
     ];
     let doc;
     let type = "page" /* page */;
-    let lang = "de-li" /* de */;
+    let lang = "ru-ru" /* ru */;
     if (route === "/unpublished/") {
       const id = api.get(preview_document_id_cookie);
       doc = allDocs.find((page) => page.id === id);
@@ -24330,7 +24430,12 @@
       this.intersectionObserver = new IntersectionObserver((entries) => this.emit("intersect", entries));
       const container = document.querySelector(`.${Stage_default.Container}`);
       const loader = document.querySelector(`.${Stage_default.Loader}`);
-      this.stage = new Stage(container, loader, this);
+      try {
+        this.stage = new Stage(container, loader, this);
+      } catch (error) {
+        console.warn("WebGL stage disabled; using static fallback.", error);
+        this.stage = new StageFallback(container, loader, this);
+      }
       const previewCookie = api.get(cookie_exports.preview);
       this.previewRef = previewCookie;
       this.hasPreview = previewCookie ? !!JSON.parse(previewCookie)[`${repo_name}.prismic.io`] : false;
