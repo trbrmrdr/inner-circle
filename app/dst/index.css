@@ -1429,6 +1429,16 @@ button {
   text-transform: uppercase;
   line-height: 2;
 }
+.inner-circle-footer-loop {
+  margin: var(--space-large) 0 0;
+}
+.inner-circle-footer-video {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16/9;
+  object-fit: cover;
+  background: var(--green);
+}
 @media (min-width:1024px) {
   ._5b8182 {
     display: grid;
@@ -1447,6 +1457,10 @@ button {
     padding: 0;
     grid-column: 15/-1;
     line-height: 1.6;
+  }
+  .inner-circle-footer-loop {
+    grid-column: 2/span 12;
+    margin: var(--space-large) 0 0;
   }
 }
 
