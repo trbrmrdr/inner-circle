@@ -22218,16 +22218,19 @@
   var fg1_default = "/fg1-2SFZA7JK.webp";
 
   // src/assets/castle.webp
-  var castle_default = "/castle-G2KAKXJG.webp";
+  var castle_default = "/castle-inner-circle-house.webp";
+
+  // src/assets/castle-vegetation.webp
+  var castle_vegetation_default = "/castle-vegetation-layer.webp";
 
   // src/assets/bg1.webp
   var bg1_default = "/bg1-RW4V5JX7.webp";
 
   // src/assets/bg2.webp
-  var bg2_default = "/bg2-3YPW5VQM.webp";
+  var bg2_default = "/castle-bg2-empty.webp";
 
   // src/assets/sky.jpg
-  var sky_default = "/sky-SUG22KWU.jpg";
+  var sky_default = "/castle-sky-from-photo.webp";
 
   // src/components/stage/image.vert
   var image_default = "#define GLSLIFY 1\nvarying vec2 vUv;\n\nvoid main() {\n	vUv = uv;\n	gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);\n}\n";
@@ -22307,7 +22310,7 @@
   };
 
   // src/components/stage/Intro.ts
-  var MAPS = [leaves_left_default, leaves_right_default, fg2_default, fg1_default, castle_default, bg1_default, bg2_default, sky_default];
+  var MAPS = [leaves_left_default, leaves_right_default, fg2_default, fg1_default, castle_vegetation_default, castle_default, bg1_default, bg2_default, sky_default];
   var CAM_DELAY = 0.01;
   var CAM_Z = 16;
   var Intro = class {
@@ -22376,6 +22379,7 @@
       });
       this.fg1 = new IntroPlane({ parent: this.scene, z: 5, animate: false, size: 5, strength: 5e-3 });
       this.fg2 = new IntroPlane({ parent: this.scene, z: 8 });
+      this.castleVegetation = new IntroPlane({ parent: this.scene, z: 3, float: true });
       this.castle = new IntroPlane({ parent: this.scene, z: 0 });
       this.bg1 = new IntroPlane({ parent: this.scene, z: -40 });
       this.bg2 = new IntroPlane({ parent: this.scene, z: -400 });
@@ -22448,6 +22452,7 @@
     leavesRight2;
     leavesLeft3;
     leavesRight3;
+    castleVegetation;
     castle;
     fg2;
     fg1;
@@ -22481,10 +22486,11 @@
       this.leavesRight3.setTexture(textures[1]);
       this.fg2.setTexture(textures[2]);
       this.fg1.setTexture(textures[3]);
-      this.castle.setTexture(textures[4]);
-      this.bg1.setTexture(textures[5]);
-      this.bg2.setTexture(textures[6]);
-      this.sky.setTexture(textures[7]);
+      this.castleVegetation.setTexture(textures[4]);
+      this.castle.setTexture(textures[5]);
+      this.bg1.setTexture(textures[6]);
+      this.bg2.setTexture(textures[7]);
+      this.sky.setTexture(textures[8]);
       this.stage.renderer.compile(this.scene, this.camera);
       this.loaded = true;
     }
@@ -22549,6 +22555,7 @@
       this.leavesLeft3.resize(filmHeight, focalLength, CAM_Z, aspect2);
       this.fg2.resize(filmHeight, focalLength, CAM_Z, aspect2);
       this.fg1.resize(filmHeight, focalLength, CAM_Z, aspect2);
+      this.castleVegetation.resize(filmHeight, focalLength, CAM_Z, aspect2);
       this.castle.resize(filmHeight, focalLength, CAM_Z, aspect2);
       this.bg1.resize(filmHeight, focalLength, CAM_Z, aspect2);
       this.bg2.resize(filmHeight, focalLength, CAM_Z, aspect2);
@@ -22586,6 +22593,7 @@
       this.leavesRight3.update(time);
       this.fg2.update(time);
       this.fg1.update(time);
+      this.castleVegetation.update(time);
       this.castle.update(time);
       this.bg1.update(time);
       this.bg2.update(time);
@@ -24112,10 +24120,10 @@
   }
 
   // src/assets/map_mobile.image.svg
-  var map_mobile_image_default = "/map_mobile.image-K6Q4D5WI.svg";
+  var map_mobile_image_default = "/map_mobile.image-K6Q4D5WI.svg?v=yanino-2";
 
   // src/assets/map_desktop.image.svg
-  var map_desktop_image_default = "/map_desktop.image-FMOASJK5.svg";
+  var map_desktop_image_default = "/map_desktop.image-FMOASJK5.svg?v=yanino-2";
 
   // src/components/Section.ts
   function Section(props, first = false, lessBottomPadding = false) {
@@ -24170,7 +24178,7 @@
         `<div class="${clsx_default(Section_default.Map, FadeIn_default.Main)}">
 						<picture class="${Section_default.Inner}">
 							<source srcset="${map_desktop_image_default}" media="(min-width: 1024px)" />
-							<img src="${map_mobile_image_default}" loading="lazy" alt="map" />
+							<img src="${map_mobile_image_default}" loading="eager" alt="map" />
 						</picture>
 				  </div>`
       ) : ""}

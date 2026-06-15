@@ -232,6 +232,7 @@
 }
 
 .inner-circle-static-map-compare {
+  display: none;
   background: var(--green-dark);
   color: var(--grey);
 }
