@@ -1429,6 +1429,41 @@ button {
   text-transform: uppercase;
   line-height: 2;
 }
+.inner-circle-contact-hero-actions {
+  margin-top: var(--space-x-small);
+}
+.inner-circle-contact-hero-actions a {
+  border: 1px solid currentColor;
+}
+.inner-circle-contact-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1.25rem;
+}
+.inner-circle-contact-button {
+  box-sizing: border-box;
+  display: inline-flex;
+  flex: 1 1 8rem;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.75rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid currentColor;
+  border-radius: 2px;
+  font-size: var(--label);
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  line-height: 1;
+  text-align: center;
+  text-transform: uppercase;
+}
+.inner-circle-contact-button--primary,
+.inner-circle-contact-button:hover {
+  border-color: var(--green);
+  background: var(--green);
+  color: var(--grey);
+}
 .inner-circle-footer-loop {
   margin: var(--space-large) 0 0;
 }
@@ -1461,6 +1496,9 @@ button {
   .inner-circle-footer-loop {
     grid-column: 2/span 12;
     margin: var(--space-large) 0 0;
+  }
+  .inner-circle-contact-button {
+    flex: 0 1 auto;
   }
 }
 
@@ -2040,5 +2078,11 @@ button {
   ._50a212 {
     grid-column: 5/-5;
   }
+}
+
+img[src*="/assets/home-lab/"],
+img[srcset*="/assets/home-lab/"],
+img[data-srcset*="/assets/home-lab/"] {
+  filter: saturate(0.68) contrast(0.92) brightness(0.66);
 }
 /*# sourceMappingURL=/index.css.map */
