@@ -1,0 +1,11 @@
+/* css-modules:css-modules://src_components_inputnumber */
+._3ac065 {
+}
+._3609d4 {
+  -moz-appearance: textfield;
+  &::-webkit-inner-spin-button,
+  &::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+}

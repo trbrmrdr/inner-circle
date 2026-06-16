@@ -1,0 +1,12 @@
+/* css-modules:css-modules://src_components_inputselect */
+._226afb {
+}
+._d6f041 {
+  min-height: 3.125rem;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  @media (min-width:1024px) {
+    min-height: 3.75rem;
+  }
+}

@@ -1,0 +1,41 @@
+/* css-modules:css-modules://src_components_imagepair */
+._43dc2f {
+  display: grid;
+  gap: var(--space-x-small);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  padding: 0 0 var(--space-x-large)0;
+}
+._fab50e {
+  padding: var(--space-x-large)0;
+}
+._e2338f ._0e1a4d {
+  padding: var(--space-medium)0 0 0;
+}
+._e2338f ._d3499d {
+  padding: 0;
+}
+._d3499d {
+  padding: var(--space-medium)0 0 0;
+}
+@media (min-width:1024px) {
+  ._43dc2f {
+    grid-template-columns: repeat(16, minmax(0, 1fr));
+    gap: var(--space-small);
+    padding: 0 var(--space-small) var(--space-xx-large) var(--space-small);
+  }
+  ._fab50e {
+    padding: var(--space-xx-large) var(--space-small);
+  }
+  ._0e1a4d {
+    grid-column: 3/9;
+  }
+  ._d3499d {
+    grid-column: 9/-3;
+  }
+  ._e2338f ._0e1a4d {
+    padding: var(--space-xx-large)0 0 0;
+  }
+  ._d3499d {
+    padding: var(--space-xx-large)0 0 0;
+  }
+}

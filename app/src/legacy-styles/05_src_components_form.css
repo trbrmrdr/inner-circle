@@ -1,0 +1,74 @@
+/* css-modules:css-modules://src_components_form */
+._75ecff {
+  padding: 0 var(--space-small) var(--space-large);
+  @media (min-width:1024px) {
+    display: grid;
+    grid-auto-flow: row dense;
+    grid-template-columns: repeat(16, minmax(0, 1fr));
+    align-content: start;
+    align-items: start;
+    gap: 0 var(--space-small);
+    padding: 0 var(--space-small) var(--space-xx-large);
+  }
+}
+._231c65 {
+  --row-gap: 1rem;
+  --column-gap: 0.625rem;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: var(--row-gap) var(--column-gap);
+  @media (min-width:1024px) {
+    --row-gap: 1.5rem;
+    --column-gap: 1.25rem;
+    grid-column: 5/-5;
+    z-index: 10;
+  }
+  @media (min-width:1680px) {
+    grid-column: 6/-6;
+  }
+  &:valid {
+    & button[type=submit] {
+      border-color: var(--rose);
+      outline-color: var(--rose);
+      background-color: var(--rose);
+      color: var(--green);
+      cursor: pointer;
+    }
+  }
+}
+._670645 {
+  grid-column: span 6;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: var(--row-gap) var(--column-gap);
+  margin: 0;
+  padding: 0;
+  border-width: 0;
+}
+._c4a5ae {
+  grid-column: span 6;
+  box-sizing: border-box;
+  padding: 1rem 2rem;
+  border-radius: 2px;
+  border: 1px solid var(--grey);
+  background-color: transparent;
+  font-family: "Neue Machina", sans-serif;
+  font-size: 0.875rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  color: var(--grey);
+  cursor: not-allowed;
+  @media (min-width:1024px) {
+    grid-column: span 6;
+    font-size: 1rem;
+  }
+  @media (min-width:1680px) {
+    grid-column: 4 / span 3;
+  }
+}
+._695ee5 {
+  grid-column: 5/-5;
+  z-index: 10;
+  padding-block-start: 1rem;
+  color: var(--red);
+}

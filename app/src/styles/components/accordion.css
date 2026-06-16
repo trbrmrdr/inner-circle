@@ -1,0 +1,6 @@
+@layer inner-circle.components {
+  /*
+    Accordion visual adjustments live here. Content cards remain in HTML
+    partials so prices, sizes and images can be edited without touching JS.
+  */
+}

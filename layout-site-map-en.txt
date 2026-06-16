@@ -1,0 +1,1320 @@
+LAYOUT SITE MAP
+SCHLOSS FREUDENFELS TEMPLATE / ENGLISH VERSION
+
+Source:
+schloss-freudenfels-local/en/*/index-2.html
+
+Purpose:
+This is a factual text map of the original layout site.
+It shows the structure, blocks, links, images, accordion groups, forms and CTAs
+that exist in the template, so it can be compared with the current Inner Circle site map.
+
+
+0. GLOBAL HEADER / TOP MENU
+
+Appears on the main English template pages.
+
+Logo:
+Freudenfels ****Schloss
+
+Logo link:
+/en/
+
+Menu items:
+1. Your Event
+   Link: /en/event/
+
+2. Your Seminar
+   Link: /en/seminar/
+
+3. Restaurant
+   Link: /en/restaurant/
+
+4. Hotel
+   Link: /en/hotel/
+
+5. Contact
+   Link: /en/kontakt/
+
+6. Language
+   EN / DE
+   DE links point to the matching German page.
+
+Note:
+The English top menu does not have a separate "Wedding" item.
+Weddings are included inside "Your Event".
+
+
+1. SHARED COMPONENT: DETAILS ACCORDION
+
+Used on:
+/en/event/
+/en/seminar/
+/en/restaurant/
+/en/hotel/
+
+Anchor on pages:
+#details
+
+Type:
+Large expandable accordion with grouped content, images and details.
+
+
+Accordion group 1:
+Venues for weddings, banquets & events
+
+Item 1:
+Title:
+The Rose Garden
+
+Category:
+Outside
+
+Text:
+On two levels with a fountain and rose corridors, for free ceremonies or aperitifs
+up to 80 pax.
+
+Image:
+Locations Aussen Rosengarten
+
+Item 2:
+Title:
+Castle terrace
+
+Category:
+Outside
+
+Text:
+With lake views. Suitable for free ceremonies or aperitifs up to 100 pax.
+
+Image:
+Castle terrace / lake view
+
+Item 3:
+Title:
+Garden area
+
+Category:
+Outside
+
+Text:
+Baroque garden complex with a sun terrace suitable for events up to 120 pax.
+
+Image:
+Locations Aussen Gartenanlage
+
+Item 4:
+Title:
+Terrace
+
+Category:
+Outside
+
+Text:
+Restaurant terrace with view to the castle and the lake. Dinner up to 64 pax.
+
+Image:
+Restaurant terrace
+
+Item 5:
+Title:
+Foyer and Aula
+
+Category:
+Inside / Schüür
+
+Text:
+Amphitheater-shaped auditorium with spacious foyer, suitable for aperitifs,
+concerts and banquets.
+
+Capacity:
+| Aperitifs up to 80 pax | Concerts up to 80 pax | Banquets up to 64 pax |
+
+Image:
+Foyer and Aula
+
+Item 6:
+Title:
+Our restaurant
+
+Category:
+Inside / Schüür
+
+Text:
+Modern and light restaurant for parties and social gatherings up to 50 pax.
+
+Image:
+Restaurant interior
+
+Item 7:
+Title:
+Plenarsaal
+
+Category:
+Inside / Castle
+
+Text:
+Friendly bright room. Suitable for free ceremonies and celebrations.
+
+Capacity:
+| Free ceremonies up to 70 pax | Celebrations up to 30 pax |
+
+Image:
+Plenarsaal
+
+Item 8:
+Title:
+Festsaal
+
+Category:
+Inside / Castle
+
+Text:
+Friendly bright room. Suitable for intimate celebration up to 15 pax.
+
+Image:
+Festsaal
+
+Documents / links in this accordion group:
+"Celebrating at Schloss Freudenfels" PDF
+Wedding dossier PDF
+
+
+Accordion group 2:
+Rooms and equipment for seminars
+
+Item 1:
+Title:
+Aula
+
+Category:
+Schüür
+
+Text:
+120 m2 room.
+
+Capacity:
+| Seminar seating up to 36 | Concert seating up to 80 |
+
+Image:
+Aula from above
+
+Item 2:
+Title:
+Foyer
+
+Category:
+Schüür
+
+Text:
+110 m2 room.
+
+Capacity:
+| U-shaped seating up to 24 |
+
+Image:
+Seminar Foyer
+
+Item 3:
+Title:
+Plenarsaal
+
+Category:
+Castle
+
+Text:
+56 m2 room.
+
+Capacity:
+| U-shaped seating up to 20 | Seminar seating up to 16 |
+
+Image:
+Seminar Plenarsaal
+
+Item 4:
+Title:
+Festsaal
+
+Category:
+Castle
+
+Text:
+40 m2 room.
+
+Capacity:
+| U-shaped seating up to 12 |
+
+Image:
+Festsaal
+
+Item 5:
+Title:
+Group rooms A-D
+
+Category:
+Castle
+
+Text:
+22-30 m2 rooms.
+
+Capacity:
+| Workshops for 6 to 10 each |
+
+Image:
+Seminar group room
+
+Item 6:
+Title:
+Equipment
+
+Category:
+Optional
+
+Text:
+Available upon request.
+
+List:
+| Whiteboard | Flipchart | Projector | Conference phone | Video conferencing system |
+
+Image:
+Seminar equipment
+
+Document / link:
+"Price list seminars Schloss Freudenfels" PDF
+
+
+Accordion group 3:
+Rooms & Cuisine
+
+Item 1:
+Title:
+21 Double room
+
+Category:
+Schüür
+
+Text:
+26 m2 with a lake or garden view. Bed size 180 x 210 cm.
+
+Image:
+Double room
+
+Item 2:
+Title:
+4 Single room
+
+Category:
+Wyberhuus
+
+Text:
+16-18 m2 with a lake or garden view. Bed size 140 x 210 cm.
+
+Image:
+Single room
+
+Item 3:
+Title:
+Menus
+
+Category:
+Restaurant
+
+Text:
+All menus are seasonal and regional but above all - delicious.
+
+Image:
+Menus
+
+Item 4:
+Title:
+On request
+
+Category:
+Furthermore
+
+Text:
+Available on request.
+
+List:
+| Extra bed | Dog bed / dog set | Baby cot |
+
+Image:
+On request
+
+
+Accordion group 4:
+Gallery
+
+Items:
+1. Schüür - View into the
+2. Schüür - Detail
+3. Double room - View into the
+4. Double room - View into the
+5. Care products - High quality
+6. Fitbox - For the active ones in every room
+7. Castle and lake - View to the
+8. Garden - View to the
+9. Wyberhuus - Single room
+10. Wyberhuus - Single room
+11. Wyberhuus - Single room
+12. Wyberhuus - Single room
+13. Castle and lake - View to the
+14. Restaurant - Inside
+15. Restaurant - Outside
+
+Type:
+Image gallery inside the accordion.
+
+
+Accordion group 5:
+Leisure, Sports & Fun
+
+Item 1:
+Title:
+Sports Pavilion
+
+Category:
+Fitness
+
+Text:
+Treadmills, TRX bands, kettlebells and bodyweight workout equipment.
+
+Item 2:
+Title:
+Table sports
+
+Category:
+Fun and games
+
+Text:
+Table football and ping pong table with paddles and balls.
+
+Item 3:
+Title:
+Library
+
+Category:
+Rest and relaxation
+
+Text:
+Historical gem with a view over Lake Constance.
+
+Item 4:
+Title:
+Fireplace room
+
+Category:
+Quiet or sociable
+
+Text:
+With honesty bar.
+
+Item 5:
+Title:
+E-bike rental
+
+Category:
+For excursions
+
+Text:
+E-bicycles and route suggestions.
+
+Item 6:
+Title:
+Piano
+
+Category:
+For skilled fingers
+
+Text:
+Guests who can and dare may play the piano on request.
+
+Item 7:
+Title:
+Events
+
+Category:
+Live
+
+Text:
+Live music concerts and more. In summer and on special occasions the castle
+offers a changing program.
+
+Link:
+program -> /de/veranstaltungen/
+
+
+2. SHARED COMPONENT: NEWSWORTHY
+
+Used on:
+Home, Event, Seminar, Restaurant, Hotel.
+
+Type:
+Small news/teaser slider.
+
+Heading:
+Newsworthy
+
+Card:
+myclimate - Cause we Care
+
+Status:
+we are on board!
+
+Text:
+This commitment is realized in collaboration with the Swiss foundation myclimate
+as part of the "Cause We Care" program.
+
+Link:
+"Cause We Care" -> external causewecare.ch
+
+
+3. SHARED COMPONENT: FOOTER
+
+Used on most English template pages.
+
+Column 1:
+Label:
+ADRESS
+
+Title:
+Freudenfels ****Schloss
+
+Text:
+Schlossweg
+8264 Eschenz
+Switzerland
+
+Phone:
++41 52 742 72 11
+
+Email:
+info@schloss-freudenfels.ch
+
+Directions:
+Google Maps
+
+Parking:
+Our guests have access to free outdoor parking spaces as well as two electric
+vehicle charging stations.
+
+Column 2:
+Label:
+Info
+
+Title:
+Opening hours Restaurant and Hotel
+
+Text:
+We are a seminar and event hotel, available exclusively for your event or
+conference throughout the year.
+
+Only during the summer season and for special occasions is our restaurant and
+hotel open to the public.
+
+Links:
+Upcoming Events 2025 -> /de/veranstaltungen/
+Summer Season -> /en/sommerfrische/
+
+Book a table:
++41 52 742 72 11
+
+Email link:
+E-Mail -> mailto:info@schloss-freudenfels.ch?subject=Request for Table Reservation
+
+Column 3:
+Utility links:
+myclimate "Cause We Care" -> /en/cause-we-care/
+Guest directory -> PDF
+Pillow menu -> PDF
+instagram -> external
+facebook -> external
+linkedin -> external
+Legal -> /en/legal/
+Imprint -> /en/impressum/
+Newsletter -> mailto newsletter subscription
+
+Image:
+OK:GO accessibility badge
+
+
+4. SHARED COMPONENT: BOTTOM CTA LINKS
+
+Type:
+Two large bottom links with arrows.
+
+Common variants:
+1. Focused work at the castle. -> /en/seminar/
+2. Celebrate at the castle. -> /en/event/
+
+Other variants:
+1. Dreaming in the castle. -> /en/hotel/
+2. Cuisine at the castle. -> /en/restaurant/
+
+
+5. PAGE: HOME
+
+Link:
+/en/
+
+Title:
+Home
+
+
+Block 1. Hero / overview
+
+Type:
+Text hero with map image and four vertical offer columns.
+
+Title:
+Castle Freudenfels.
+
+Lead:
+Once a medieval fortification, now an oasis of calm.
+
+Text:
+Beautifully situated amidst untouched nature, easily accessible from Switzerland,
+Liechtenstein, Austria, and Germany. Equipped with everything that makes your
+event unforgettable and your seminar a success - not only technically but above
+all humanly, because we are here with passion and heart for you.
+
+Image:
+Desktop map: /map_desktop.image-FMOASJK5.svg
+Mobile map: /map_mobile.image-K6Q4D5WI.svg
+
+Vertical columns:
+| Celebrate inside with 70 or outside with 120 guests. Learn more |
+| Concentrated meetings with up to 80 participants. Learn more |
+| Fine dining, seasonal and regional. Learn more |
+| Sleep deeply with garden or lake view. Learn more |
+
+Links:
+Learn more -> /en/event/
+Learn more -> /en/seminar/
+Learn more -> /en/restaurant/
+Learn more -> /en/hotel/
+
+
+Block 2. Full image
+
+Type:
+Large atmospheric image.
+
+Image:
+Prismic DSC05573-Bearbeitet
+(castle / landscape visual)
+
+
+Block 3. Newsworthy
+
+Uses shared component:
+Newsworthy
+
+
+Block 4. Wedding, Family & Corporate Events
+
+Type:
+Text + image + vertical facts + CTA links.
+
+Label:
+Wedding, Family & Corporate Events
+
+Title:
+Celebrate like royalty.
+
+Lead:
+Or beautifully simple.
+
+Text:
+Whether you want to get married in an intimate setting or on a grand scale,
+celebrate a baptism or a birthday party, hold a simple corporate event or a
+festive banquet, Schloss Freudenfels offers bright and festive rooms in various
+configurations - as well as a castle chapel, a castle terrace, and an impressive
+rose garden with a view of the castle and Lake Constance.
+
+Vertical facts:
+| Romantic rose garden. | Hall for up to 70 guests. | Celebrations until 3 am. |
+
+Image:
+Prismic DSC05149-Bearbeitet
+
+Links:
+Inquiry -> mailto:info@schloss-freudenfels.ch?subject=Inquiry for an event
+Learn more -> /en/event/
+
+
+Block 5. Full image
+
+Image:
+Prismic DSC05978-Bearbeitet
+
+
+Block 6. Seminar, Conference & Workshop
+
+Label:
+Seminar, Conference & Workshop
+
+Title:
+Focused work.
+
+Lead:
+Your customized off-site.
+
+Text:
+Castle Freudenfels is a top-notch seminar and conference center. Bright rooms,
+technical equipment, quiet location, generous outdoor areas and unobtrusive
+care support concentrated work and good results.
+
+Vertical facts:
+| Up to 80 participants. | Auditorium, seminar and group rooms. | Continuous catering. |
+
+Image:
+Prismic DSC05822-Bearbeitet
+
+Links:
+Inquiry -> mailto:info@schloss-freudenfels.ch?subject=Inquiry for seminar, conference or workshop
+Details -> /en/seminar/
+
+
+Block 7. Full image
+
+Image:
+Prismic DSC05995-Bearbeitet
+
+
+Block 8. Cuisine
+
+Label:
+Cuisine
+
+Title:
+To the table.
+
+Lead:
+Feast - regional and seasonal.
+
+Text:
+The restaurant is open to all only during the summer season and for special
+events. The kitchen serves specialties from carefully selected, mostly regional
+and seasonal ingredients, with a terrace view of the castle and lake.
+
+Vertical facts:
+| Terrace with a view of the castle and the lake. |
+| A fine selection of regional wines and beers. |
+| Service as one would wish for. |
+
+Image:
+Prismic DSC05417-Bearbeitet
+
+Links:
+Book a table -> mailto:info@schloss-freudenfels.ch?subject=Inquiry for booking a table
+Details -> /en/restaurant/
+
+
+Block 9. Full image
+
+Image:
+Prismic DSC05533-Bearbeitet
+
+
+Block 10. Hotel
+
+Label:
+HOTEL
+
+Title:
+Dream beautifully.
+
+Lead:
+With a garden or lake view.
+
+Text:
+The hotel is open to all only during the summer season and for special events.
+Bright double rooms offer garden or lake view, flat-screen TV, spacious bathroom
+and breakfast. Loungers and lounges around the property invite rest.
+
+Vertical facts:
+| 5 single and 20 double rooms. | Rich breakfast included. | Sun loungers and lounges for relaxing. |
+
+Image:
+Prismic AC2I8215
+
+Links:
+Book a stay -> mailto:info@schloss-freudenfels.ch?subject=Inquiry to book a stay
+Learn more -> /en/hotel/
+
+
+Block 11. Full image
+
+Image:
+Prismic DSC05054-Bearbeitet
+
+
+Block 12. Footer
+
+Uses shared component:
+Footer
+
+
+Block 13. Bottom CTA
+
+Links:
+Focused work at the castle. -> /en/seminar/
+Celebrate at the castle. -> /en/event/
+
+
+6. PAGE: YOUR EVENT
+
+Link:
+/en/event/
+
+Title:
+Your Event
+
+
+Block 1. Hero / event offer
+
+Label:
+Wedding, Family & Corporate Events
+
+Title:
+Celebrate like royalty.
+
+Lead:
+Or beautifully simple.
+
+Text:
+Whether intimate or grand, for weddings, baptisms, birthdays, corporate events
+or banquets, Schloss Freudenfels offers bright festive rooms, a chapel, a castle
+terrace and a rose garden with castle and Lake Constance view.
+
+Vertical facts:
+| Romantic rose garden. | Hall for up to 70 guests. | Celebrations until 3 am. | Accommodation options. |
+
+Links:
+Inquiry -> mailto:info@schloss-freudenfels.ch?subject=Inquiry for an event
+Details -> #details
+
+
+Block 2. Details accordion
+
+Uses shared component:
+Details accordion
+
+Important difference from Inner Circle:
+This template page has a deep grouped details section with venue capacities,
+room images, seminar rooms, hotel rooms, menu information, gallery and leisure
+features.
+
+
+Block 3. Full image
+
+Image:
+Prismic DSC05978-Bearbeitet
+
+
+Block 4. Newsworthy
+
+Uses shared component:
+Newsworthy
+
+
+Block 5. Footer
+
+Uses shared component:
+Footer
+
+
+Block 6. Bottom CTA
+
+Links:
+Dreaming in the castle -> /en/hotel/
+Cuisine at the castle. -> /en/restaurant/
+
+
+7. PAGE: YOUR SEMINAR
+
+Link:
+/en/seminar/
+
+Title:
+Your Seminar
+
+
+Block 1. Hero / seminar offer
+
+Label:
+Seminar, Conference & Workshop
+
+Title:
+Focused work.
+
+Lead:
+Your customized off-site.
+
+Text:
+Castle Freudenfels is a seminar and conference center with bright rooms,
+technical equipment, quiet location, outdoor areas for inspiring walks and
+unobtrusive care of participants.
+
+Vertical facts:
+| Up to 80 participants. | Auditorium, seminar and group rooms. | Continuous catering. | Accommodation options. |
+
+Links:
+Inquiry -> mailto:info@schloss-freudenfels.ch?subject=Inquiry for seminar, conference or workshop
+Details -> #details
+Prices (PDF) -> seminar price list PDF
+
+
+Block 2. Details accordion
+
+Uses shared component:
+Details accordion
+
+Important difference from Inner Circle:
+This page relies heavily on detailed accordion content: room capacities, seating
+types, equipment, group rooms, lodging and leisure.
+
+
+Block 3. Partner block
+
+Type:
+Text + image + link.
+
+Text:
+We are a partner of Seminarland Ostschweiz.
+
+Image:
+Seminarland-Ostschweiz-Visual
+
+Link:
+Seminarland Website -> external seminarland.ch
+
+
+Block 4. Newsworthy
+
+Uses shared component:
+Newsworthy
+
+
+Block 5. Footer
+
+Uses shared component:
+Footer
+
+
+Block 6. Bottom CTA
+
+Links:
+Dreaming in the castle. -> /en/hotel/
+Cuisine at the castle. -> /en/restaurant/
+
+
+8. PAGE: RESTAURANT
+
+Link:
+/en/restaurant/
+
+Title:
+Restaurant
+
+
+Block 1. Hero / restaurant offer
+
+Label:
+Restaurant
+
+Title:
+To the table.
+
+Lead:
+Feast - regional and seasonal.
+
+Text:
+The restaurant is open to the public during summer season and special events.
+The kitchen uses carefully selected, mostly local and seasonal ingredients.
+Guests can eat on the sun terrace with a view of the castle and lake.
+
+Vertical facts:
+| Terrace with a view of the castle and the lake. |
+| A fine selection of regional wines and beers. |
+| Service as one would wish for. |
+
+Links:
+Book a table -> mailto:info@schloss-freudenfels.ch?subject=Inquiry for booking a table
+Details -> #details
+
+
+Block 2. Sustainability / gastronomy
+
+Label:
+For the environment
+
+Title:
+Sustainable gastronomy operation.
+
+Lead:
+We buy seasonal/regional produce, save energy, and avoid food waste and waste.
+
+Text:
+The operation describes care for the environment and resource conservation
+behind the scenes.
+
+
+Block 3. Details accordion
+
+Uses shared component:
+Details accordion
+
+Important difference from Inner Circle:
+Restaurant page still includes the full estate accordion, not only restaurant
+content.
+
+
+Block 4. Newsworthy
+
+Uses shared component:
+Newsworthy
+
+
+Block 5. Footer
+
+Uses shared component:
+Footer
+
+
+Block 6. Bottom CTA
+
+Links:
+Focused work at the castle. -> /en/seminar/
+Celebrate at the castle. -> /en/event/
+
+
+9. PAGE: HOTEL
+
+Link:
+/en/hotel/
+
+Title:
+Hotel
+
+
+Block 1. Hero / hotel offer
+
+Label:
+HOTEL
+
+Title:
+Dream beautifully.
+
+Lead:
+With a garden or lake view.
+
+Text:
+The hotel is open to all during the summer season and for special events.
+Bright cozy double rooms offer garden or lake view, flat-screen TV, spacious
+bathroom and breakfast. Around the property are lounges for relaxing. Guests
+have free outdoor parking and two electric vehicle charging stations.
+
+Vertical facts:
+| 5 single and 20 double rooms. | Rich breakfast included. | Sun loungers and lounges for relaxing. | Peace, peace, peace. |
+
+Links:
+Book a stay -> /en/booking-enquiry/
+Details -> #details
+Guest directory -> PDF
+
+
+Block 2. Details accordion
+
+Uses shared component:
+Details accordion
+
+
+Block 3. Sustainability / hotel
+
+Label:
+Relaxing addition
+
+Title:
+Sustainable hotel operation.
+
+Lead:
+We buy seasonal/regional, save energy, and avoid food waste and waste. While you
+are with us, your electric car can be charged at our E-Mobility stations.
+
+Text:
+The hotel describes environmental care and resource conservation without
+compromising comfort.
+
+
+Block 4. Newsworthy
+
+Uses shared component:
+Newsworthy
+
+
+Block 5. Footer
+
+Uses shared component:
+Footer
+
+
+Block 6. Bottom CTA
+
+Links:
+Cuisine at the castle. -> /en/restaurant/
+Celebrate at the castle. -> /en/event/
+
+
+10. PAGE: CONTACT
+
+Link:
+/en/kontakt/
+
+Title:
+Kontakt
+
+
+Block 1. Contact hero
+
+Label:
+Here for you
+
+Title:
+Contact.
+
+Lead:
+At your service.
+
+Text:
+Whether weddings, conferences, family or corporate events, the team is committed
+to fulfilling wishes and making the occasion unforgettable. The text offers
+information or a tour of the castle.
+
+Signature:
+Your Freudenfels Castle
+Michèle Warna & Team
+
+
+Block 2. Team grid
+
+Type:
+Photo grid with names, roles, email links and phone numbers.
+
+Heading:
+The Team.
+
+Subheading:
+We care about your well-being.
+
+People:
+1. Michèle Warna
+   Role: Managing Director
+   Email: info@schloss-freudenfels.ch
+   Phone: +41 52 742 72 11
+
+2. Cornelia Oberhänsli
+   Role: Receptionist
+   Email: info@schloss-freudenfels.ch
+   Phone: +41 52 742 72 11
+
+3. Yannick Warna
+   Role: Head of Service and Banquet
+   Email: info@schloss-freudenfels.ch
+   Phone: +41 52 742 72 11
+
+4. Nicolina Sigg
+   Role: Deputy Head of Service and Banquet
+   Phone: +41 52 742 72 11
+
+5. Barbara Frehner
+   Role: Head of Housekeeping
+   Email: info@schloss-freudenfels.ch
+   Phone: +41 52 742 72 70
+
+6. Tobias Estermann
+   Role: Chef de Cuisine
+   Email: info@schloss-freudenfels.ch
+   Phone: +41 52 742 72 60
+
+7. Roger Bühlmann
+   Role: Deputy Chef de Cuisine
+   Email: info@schloss-freudenfels.ch
+   Phone: +41 52 742 72 60
+
+8. Angela Basler
+   Role: Castle Keeper
+   Email: info@schloss-freudenfels.ch
+   Phone: +41 79 407 30 05
+
+
+Block 3. History
+
+Label:
+Moving
+
+Title:
+History.
+
+Lead:
+Old walls. Fresh wind.
+
+Text:
+Originally built around 1200 as a castle with a defence tower, the present
+castle complex was created in the Baroque period. For centuries monks of the
+Einsiedeln monastery inhabited the house before it developed into a venue for
+celebrations and seminars.
+
+
+Block 4. Footer
+
+Uses shared component:
+Footer
+
+
+11. PAGE: BOOKING ENQUIRY
+
+Link:
+/en/booking-enquiry/
+
+Title:
+Buchungsanfrage
+
+
+Block 1. Enquiry hero
+
+Title:
+Enquiry.
+
+Lead:
+Become the lady or lord of the castle for a while.
+
+Text:
+Please let us know your preferred period and we will get back to you as soon as
+possible with available rooms. We look forward to seeing you!
+
+
+Block 2. Room request form
+
+Type:
+Booking form.
+
+Fields:
+1. Arrival*
+   Type: date
+
+2. Nights*
+   Type: select
+
+3. Travelling with child / dog
+   Radio options:
+   | No |
+   | Yes, I/we are travelling with child/children |
+   | Yes, I/we are travelling with dog/s |
+   | Yes, I/we are travelling with child/children and dog/s |
+
+4. Number / Age
+   Type: text
+
+5. Room category
+   Radio options:
+   | Wyberhuus |
+   | Schüür with garden views |
+   | Schüür with lake / castle views |
+
+6. Half-board
+   Radio options:
+   | with half-board |
+   | without half board |
+
+7. myclimate Cause we Care
+   Checkbox:
+   I support with CHF 2.50 per overnight stay.
+
+8. Salutation
+   Radio options:
+   | Divers | Mrs | Mr |
+
+9. First name*
+   Placeholder:
+   Andrea
+
+10. Surname*
+    Placeholder:
+    Muster
+
+11. email*
+    Placeholder:
+    andrea.muster@email.com
+
+12. Phone number*
+    Placeholder:
+    +41 41 000 00 00
+
+13. Message
+    Placeholder:
+    We should still know that ...
+
+14. Privacy checkbox
+    Text:
+    Yes, I have read and understood the privacy policy.
+
+Submit button:
+Request a room
+
+
+Block 3. Footer
+
+Uses shared component:
+Footer
+
+
+12. PAGE: LEGAL
+
+Link:
+/en/legal/
+
+Title:
+Legal
+
+Status:
+Long legal/privacy text page.
+
+Main function:
+Privacy policy, data processing, cookies, server logs, data protection,
+contact for legal/privacy matters.
+
+Important for comparison:
+This is a text-heavy service page, not a visual content page.
+
+
+13. TEMPLATE MODULES THAT ARE PRESENT IN THE LAYOUT BUT NOT FULLY USED IN INNER CIRCLE YET
+
+1. Deep Details accordion
+   The original layout has a very large grouped accordion with venues, capacities,
+   room types, technical equipment, menus, gallery and leisure.
+
+2. Team grid
+   The Contact page has portraits, roles, emails and phone numbers.
+
+3. Newsworthy slider
+   Reusable news teaser block.
+
+4. Full estate footer
+   Address, directions, parking, opening hours, table booking, documents,
+   social links and legal links.
+
+5. Bottom CTA pairs
+   Large arrow links between main sections.
+
+6. Booking form
+   Hotel page leads to a detailed booking enquiry form with dates, nights,
+   room categories, half-board and personal information.
+
+7. PDF/document links
+   Price list, wedding dossier, guest directory, pillow menu.
+
+8. Image-heavy gallery
+   The accordion contains many visual detail cards that can become photo
+   hotspots or grouped visual explanations in Inner Circle.

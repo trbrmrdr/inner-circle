@@ -6,7 +6,8 @@ SERVER="${SERVER:-root@155.212.245.24}"
 SSH_OPTS="${SSH_OPTS:- -o ServerAliveInterval=30 -o ServerAliveCountMax=20}"
 
 ROOT_DIR="$(cd "$(dirname "$0")" && pwd)"
-STATIC_DIR="$ROOT_DIR/app/dst"
+PROJECT_DIR="$ROOT_DIR/app/"
+STATIC_DIR="$ROOT_DIR/app/dist"
 
 INNER_CIRCLE_HOST="${INNER_CIRCLE_HOST:-inner-circle.spi.ski}"
 INNER_CIRCLE_DOMAIN="${INNER_CIRCLE_DOMAIN:-https://${INNER_CIRCLE_HOST}}"
@@ -34,6 +35,10 @@ while [[ $# -gt 0 ]]; do
     *) echo "Unknown option: $1"; help; exit 1 ;;
   esac
 done
+
+cd "$PROJECT_DIR"
+npm run build
+cd "$ROOT_DIR"
 
 if [[ ! -f "$STATIC_DIR/index.html" ]]; then
   echo "Missing static site entrypoint: $STATIC_DIR/index.html" >&2

@@ -1,0 +1,48 @@
+/* css-modules:css-modules://src_components_inputcheckbox */
+._0479c5 {
+  position: relative;
+  display: block grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: 0.75rem;
+  align-items: center;
+  margin: 0;
+  border-width: 0;
+  padding: 0;
+  font-family: "Neue Machina", sans-serif;
+  font-size: 1rem;
+  font-weight: 400;
+  letter-spacing: 0.05em;
+  @media (min-width:1024px) {
+    column-gap: 1.25rem;
+  }
+}
+._612cd4 {
+  width: 1.5rem;
+  height: 1.5rem;
+  fill: var(--grey);
+  &:has(~ input:checked) {
+    & path:nth-child(2) {
+      opacity: 1;
+    }
+  }
+}
+._4a10db {
+  opacity: 0;
+}
+._4f669e {
+  & a {
+    font-weight: 900;
+    text-decoration: underline;
+  }
+}
+._4ab76c {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}

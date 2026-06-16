@@ -1,0 +1,17 @@
+/* css-modules:css-modules://src_pages_page */
+._7abbf3 {
+  position: relative;
+  color: var(--color);
+  width: 100vw;
+}
+._b28a1c {
+}
+._b29fee {
+  position: fixed;
+  top: 0;
+  right: 0;
+  font-size: var(--text);
+  padding: 5vmin;
+  text-decoration: none;
+  color: inherit;
+}

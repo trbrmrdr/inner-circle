@@ -1,0 +1,5 @@
+@layer inner-circle.base {
+  :root {
+    --ic-source-layer: 1;
+  }
+}

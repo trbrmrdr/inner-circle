@@ -1,0 +1,15 @@
+/* css-modules:css-modules://src_components_responsiveimage */
+._c330a0 {
+  position: relative;
+}
+._244e6b {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 250ms linear;
+  object-fit: cover;
+}
+._c7d48a {
+  opacity: 1;
+}

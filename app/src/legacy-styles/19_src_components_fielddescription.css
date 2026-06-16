@@ -1,0 +1,39 @@
+/* css-modules:css-modules://src_components_fielddescription */
+._4ff17f {
+  & h1,
+  & h2,
+  & h3,
+  & h4,
+  & h5,
+  & h6 {
+    padding: 0;
+    font-family: Grafier, serif;
+    font-size: var(--lead);
+    font-weight: 400;
+    line-height: 1.2;
+    hyphens: none;
+    overflow-wrap: normal;
+    text-wrap: balance;
+    word-break: normal;
+  }
+  & p {
+    max-width: 60ch;
+    padding: 0;
+    font-size: var(--text-medium);
+    line-height: 1.6;
+    letter-spacing: 0.05em;
+  }
+  & a {
+    font-weight: 900;
+    letter-spacing: 0.1em;
+  }
+}
+._3f3c91 {
+  opacity: 0;
+}
+._d1f62b {
+}
+._bfc5ee {
+  display: grid;
+  align-items: center;
+}

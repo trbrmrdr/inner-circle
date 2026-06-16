@@ -1,0 +1,16 @@
+/* css-modules:css-modules://src_components_fieldseparator */
+._4462cb {
+  grid-column: span 6;
+}
+._7dd37a {
+  border-bottom: 1px solid var(--grey);
+}
+._1fdb15 {
+  padding-block: calc(1.25rem - var(--row-gap));
+}
+._818d7d {
+  padding-block: calc(1.875rem - var(--row-gap));
+}
+._adeb05 {
+  padding-block: calc(2.5rem - var(--row-gap));
+}

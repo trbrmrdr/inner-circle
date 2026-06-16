@@ -1,0 +1,114 @@
+/* css-modules:css-modules://src_components_input */
+._78e074 {
+  display: grid;
+  grid-template-rows: min-content minmax(0, 1fr);
+  row-gap: 0.25rem;
+  @supports not selector(:user-invalid) {
+    &:has(> input:invalid) {
+      color: var(--red);
+    }
+  }
+  &:has(> input:user-invalid) {
+    color: var(--red);
+  }
+}
+._42a9b4 {
+  grid-column: span 6;
+}
+._b2ac87 {
+  grid-column: span 5;
+}
+._ec2758 {
+  grid-column: span 4;
+}
+._2e66cd {
+  grid-column: span 3;
+}
+._4a249d {
+  grid-column: span 2;
+}
+._88b5d7 {
+  grid-column: span 1;
+}
+._c7d675 {
+  @media (min-width:1024px) {
+    grid-column: span 6;
+  }
+}
+._7a82d2 {
+  @media (min-width:1024px) {
+    grid-column: span 5;
+  }
+}
+._ff4c39 {
+  @media (min-width:1024px) {
+    grid-column: span 4;
+  }
+}
+._82f446 {
+  @media (min-width:1024px) {
+    grid-column: span 3;
+  }
+}
+._266a7c {
+  @media (min-width:1024px) {
+    grid-column: span 2;
+  }
+}
+._33a96c {
+  @media (min-width:1024px) {
+    grid-column: span 1;
+  }
+}
+._62a0c1 {
+  font-family: "Neue Machina", sans-serif;
+  font-size: var(--text--small);
+  font-weight: 400;
+  line-height: 1.2;
+}
+._a2980d {
+  box-sizing: border-box;
+  min-width: 0;
+  padding: 0.5em 1em;
+  border-radius: 2px;
+  border: 1px solid var(--green-dark);
+  background-color: var(--green-dark);
+  font-family: "Neue Machina", sans-serif;
+  font-size: var(--text-medium);
+  font-weight: 400;
+  line-height: 2;
+  letter-spacing: 0.0625em;
+  color: var(--grey);
+  &::placeholder {
+    all: unset;
+    opacity: 0.2;
+  }
+  &:focus {
+    outline: 2px solid var(--grey);
+    border-radius: 2px;
+  }
+  @supports not selector(:user-invalid) {
+    &:invalid {
+      border-color: var(--red);
+      outline-color: var(--red);
+      color: var(--red);
+      &::placeholder {
+        opacity: 0.3;
+      }
+    }
+  }
+  &:user-invalid {
+    border-color: var(--red);
+    outline-color: var(--red);
+    color: var(--red);
+    &::placeholder {
+      opacity: 0.3;
+    }
+  }
+  @media (min-width: 1024px) {
+    line-height: 2.2222222222;
+  }
+  @media (min-width: 1680px) {
+    line-height: 1.9;
+  }
+}

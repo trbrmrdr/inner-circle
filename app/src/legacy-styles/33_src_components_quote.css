@@ -1,0 +1,66 @@
+/* css-modules:css-modules://src_components_quote */
+._ef7e1c {
+  overflow: hidden;
+  padding: var(--space-x-large) var(--space-small);
+}
+._46a133 {
+  padding: 0 var(--space-small) var(--space-x-large) var(--space-small);
+}
+._50a212 {
+  font-size: var(--eyebrow);
+  line-height: 1.4;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+._0f2468 {
+  font-family: Grafier, serif;
+  font-size: var(--quote);
+  line-height: 1.1;
+  margin: 0;
+}
+._0f2468 p {
+  margin: 0;
+}
+@media (min-width:1024px) {
+  ._ef7e1c {
+    display: grid;
+    grid-template-columns: repeat(16, minmax(0, 1fr));
+    gap: 0 var(--space-small);
+    padding: var(--space-xx-large) var(--space-small);
+  }
+  ._46a133 {
+    padding: 0 var(--space-small) var(--space-xx-large) var(--space-small);
+  }
+  ._0f2468,
+  ._50a212 {
+    grid-column: 5/-5;
+  }
+}
+
+img[src*="/assets/home-lab/"],
+img[srcset*="/assets/home-lab/"],
+img[data-srcset*="/assets/home-lab/"] {
+  filter: saturate(0.68) contrast(0.92) brightness(0.66);
+}
+._30ea2f,
+._9c6871,
+._74c999,
+._b02a17 h1,
+._b02a17 h2,
+._b02a17 h3,
+._b02a17 h4,
+._b02a17 h5,
+._b02a17 h6,
+._4ff17f h1,
+._4ff17f h2,
+._4ff17f h3,
+._4ff17f h4,
+._4ff17f h5,
+._4ff17f h6,
+._d43f79 li {
+  -webkit-hyphens: none;
+  hyphens: none;
+  overflow-wrap: normal;
+  text-wrap: balance;
+  word-break: normal;
+}

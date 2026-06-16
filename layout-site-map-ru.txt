@@ -1,0 +1,1323 @@
+КАРТА САЙТА МАКЕТА
+SCHLOSS FREUDENFELS / РУССКИЙ ПЕРЕВОД АНГЛИЙСКОЙ ВЕРСИИ
+
+Источник:
+schloss-freudenfels-local/en/*/index-2.html
+
+Назначение:
+Это фактическая текстовая карта оригинального макета сайта.
+Она показывает структуру, блоки, ссылки, изображения, раскрывающиеся списки,
+формы и CTA, которые есть в шаблоне, чтобы сравнить их с текущей картой сайта
+Inner Circle.
+
+
+0. ОБЩАЯ ШАПКА / ВЕРХНЕЕ МЕНЮ
+
+Показывается на основных английских страницах макета.
+
+Логотип:
+Freudenfels ****Schloss
+
+Ссылка логотипа:
+/en/
+
+Пункты меню:
+1. Your Event / Ваше событие
+   Ссылка: /en/event/
+
+2. Your Seminar / Ваш семинар
+   Ссылка: /en/seminar/
+
+3. Restaurant / Ресторан
+   Ссылка: /en/restaurant/
+
+4. Hotel / Отель
+   Ссылка: /en/hotel/
+
+5. Contact / Контакты
+   Ссылка: /en/kontakt/
+
+6. Язык
+   EN / DE
+   DE ведет на соответствующую немецкую страницу.
+
+Примечание:
+В английском верхнем меню нет отдельного пункта "Wedding".
+Свадьбы находятся внутри раздела "Your Event".
+
+
+1. ОБЩИЙ КОМПОНЕНТ: DETAILS / РАСКРЫВАЮЩИЙСЯ СПИСОК
+
+Используется на страницах:
+/en/event/
+/en/seminar/
+/en/restaurant/
+/en/hotel/
+
+Якорь на страницах:
+#details
+
+Тип:
+Большой раскрывающийся список с группами, изображениями и подробностями.
+
+
+Группа accordion 1:
+Venues for weddings, banquets & events
+Площадки для свадеб, банкетов и событий
+
+Пункт 1:
+Название:
+The Rose Garden / Розовый сад
+
+Категория:
+Outside / снаружи
+
+Текст:
+Два уровня, фонтан и розовые коридоры. Подходит для свободных церемоний
+или аперитивов до 80 человек.
+
+Изображение:
+Locations Aussen Rosengarten
+
+Пункт 2:
+Название:
+Castle terrace / Терраса замка
+
+Категория:
+Outside / снаружи
+
+Текст:
+Вид на озеро. Подходит для свободных церемоний или аперитивов до 100 человек.
+
+Изображение:
+Castle terrace / lake view
+
+Пункт 3:
+Название:
+Garden area / Садовая территория
+
+Категория:
+Outside / снаружи
+
+Текст:
+Барочный сад с солнечной террасой. Подходит для событий до 120 человек.
+
+Изображение:
+Locations Aussen Gartenanlage
+
+Пункт 4:
+Название:
+Terrace / Терраса
+
+Категория:
+Outside / снаружи
+
+Текст:
+Терраса ресторана с видом на замок и озеро. Ужин до 64 человек.
+
+Изображение:
+Restaurant terrace
+
+Пункт 5:
+Название:
+Foyer and Aula / Фойе и Aula
+
+Категория:
+Inside / Schüür
+
+Текст:
+Амфитеатральная аудитория с просторным фойе. Подходит для аперитивов,
+концертов и банкетов.
+
+Вместимость:
+| Аперитивы до 80 человек | Концерты до 80 человек | Банкеты до 64 человек |
+
+Изображение:
+Foyer and Aula
+
+Пункт 6:
+Название:
+Our restaurant / Наш ресторан
+
+Категория:
+Inside / Schüür
+
+Текст:
+Современный светлый ресторан для вечеринок и встреч до 50 человек.
+
+Изображение:
+Restaurant interior
+
+Пункт 7:
+Название:
+Plenarsaal
+
+Категория:
+Inside / Castle
+
+Текст:
+Светлый дружелюбный зал. Подходит для свободных церемоний и праздников.
+
+Вместимость:
+| Свободные церемонии до 70 человек | Праздники до 30 человек |
+
+Изображение:
+Plenarsaal
+
+Пункт 8:
+Название:
+Festsaal
+
+Категория:
+Inside / Castle
+
+Текст:
+Светлый дружелюбный зал. Подходит для камерного праздника до 15 человек.
+
+Изображение:
+Festsaal
+
+Документы / ссылки в группе:
+"Celebrating at Schloss Freudenfels" PDF
+Wedding dossier PDF
+
+
+Группа accordion 2:
+Rooms and equipment for seminars
+Комнаты и оборудование для семинаров
+
+Пункт 1:
+Название:
+Aula
+
+Категория:
+Schüür
+
+Текст:
+Зал 120 м2.
+
+Вместимость:
+| Семинарная посадка до 36 человек | Концертная посадка до 80 человек |
+
+Изображение:
+Aula from above
+
+Пункт 2:
+Название:
+Foyer / Фойе
+
+Категория:
+Schüür
+
+Текст:
+Зал 110 м2.
+
+Вместимость:
+| U-образная посадка до 24 человек |
+
+Изображение:
+Seminar Foyer
+
+Пункт 3:
+Название:
+Plenarsaal
+
+Категория:
+Castle
+
+Текст:
+Зал 56 м2.
+
+Вместимость:
+| U-образная посадка до 20 человек | Семинарная посадка до 16 человек |
+
+Изображение:
+Seminar Plenarsaal
+
+Пункт 4:
+Название:
+Festsaal
+
+Категория:
+Castle
+
+Текст:
+Зал 40 м2.
+
+Вместимость:
+| U-образная посадка до 12 человек |
+
+Изображение:
+Festsaal
+
+Пункт 5:
+Название:
+Group rooms A-D / Групповые комнаты A-D
+
+Категория:
+Castle
+
+Текст:
+Комнаты 22-30 м2.
+
+Вместимость:
+| Воркшопы по 6-10 человек в каждой комнате |
+
+Изображение:
+Seminar group room
+
+Пункт 6:
+Название:
+Equipment / Оборудование
+
+Категория:
+Optional / опционально
+
+Текст:
+Доступно по запросу.
+
+Список:
+| Whiteboard | Flipchart | Projector | Conference phone | Video conferencing system |
+
+Изображение:
+Seminar equipment
+
+Документ / ссылка:
+"Price list seminars Schloss Freudenfels" PDF
+
+
+Группа accordion 3:
+Rooms & Cuisine
+Номера и кухня
+
+Пункт 1:
+Название:
+21 Double room / 21 двухместный номер
+
+Категория:
+Schüür
+
+Текст:
+26 м2, вид на озеро или сад. Размер кровати 180 x 210 см.
+
+Изображение:
+Double room
+
+Пункт 2:
+Название:
+4 Single room / 4 одноместных номера
+
+Категория:
+Wyberhuus
+
+Текст:
+16-18 м2, вид на озеро или сад. Размер кровати 140 x 210 см.
+
+Изображение:
+Single room
+
+Пункт 3:
+Название:
+Menus / Меню
+
+Категория:
+Restaurant
+
+Текст:
+Все меню сезонные и региональные, но прежде всего вкусные.
+
+Изображение:
+Menus
+
+Пункт 4:
+Название:
+On request / По запросу
+
+Категория:
+Furthermore / дополнительно
+
+Текст:
+Доступно по запросу.
+
+Список:
+| Дополнительная кровать | Лежанка / комплект для собаки | Детская кроватка |
+
+Изображение:
+On request
+
+
+Группа accordion 4:
+Gallery
+Галерея
+
+Пункты:
+1. Schüür - вид внутрь
+2. Schüür - деталь
+3. Double room - вид внутрь
+4. Double room - вид внутрь
+5. Care products - качественные средства
+6. Fitbox - для активных гостей в каждом номере
+7. Castle and lake - вид на замок и озеро
+8. Garden - вид на сад
+9. Wyberhuus - одноместный номер
+10. Wyberhuus - одноместный номер
+11. Wyberhuus - одноместный номер
+12. Wyberhuus - одноместный номер
+13. Castle and lake - вид на замок и озеро
+14. Restaurant - внутри
+15. Restaurant - снаружи
+
+Тип:
+Галерея изображений внутри раскрывающегося списка.
+
+
+Группа accordion 5:
+Leisure, Sports & Fun
+Досуг, спорт и развлечения
+
+Пункт 1:
+Название:
+Sports Pavilion / Спортивный павильон
+
+Категория:
+Fitness
+
+Текст:
+Беговые дорожки, TRX, гири и оборудование для упражнений с весом тела.
+
+Пункт 2:
+Название:
+Table sports / Настольные игры
+
+Категория:
+Fun and games
+
+Текст:
+Настольный футбол и стол для пинг-понга с ракетками и мячами.
+
+Пункт 3:
+Название:
+Library / Библиотека
+
+Категория:
+Rest and relaxation
+
+Текст:
+Историческое пространство с видом на Боденское озеро.
+
+Пункт 4:
+Название:
+Fireplace room / Каминная комната
+
+Категория:
+Quiet or sociable
+
+Текст:
+С honesty bar.
+
+Пункт 5:
+Название:
+E-bike rental / Аренда e-bike
+
+Категория:
+For excursions
+
+Текст:
+Электровелосипеды и предложения маршрутов.
+
+Пункт 6:
+Название:
+Piano / Пианино
+
+Категория:
+For skilled fingers
+
+Текст:
+Гости, которые умеют и решаются, могут сыграть на пианино по запросу.
+
+Пункт 7:
+Название:
+Events / События
+
+Категория:
+Live
+
+Текст:
+Живая музыка и другие события. Летом и в особые даты замок предлагает
+обновляющуюся программу.
+
+Ссылка:
+program -> /de/veranstaltungen/
+
+
+2. ОБЩИЙ КОМПОНЕНТ: NEWSWORTHY / НОВОСТНОЙ БЛОК
+
+Используется на страницах:
+Home, Event, Seminar, Restaurant, Hotel.
+
+Тип:
+Небольшой новостной/teaser-слайдер.
+
+Заголовок:
+Newsworthy
+
+Карточка:
+myclimate - Cause we Care
+
+Статус:
+we are on board!
+
+Текст:
+Это участие реализуется совместно со швейцарским фондом myclimate в рамках
+программы "Cause We Care".
+
+Ссылка:
+"Cause We Care" -> внешний сайт causewecare.ch
+
+
+3. ОБЩИЙ КОМПОНЕНТ: ФУТЕР
+
+Используется на большинстве английских страниц макета.
+
+Колонка 1:
+Метка:
+ADRESS
+
+Заголовок:
+Freudenfels ****Schloss
+
+Текст:
+Schlossweg
+8264 Eschenz
+Switzerland
+
+Телефон:
++41 52 742 72 11
+
+Email:
+info@schloss-freudenfels.ch
+
+Маршрут:
+Google Maps
+
+Парковка:
+Гостям доступны бесплатные открытые парковочные места и две зарядные станции
+для электромобилей.
+
+Колонка 2:
+Метка:
+Info
+
+Заголовок:
+Opening hours Restaurant and Hotel
+
+Текст:
+Мы являемся семинарным и event-отелем, доступным эксклюзивно для вашего события
+или конференции в течение года.
+
+Только во время летнего сезона и специальных событий ресторан и отель открыты
+для широкой публики.
+
+Ссылки:
+Upcoming Events 2025 -> /de/veranstaltungen/
+Summer Season -> /en/sommerfrische/
+
+Book a table:
++41 52 742 72 11
+
+Email link:
+E-Mail -> mailto:info@schloss-freudenfels.ch?subject=Request for Table Reservation
+
+Колонка 3:
+Служебные ссылки:
+myclimate "Cause We Care" -> /en/cause-we-care/
+Guest directory -> PDF
+Pillow menu -> PDF
+instagram -> external
+facebook -> external
+linkedin -> external
+Legal -> /en/legal/
+Imprint -> /en/impressum/
+Newsletter -> mailto newsletter subscription
+
+Изображение:
+OK:GO accessibility badge
+
+
+4. ОБЩИЙ КОМПОНЕНТ: НИЖНИЕ CTA-ССЫЛКИ
+
+Тип:
+Две большие нижние ссылки со стрелками.
+
+Частый вариант:
+1. Focused work at the castle. -> /en/seminar/
+2. Celebrate at the castle. -> /en/event/
+
+Другой вариант:
+1. Dreaming in the castle. -> /en/hotel/
+2. Cuisine at the castle. -> /en/restaurant/
+
+
+5. СТРАНИЦА: HOME / ГЛАВНАЯ
+
+Ссылка:
+/en/
+
+Title:
+Home
+
+
+Блок 1. Hero / обзор
+
+Тип:
+Текстовый hero с картой и четырьмя вертикальными предложениями.
+
+Заголовок:
+Castle Freudenfels.
+
+Лид:
+Когда-то средневековое укрепление, теперь оазис спокойствия.
+
+Текст:
+Красиво расположен среди нетронутой природы, удобно доступен из Швейцарии,
+Лихтенштейна, Австрии и Германии. Оснащен всем, что делает событие
+незабываемым, а семинар успешным - не только технически, но прежде всего
+по-человечески, потому что команда работает с увлечением и сердцем.
+
+Изображение:
+Desktop map: /map_desktop.image-FMOASJK5.svg
+Mobile map: /map_mobile.image-K6Q4D5WI.svg
+
+Вертикальные колонки:
+| Праздновать внутри с 70 или снаружи со 120 гостями. Learn more |
+| Сконцентрированные встречи до 80 участников. Learn more |
+| Хорошая кухня, сезонная и региональная. Learn more |
+| Крепкий сон с видом на сад или озеро. Learn more |
+
+Ссылки:
+Learn more -> /en/event/
+Learn more -> /en/seminar/
+Learn more -> /en/restaurant/
+Learn more -> /en/hotel/
+
+
+Блок 2. Полноэкранное изображение
+
+Тип:
+Большое атмосферное изображение.
+
+Изображение:
+Prismic DSC05573-Bearbeitet
+(замок / пейзаж)
+
+
+Блок 3. Newsworthy
+
+Использует общий компонент:
+Newsworthy
+
+
+Блок 4. Wedding, Family & Corporate Events
+
+Тип:
+Текст + изображение + вертикальные факты + CTA-ссылки.
+
+Метка:
+Wedding, Family & Corporate Events
+
+Заголовок:
+Celebrate like royalty.
+
+Лид:
+Or beautifully simple.
+
+Текст:
+Для камерной или большой свадьбы, крестин, дня рождения, корпоративного события
+или праздничного банкета Schloss Freudenfels предлагает светлые праздничные
+залы в разных конфигурациях, часовню, террасу и розовый сад с видом на замок
+и Боденское озеро.
+
+Вертикальные факты:
+| Romantic rose garden. | Hall for up to 70 guests. | Celebrations until 3 am. |
+
+Изображение:
+Prismic DSC05149-Bearbeitet
+
+Ссылки:
+Inquiry -> mailto:info@schloss-freudenfels.ch?subject=Inquiry for an event
+Learn more -> /en/event/
+
+
+Блок 5. Полноэкранное изображение
+
+Изображение:
+Prismic DSC05978-Bearbeitet
+
+
+Блок 6. Seminar, Conference & Workshop
+
+Метка:
+Seminar, Conference & Workshop
+
+Заголовок:
+Focused work.
+
+Лид:
+Your customized off-site.
+
+Текст:
+Schloss Freudenfels - семинарный и конференц-центр с яркими комнатами,
+техническим оборудованием, тихой локацией, просторными открытыми зонами
+и ненавязчивой заботой об участниках.
+
+Вертикальные факты:
+| Up to 80 participants. | Auditorium, seminar and group rooms. | Continuous catering. |
+
+Изображение:
+Prismic DSC05822-Bearbeitet
+
+Ссылки:
+Inquiry -> mailto:info@schloss-freudenfels.ch?subject=Inquiry for seminar, conference or workshop
+Details -> /en/seminar/
+
+
+Блок 7. Полноэкранное изображение
+
+Изображение:
+Prismic DSC05995-Bearbeitet
+
+
+Блок 8. Cuisine
+
+Метка:
+Cuisine
+
+Заголовок:
+To the table.
+
+Лид:
+Feast - regional and seasonal.
+
+Текст:
+Ресторан открыт для всех только в летний сезон и во время специальных событий.
+Кухня готовит из тщательно выбранных, преимущественно региональных и сезонных
+ингредиентов. Есть терраса с видом на замок и озеро.
+
+Вертикальные факты:
+| Terrace with a view of the castle and the lake. |
+| A fine selection of regional wines and beers. |
+| Service as one would wish for. |
+
+Изображение:
+Prismic DSC05417-Bearbeitet
+
+Ссылки:
+Book a table -> mailto:info@schloss-freudenfels.ch?subject=Inquiry for booking a table
+Details -> /en/restaurant/
+
+
+Блок 9. Полноэкранное изображение
+
+Изображение:
+Prismic DSC05533-Bearbeitet
+
+
+Блок 10. Hotel
+
+Метка:
+HOTEL
+
+Заголовок:
+Dream beautifully.
+
+Лид:
+With a garden or lake view.
+
+Текст:
+Отель открыт для всех только в летний сезон и во время специальных событий.
+Светлые двухместные номера предлагают вид на сад или озеро, телевизор,
+просторную ванную и завтрак. На территории есть лежаки и lounge-зоны для отдыха.
+
+Вертикальные факты:
+| 5 single and 20 double rooms. | Rich breakfast included. | Sun loungers and lounges for relaxing. |
+
+Изображение:
+Prismic AC2I8215
+
+Ссылки:
+Book a stay -> mailto:info@schloss-freudenfels.ch?subject=Inquiry to book a stay
+Learn more -> /en/hotel/
+
+
+Блок 11. Полноэкранное изображение
+
+Изображение:
+Prismic DSC05054-Bearbeitet
+
+
+Блок 12. Футер
+
+Использует общий компонент:
+Футер
+
+
+Блок 13. Нижние CTA
+
+Ссылки:
+Focused work at the castle. -> /en/seminar/
+Celebrate at the castle. -> /en/event/
+
+
+6. СТРАНИЦА: YOUR EVENT / ВАШЕ СОБЫТИЕ
+
+Ссылка:
+/en/event/
+
+Title:
+Your Event
+
+
+Блок 1. Hero / предложение для события
+
+Метка:
+Wedding, Family & Corporate Events
+
+Заголовок:
+Celebrate like royalty.
+
+Лид:
+Or beautifully simple.
+
+Текст:
+Камерная или большая свадьба, крещение, день рождения, корпоративное событие
+или банкет. Schloss Freudenfels предлагает светлые залы, часовню, террасу
+и розовый сад с видом на замок и Боденское озеро.
+
+Вертикальные факты:
+| Romantic rose garden. | Hall for up to 70 guests. | Celebrations until 3 am. | Accommodation options. |
+
+Ссылки:
+Inquiry -> mailto:info@schloss-freudenfels.ch?subject=Inquiry for an event
+Details -> #details
+
+
+Блок 2. Details accordion
+
+Использует общий компонент:
+Details accordion
+
+Важное отличие от Inner Circle:
+В макете есть глубокий сгруппированный блок деталей: площадки, вместимость,
+изображения комнат, семинарные залы, гостиничные номера, меню, галерея и досуг.
+
+
+Блок 3. Полноэкранное изображение
+
+Изображение:
+Prismic DSC05978-Bearbeitet
+
+
+Блок 4. Newsworthy
+
+Использует общий компонент:
+Newsworthy
+
+
+Блок 5. Футер
+
+Использует общий компонент:
+Футер
+
+
+Блок 6. Нижние CTA
+
+Ссылки:
+Dreaming in the castle -> /en/hotel/
+Cuisine at the castle. -> /en/restaurant/
+
+
+7. СТРАНИЦА: YOUR SEMINAR / ВАШ СЕМИНАР
+
+Ссылка:
+/en/seminar/
+
+Title:
+Your Seminar
+
+
+Блок 1. Hero / предложение для семинара
+
+Метка:
+Seminar, Conference & Workshop
+
+Заголовок:
+Focused work.
+
+Лид:
+Your customized off-site.
+
+Текст:
+Schloss Freudenfels - семинарный и конференц-центр со светлыми комнатами,
+техническим оборудованием, тихой локацией, открытыми зонами для прогулок
+и ненавязчивой заботой об участниках.
+
+Вертикальные факты:
+| Up to 80 participants. | Auditorium, seminar and group rooms. | Continuous catering. | Accommodation options. |
+
+Ссылки:
+Inquiry -> mailto:info@schloss-freudenfels.ch?subject=Inquiry for seminar, conference or workshop
+Details -> #details
+Prices (PDF) -> seminar price list PDF
+
+
+Блок 2. Details accordion
+
+Использует общий компонент:
+Details accordion
+
+Важное отличие от Inner Circle:
+Страница сильно опирается на подробности внутри accordion: вместимость,
+типы посадки, оборудование, групповые комнаты, проживание и досуг.
+
+
+Блок 3. Партнерский блок
+
+Тип:
+Текст + изображение + ссылка.
+
+Текст:
+We are a partner of Seminarland Ostschweiz.
+
+Изображение:
+Seminarland-Ostschweiz-Visual
+
+Ссылка:
+Seminarland Website -> external seminarland.ch
+
+
+Блок 4. Newsworthy
+
+Использует общий компонент:
+Newsworthy
+
+
+Блок 5. Футер
+
+Использует общий компонент:
+Футер
+
+
+Блок 6. Нижние CTA
+
+Ссылки:
+Dreaming in the castle. -> /en/hotel/
+Cuisine at the castle. -> /en/restaurant/
+
+
+8. СТРАНИЦА: RESTAURANT / РЕСТОРАН
+
+Ссылка:
+/en/restaurant/
+
+Title:
+Restaurant
+
+
+Блок 1. Hero / ресторан
+
+Метка:
+Restaurant
+
+Заголовок:
+To the table.
+
+Лид:
+Feast - regional and seasonal.
+
+Текст:
+Ресторан открыт для публики во время летнего сезона и специальных событий.
+Кухня использует тщательно выбранные, преимущественно местные и сезонные
+ингредиенты. Можно есть на солнечной террасе с видом на замок и озеро.
+
+Вертикальные факты:
+| Terrace with a view of the castle and the lake. |
+| A fine selection of regional wines and beers. |
+| Service as one would wish for. |
+
+Ссылки:
+Book a table -> mailto:info@schloss-freudenfels.ch?subject=Inquiry for booking a table
+Details -> #details
+
+
+Блок 2. Sustainability / гастрономия
+
+Метка:
+For the environment
+
+Заголовок:
+Sustainable gastronomy operation.
+
+Лид:
+We buy seasonal/regional produce, save energy, and avoid food waste and waste.
+
+Текст:
+Блок описывает заботу об окружающей среде и экономию ресурсов в гастрономии.
+
+
+Блок 3. Details accordion
+
+Использует общий компонент:
+Details accordion
+
+Важное отличие от Inner Circle:
+Даже страница ресторана содержит общий большой accordion всего поместья,
+а не только ресторанные детали.
+
+
+Блок 4. Newsworthy
+
+Использует общий компонент:
+Newsworthy
+
+
+Блок 5. Футер
+
+Использует общий компонент:
+Футер
+
+
+Блок 6. Нижние CTA
+
+Ссылки:
+Focused work at the castle. -> /en/seminar/
+Celebrate at the castle. -> /en/event/
+
+
+9. СТРАНИЦА: HOTEL / ОТЕЛЬ
+
+Ссылка:
+/en/hotel/
+
+Title:
+Hotel
+
+
+Блок 1. Hero / отель
+
+Метка:
+HOTEL
+
+Заголовок:
+Dream beautifully.
+
+Лид:
+With a garden or lake view.
+
+Текст:
+Отель открыт для всех в летний сезон и во время специальных событий.
+Светлые уютные двухместные номера имеют вид на сад или озеро, телевизор,
+просторную ванную и завтрак. На территории есть зоны отдыха. Гостям доступны
+бесплатная парковка и две зарядки для электромобилей.
+
+Вертикальные факты:
+| 5 single and 20 double rooms. | Rich breakfast included. | Sun loungers and lounges for relaxing. | Peace, peace, peace. |
+
+Ссылки:
+Book a stay -> /en/booking-enquiry/
+Details -> #details
+Guest directory -> PDF
+
+
+Блок 2. Details accordion
+
+Использует общий компонент:
+Details accordion
+
+
+Блок 3. Sustainability / отель
+
+Метка:
+Relaxing addition
+
+Заголовок:
+Sustainable hotel operation.
+
+Лид:
+We buy seasonal/regional, save energy, and avoid food waste and waste. While you
+are with us, your electric car can be charged at our E-Mobility stations.
+
+Текст:
+Отель описывает заботу об окружающей среде и сохранение ресурсов без потери
+комфорта гостя.
+
+
+Блок 4. Newsworthy
+
+Использует общий компонент:
+Newsworthy
+
+
+Блок 5. Футер
+
+Использует общий компонент:
+Футер
+
+
+Блок 6. Нижние CTA
+
+Ссылки:
+Cuisine at the castle. -> /en/restaurant/
+Celebrate at the castle. -> /en/event/
+
+
+10. СТРАНИЦА: CONTACT / КОНТАКТЫ
+
+Ссылка:
+/en/kontakt/
+
+Title:
+Kontakt
+
+
+Блок 1. Contact hero
+
+Метка:
+Here for you
+
+Заголовок:
+Contact.
+
+Лид:
+At your service.
+
+Текст:
+Для свадеб, конференций, семейных или корпоративных событий команда готова
+помочь исполнить пожелания и сделать событие незабываемым. Текст предлагает
+получить информацию или экскурсию по замку.
+
+Подпись:
+Your Freudenfels Castle
+Michèle Warna & Team
+
+
+Блок 2. Team grid / команда
+
+Тип:
+Сетка фотографий с именами, ролями, email-ссылками и телефонами.
+
+Заголовок:
+The Team.
+
+Подзаголовок:
+We care about your well-being.
+
+Люди:
+1. Michèle Warna
+   Роль: Managing Director
+   Email: info@schloss-freudenfels.ch
+   Телефон: +41 52 742 72 11
+
+2. Cornelia Oberhänsli
+   Роль: Receptionist
+   Email: info@schloss-freudenfels.ch
+   Телефон: +41 52 742 72 11
+
+3. Yannick Warna
+   Роль: Head of Service and Banquet
+   Email: info@schloss-freudenfels.ch
+   Телефон: +41 52 742 72 11
+
+4. Nicolina Sigg
+   Роль: Deputy Head of Service and Banquet
+   Телефон: +41 52 742 72 11
+
+5. Barbara Frehner
+   Роль: Head of Housekeeping
+   Email: info@schloss-freudenfels.ch
+   Телефон: +41 52 742 72 70
+
+6. Tobias Estermann
+   Роль: Chef de Cuisine
+   Email: info@schloss-freudenfels.ch
+   Телефон: +41 52 742 72 60
+
+7. Roger Bühlmann
+   Роль: Deputy Chef de Cuisine
+   Email: info@schloss-freudenfels.ch
+   Телефон: +41 52 742 72 60
+
+8. Angela Basler
+   Роль: Castle Keeper
+   Email: info@schloss-freudenfels.ch
+   Телефон: +41 79 407 30 05
+
+
+Блок 3. History / история
+
+Метка:
+Moving
+
+Заголовок:
+History.
+
+Лид:
+Old walls. Fresh wind.
+
+Текст:
+Изначально построенный около 1200 года как замок с оборонительной башней,
+нынешний комплекс появился в эпоху барокко. В течение веков монахи монастыря
+Einsiedeln жили в этом доме, прежде чем он стал площадкой для праздников
+и семинаров.
+
+
+Блок 4. Футер
+
+Использует общий компонент:
+Футер
+
+
+11. СТРАНИЦА: BOOKING ENQUIRY / ЗАПРОС БРОНИРОВАНИЯ
+
+Ссылка:
+/en/booking-enquiry/
+
+Title:
+Buchungsanfrage
+
+
+Блок 1. Enquiry hero
+
+Заголовок:
+Enquiry.
+
+Лид:
+Become the lady or lord of the castle for a while.
+
+Текст:
+Сообщите желаемый период, и команда вернется с доступными номерами
+как можно скорее. Текст завершает ожиданием встречи.
+
+
+Блок 2. Форма запроса номера
+
+Тип:
+Форма бронирования.
+
+Поля:
+1. Arrival*
+   Тип: date
+
+2. Nights*
+   Тип: select
+
+3. Поездка с ребенком / собакой
+   Radio options:
+   | No |
+   | Yes, I/we are travelling with child/children |
+   | Yes, I/we are travelling with dog/s |
+   | Yes, I/we are travelling with child/children and dog/s |
+
+4. Number / Age
+   Тип: text
+
+5. Room category
+   Radio options:
+   | Wyberhuus |
+   | Schüür with garden views |
+   | Schüür with lake / castle views |
+
+6. Half-board
+   Radio options:
+   | with half-board |
+   | without half board |
+
+7. myclimate Cause we Care
+   Checkbox:
+   I support with CHF 2.50 per overnight stay.
+
+8. Salutation
+   Radio options:
+   | Divers | Mrs | Mr |
+
+9. First name*
+   Placeholder:
+   Andrea
+
+10. Surname*
+    Placeholder:
+    Muster
+
+11. email*
+    Placeholder:
+    andrea.muster@email.com
+
+12. Phone number*
+    Placeholder:
+    +41 41 000 00 00
+
+13. Message
+    Placeholder:
+    We should still know that ...
+
+14. Privacy checkbox
+    Текст:
+    Yes, I have read and understood the privacy policy.
+
+Кнопка отправки:
+Request a room
+
+
+Блок 3. Футер
+
+Использует общий компонент:
+Футер
+
+
+12. СТРАНИЦА: LEGAL / ПРАВОВАЯ ИНФОРМАЦИЯ
+
+Ссылка:
+/en/legal/
+
+Title:
+Legal
+
+Статус:
+Длинная правовая страница / privacy policy.
+
+Основная функция:
+Политика приватности, обработка данных, cookie, журналы сервера,
+защита данных, контакт по юридическим вопросам и privacy.
+
+Важно для сравнения:
+Это служебная текстовая страница, а не визуальная контентная страница.
+
+
+13. МОДУЛИ МАКЕТА, КОТОРЫЕ ЕСТЬ В ШАБЛОНЕ, НО ЕЩЕ НЕ ПОЛНОСТЬЮ ИСПОЛЬЗУЮТСЯ В INNER CIRCLE
+
+1. Глубокий Details accordion
+   В оригинальном макете есть большой сгруппированный раскрывающийся список:
+   площадки, вместимость, типы комнат, техника, меню, галерея и досуг.
+
+2. Team grid
+   На странице Contact есть портреты, роли, email и телефоны.
+
+3. Newsworthy slider
+   Переиспользуемый новостной teaser-блок.
+
+4. Полный футер поместья
+   Адрес, маршрут, парковка, часы работы, бронирование столика, документы,
+   соцсети и правовые ссылки.
+
+5. Нижние CTA-пары
+   Большие стрелочные ссылки между основными разделами.
+
+6. Booking form
+   Страница Hotel ведет на подробную форму бронирования с датами, ночами,
+   категориями номеров, half-board и личными данными.
+
+7. PDF/document links
+   Прайс, свадебное досье, guest directory, pillow menu.
+
+8. Image-heavy gallery
+   В accordion много визуальных карточек, которые можно использовать как основу
+   для фото-маячков или сгруппированных визуальных объяснений в Inner Circle.

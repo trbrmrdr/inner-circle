@@ -1,0 +1,114 @@
+/* css-modules:css-modules://src_components_footer */
+._5b8182 {
+  position: relative;
+  background: var(--grey);
+  color: var(--green);
+  padding: var(--space-x-large) var(--space-small);
+}
+._e13d64 {
+  display: grid;
+  gap: var(--space-medium);
+}
+._7bcf59 {
+  font-size: var(--eyebrow);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0 0 var(--space-xx-small)0;
+}
+._acbc0a {
+  font-size: var(--heading-4);
+  padding: 0 0 var(--space)0;
+  font-family: Grafier, serif;
+  line-height: 1.2;
+  font-weight: 400;
+}
+._a5ef3b {
+  font-size: var(--text);
+  line-height: 1.6;
+}
+._a5ef3b p {
+  padding: 0 0 1em 0;
+}
+._a5ef3b p:last-of-type {
+  padding: 0;
+}
+._a5ef3b b {
+  font-weight: 900;
+}
+._9c87df {
+  padding: var(--space-large)0 var(--space)0;
+  text-transform: uppercase;
+  line-height: 2;
+}
+.inner-circle-contact-hero-actions {
+  margin-top: var(--space-x-small);
+}
+.inner-circle-contact-hero-actions a {
+  border: 1px solid currentColor;
+}
+.inner-circle-contact-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1.25rem;
+}
+.inner-circle-contact-button {
+  box-sizing: border-box;
+  display: inline-flex;
+  flex: 1 1 8rem;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.75rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid currentColor;
+  border-radius: 2px;
+  font-size: var(--label);
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  line-height: 1;
+  text-align: center;
+  text-transform: uppercase;
+}
+.inner-circle-contact-button--primary,
+.inner-circle-contact-button:hover {
+  border-color: var(--green);
+  background: var(--green);
+  color: var(--grey);
+}
+.inner-circle-footer-loop {
+  margin: var(--space-large) 0 0;
+}
+.inner-circle-footer-video {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16/9;
+  object-fit: cover;
+  background: var(--green);
+}
+@media (min-width:1024px) {
+  ._5b8182 {
+    display: grid;
+    grid-template-columns: repeat(16, minmax(0, 1fr));
+    gap: 0 var(--space-small);
+    padding: var(--space-xx-large) var(--space-small) var(--space-x-large) var(--space-small);
+    z-index: 100;
+  }
+  ._e13d64 {
+    grid-column: 2/span 12;
+    gap: var(--space-small);
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
+  }
+  ._9c87df {
+    padding: 0;
+    grid-column: 15/-1;
+    line-height: 1.6;
+  }
+  .inner-circle-footer-loop {
+    grid-column: 2/span 12;
+    margin: var(--space-large) 0 0;
+  }
+  .inner-circle-contact-button {
+    flex: 0 1 auto;
+  }
+}

@@ -1,0 +1,6 @@
+@layer inner-circle.components {
+  /*
+    Shared footer overrides live here. Keep page-specific footer variants in
+    src/partials/footers.
+  */
+}

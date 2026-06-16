@@ -1,0 +1,10 @@
+/* css-modules:css-modules://src_components_inputdate */
+._b828f7 {
+}
+._58d1b5 {
+  -moz-appearance: textfield;
+  &::-webkit-calendar-picker-indicator {
+    display: none;
+    appearance: none;
+  }
+}

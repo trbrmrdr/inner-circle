@@ -1,0 +1,22 @@
+/* css-modules:css-modules://src_components_columns */
+._94eb90 {
+  padding: var(--space) var(--space-small);
+}
+._418675 {
+  display: grid;
+  gap: var(--space-medium);
+}
+@media (min-width:1024px) {
+  ._94eb90 {
+    display: grid;
+    grid-template-columns: repeat(16, minmax(0, 1fr));
+    gap: 0 var(--space-small);
+    padding: var(--space-large) var(--space-small);
+  }
+  ._418675 {
+    grid-column: 4/span 12;
+    gap: var(--space-small);
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
+  }
+}

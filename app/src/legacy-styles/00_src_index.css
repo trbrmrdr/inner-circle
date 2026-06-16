@@ -1,0 +1,25 @@
+/* src/index.css */
+@font-face {
+  font-family: "Grafier";
+  src: url(/Grafier-RegularDisplay-JBYXNUJ4.woff2) format("woff2");
+  font-weight: 400;
+  font-style: normal;
+}
+@font-face {
+  font-family: "Neue Machina";
+  src: url(/NeueMachina-Ultralight-L6F37B7B.woff2) format("woff2");
+  font-weight: 100;
+  font-style: normal;
+}
+@font-face {
+  font-family: "Neue Machina";
+  src: url(/NeueMachina-Regular-RIUAPWEK.woff2) format("woff2");
+  font-weight: 400;
+  font-style: normal;
+}
+@font-face {
+  font-family: "Neue Machina";
+  src: url(/NeueMachina-Black-3G4SBTUK.woff2) format("woff2");
+  font-weight: 900;
+  font-style: normal;
+}

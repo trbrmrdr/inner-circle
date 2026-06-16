@@ -1,0 +1,36 @@
+/* css-modules:css-modules://src_components_info */
+._06ff1d {
+}
+._0d4d9a {
+  font-size: var(--eyebrow);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0 0 var(--space-xx-small)0;
+}
+._2db789 {
+  font-size: var(--heading-4);
+  padding: 0 0 var(--space)0;
+  font-family: Grafier, serif;
+  line-height: 1.2;
+  font-weight: 400;
+}
+._302284 {
+  font-size: var(--text);
+  line-height: 1.6;
+}
+._302284 p {
+  padding: 0 0 1em 0;
+}
+._302284 p:last-of-type {
+  padding: 0;
+}
+._302284 b {
+  font-weight: 900;
+}
+@media (min-width:1024px) {
+  ._8d4459 {
+    padding: 0;
+    grid-column: 15/-1;
+    line-height: 1.6;
+  }
+}

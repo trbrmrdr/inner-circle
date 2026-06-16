@@ -1,0 +1,97 @@
+/* css-modules:css-modules://src_components_gallery */
+._36ce55 {
+  padding: var(--space)0 var(--space-small)0;
+}
+._d8ed09 {
+  font-size: var(--eyebrow);
+  line-height: 1.4;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0 0 var(--space-xx-small)0;
+}
+._824560 {
+  font-size: var(--heading-1);
+  font-family: Grafier, serif;
+  line-height: 1;
+  font-weight: 400;
+  padding: 0 0 var(--space)0;
+}
+._d14186 {
+  font-size: var(--space-small);
+  line-height: 1.6;
+}
+._8e884e {
+  padding: 0 var(--space-small) var(--space-medium) var(--space-small);
+}
+._7c2531 {
+  width: 100%;
+  display: grid;
+  grid-auto-flow: column;
+  overflow-x: auto;
+  overflow-y: hidden;
+  grid-auto-columns: minmax(75vw, min-content);
+  scroll-snap-type: x mandatory;
+  padding: 0 0 var(--space-small)0;
+}
+._7c2531::-webkit-scrollbar {
+  display: none;
+}
+._7c2531 > :last-child:after {
+  content: "";
+  position: absolute;
+  width: 25vw;
+  right: -25vw;
+  top: 0;
+  height: 100%;
+}
+._a729e8 {
+  display: grid;
+  position: relative;
+  scroll-snap-align: start;
+  padding: 0 0 0 var(--space-small);
+}
+._8a823b {
+  width: 100%;
+  padding: 0 0 var(--space)0;
+}
+._3679e3 {
+  font-size: var(--eyebrow);
+  line-height: 1.4;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0 0 var(--space-small)0;
+}
+._77cd4b {
+  font-size: var(--heading-5);
+  line-height: 1.1;
+  padding: 0 0 var(--space-small)0;
+  white-space: pre-line;
+}
+._e6645f {
+  font-size: var(--eyebrow);
+  line-height: 1.4;
+  letter-spacing: 0.1em;
+}
+@media (min-width:1024px) {
+  ._36ce55 {
+    display: grid;
+    grid-template-columns: repeat(16, minmax(0, 1fr));
+    gap: 0 var(--space-small);
+    padding: var(--space-medium) var(--space-small) var(--space-small) var(--space-small);
+  }
+  ._8e884e {
+    grid-column: 5/-1;
+    padding: 0 0 var(--space-medium)0;
+  }
+  ._7c2531 {
+    grid-column: 4/-2;
+    padding: 0;
+    gap: var(--space-large) var(--space);
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-auto-flow: unset;
+    overflow: hidden;
+  }
+  ._a729e8 {
+    padding: 0;
+  }
+}
