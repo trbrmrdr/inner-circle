@@ -5,7 +5,9 @@
   "scripts": {
     "inspect": "node inspect-workspace.mjs",
     "inspect:write": "node inspect-workspace.mjs --write-healthcheck",
-    "inspect:apps-script": "node inspect-apps-script.mjs"
+    "inspect:apps-script": "node inspect-apps-script.mjs",
+    "media:contact": "node build-local-media-contact-sheet.mjs",
+    "media:contact:drive": "node build-media-contact-sheet.mjs"
   },
   "dependencies": {
     "googleapis": "^144.0.0"

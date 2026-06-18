@@ -3214,15 +3214,26 @@
 	      this.group.removeAll();
 	      await Promise.all([this.hideLogo(), this.hideButton(), this.hideItems()]);
 	    }
-    async hideItems() {
-      await Promise.all(
-        this.items.map((item, index) => {
-          return new Promise((resolve) => {
-            new Tween({ opacity: 1 }, this.group).to({ opacity: 0 }, 250).delay(index * 50).onUpdate(({ opacity }) => item.style.setProperty("opacity", `${opacity}`)).onComplete(() => resolve()).start();
-          });
-        })
-      );
-    }
+	    async hideItems() {
+	      const navigationItems = this.items.filter((item) => !item.classList.contains(Header_default.Lang));
+	      await Promise.all(
+	        this.items.map((item, index) => {
+	          return new Promise((resolve) => {
+	            const navigationIndex = navigationItems.indexOf(item);
+	            const reverseIndex = navigationIndex === -1 ? 0 : navigationItems.length - 1 - navigationIndex;
+	            item.style.setProperty("opacity", "1");
+	            new Tween({ y: 0 }, this.group).to({ y: -140 }, 560).delay(reverseIndex * 70).easing(Easing.Exponential.In).onUpdate(({ y }) => {
+	              item.style.setProperty("opacity", "1");
+	              item.style.setProperty("transform", `translateY(${y}%)`);
+	            }).onComplete(() => {
+	              item.style.setProperty("opacity", "0");
+	              item.style.removeProperty("transform");
+	              resolve();
+	            }).start();
+	          });
+	        })
+	      );
+	    }
     async hideLogo() {
       if (!this.mq.matches)
         return;
@@ -3231,22 +3242,32 @@
       this.logo.classList.remove(Header_default.Open);
       const left = prevLeft - this.logoLeft.getBoundingClientRect().left;
       const right = prevRight - this.logoRight.getBoundingClientRect().left;
+      this.logoLeft.style.setProperty("transform", `translateX(${left}px)`);
+      this.logoRight.style.setProperty("transform", `translateX(${right}px)`);
       return new Promise((resolve) => {
-        new Tween({ left, right }, this.group).to({ left: 0, right: 0 }, 750).easing(Easing.Quartic.InOut).onUpdate(({ left: left2, right: right2 }) => {
-          this.logoLeft.style.setProperty("transform", `translateX(${left2}px)`);
-          this.logoRight.style.setProperty("transform", `translateX(${right2}px)`);
-        }).onComplete(() => {
+	        new Tween({ left, right }, this.group).to({ left: 0, right: 0 }, 900).easing(Easing.Sinusoidal.InOut).onUpdate(({ left: left2, right: right2 }) => {
+	          this.logoLeft.style.setProperty("transform", `translateX(${left2}px)`);
+	          this.logoRight.style.setProperty("transform", `translateX(${right2}px)`);
+	        }).onComplete(() => {
           this.logoLeft.style.removeProperty("transform");
           this.logoRight.style.removeProperty("transform");
           resolve();
         }).start();
       });
-    }
-    async hideButton() {
-      return new Promise((resolve) => {
-        new Tween({ opacity: 1 }, this.group).to({ opacity: 0 }, 250).delay(150).onUpdate(({ opacity }) => this.button.style.setProperty("opacity", `${opacity}`)).onComplete(() => resolve()).start();
-      });
-    }
+	    }
+	    async hideButton() {
+	      return new Promise((resolve) => {
+	        this.button.style.setProperty("opacity", "1");
+	        new Tween({ y: 0 }, this.group).to({ y: -140 }, 420).delay(120).easing(Easing.Exponential.In).onUpdate(({ y }) => {
+	          this.button.style.setProperty("opacity", "1");
+	          this.button.style.setProperty("transform", `translateY(${y}%)`);
+	        }).onComplete(() => {
+	          this.button.style.setProperty("opacity", "0");
+	          this.button.style.removeProperty("transform");
+	          resolve();
+	        }).start();
+	      });
+	    }
     update(time) {
       this.group.update(time);
     }
@@ -24479,6 +24500,7 @@
 	      this.inner = document.querySelector(`.${Page_default.Inner}`);
 	      this.routeTransition = document.createElement("div");
 	      this.routeTransition.className = "route-transition-cover";
+	      this.routeTransition.setAttribute("aria-hidden", "true");
 	      document.body.appendChild(this.routeTransition);
 	      this.isBodyFixed = document.body.classList.contains(Body_default.IsFixed);
       const scrollbarWidth = getScrollbarWidth();
@@ -24564,6 +24586,7 @@
 	        return;
 	      }
 	      this.isNavigating = true;
+	      document.documentElement.classList.add("is-route-transitioning");
 	      this.setBodyFixed();
 	      const [html] = await Promise.all([
 	        this.loadPage(route),
@@ -24576,6 +24599,7 @@
 	        await this.hideRouteTransition();
 	        this.unsetBodyFixed();
 	        this.isNavigating = false;
+	        document.documentElement.classList.remove("is-route-transitioning");
 	        return;
 	      }
       this.stage.dispose();
@@ -24590,6 +24614,7 @@
 	      this.onResize();
 	      await this.hideRouteTransition();
 	      this.isNavigating = false;
+	      document.documentElement.classList.remove("is-route-transitioning");
 	    }
     async loadPage(route) {
       if (this.hasPreview && this.previewRef) {
@@ -24640,6 +24665,7 @@
       this.scrollY = window.scrollY;
       this.stage.setFixed();
       this.inner?.style.setProperty("transform", `translateY(${this.scrollY * -1}px)`);
+      this.inner?.querySelector(`.${Header_default.Main}`)?.style.setProperty("transform", `translateY(${this.scrollY}px)`);
       document.body.classList.add(Body_default.IsFixed);
     }
     unsetBodyFixed() {
@@ -24648,23 +24674,32 @@
       this.isBodyFixed = false;
       this.stage.unsetFixed();
       document.body.classList.remove(Body_default.IsFixed);
+      this.inner?.querySelector(`.${Header_default.Main}`)?.style.removeProperty("transform");
       this.inner?.style.removeProperty("transform");
       window.scrollTo(0, this.scrollY);
     }
 	    async fadeOut() {
+	      const header = this.inner?.querySelector(`.${Header_default.Main}`);
+	      const nodes = Array.from(this.inner?.children ?? []).filter((node) => node !== header);
+	      if (!nodes.length) {
+	        return;
+	      }
 	      return new Promise(
-	        (resolve) => new Tween({ opacity: 1 }, this.group).to({ opacity: 0 }, 250).onUpdate(({ opacity }) => this.inner?.style.setProperty("opacity", `${opacity}`)).onComplete(() => {
-	          this.inner?.style.setProperty("opacity", "0");
+	        (resolve) => new Tween({ opacity: 1 }, this.group).to({ opacity: 0 }, 520).easing(Easing.Cubic.InOut).onUpdate(({ opacity }) => {
+	          nodes.forEach((node) => node.style.setProperty("opacity", `${opacity}`));
+	        }).onComplete(() => {
+	          nodes.forEach((node) => node.style.setProperty("opacity", "0"));
 	          resolve();
 	        }).start()
 	      );
 	    }
 	    async showRouteTransition() {
 	      const background = getComputedStyle(document.body).getPropertyValue("--background").trim();
+	      this.routeTransition.style.setProperty("--route-transition-background", background || "var(--background)");
 	      this.routeTransition.style.setProperty("background", background || "var(--background)");
 	      this.routeTransition.style.setProperty("display", "block");
 	      return new Promise(
-	        (resolve) => new Tween({ opacity: 0 }, this.group).to({ opacity: 1 }, 350).easing(Easing.Cubic.Out).onUpdate(({ opacity }) => this.routeTransition.style.setProperty("opacity", `${opacity}`)).onComplete(() => {
+	        (resolve) => new Tween({ opacity: 0 }, this.group).to({ opacity: 1 }, 980).easing(Easing.Cubic.InOut).onUpdate(({ opacity }) => this.routeTransition.style.setProperty("opacity", `${opacity}`)).onComplete(() => {
 	          this.routeTransition.style.setProperty("opacity", "1");
 	          resolve();
 	        }).start()
@@ -24672,7 +24707,7 @@
 	    }
 	    async hideRouteTransition() {
 	      return new Promise(
-	        (resolve) => new Tween({ opacity: 1 }, this.group).to({ opacity: 0 }, 450).easing(Easing.Cubic.InOut).onUpdate(({ opacity }) => this.routeTransition.style.setProperty("opacity", `${opacity}`)).onComplete(() => {
+	        (resolve) => new Tween({ opacity: 1 }, this.group).to({ opacity: 0 }, 520).easing(Easing.Cubic.InOut).onUpdate(({ opacity }) => this.routeTransition.style.setProperty("opacity", `${opacity}`)).onComplete(() => {
 	          this.routeTransition.style.setProperty("opacity", "0");
 	          this.routeTransition.style.setProperty("display", "none");
 	          resolve();

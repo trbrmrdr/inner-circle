@@ -1,0 +1,22 @@
+<script>
+(() => {
+  const getPreferredHome = () => {
+    const languages = navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language || ""];
+    const first = String(languages[0] || "").toLowerCase();
+    const usesRussian = languages.some((language) => /^(ru|be|uk|kk|ky|uz|tg|az|hy|ka|mo)(-|$)/i.test(String(language || "")));
+
+    return first.startsWith("en") && !usesRussian ? "/en/" : "/ru/";
+  };
+
+  const home = getPreferredHome();
+  document.documentElement.dataset.preferredHome = home;
+
+  document.querySelectorAll("[data-language-home]").forEach((link) => {
+    link.setAttribute("href", home);
+    link.addEventListener("click", (event) => {
+      event.preventDefault();
+      window.location.assign(home);
+    });
+  });
+})();
+</script>

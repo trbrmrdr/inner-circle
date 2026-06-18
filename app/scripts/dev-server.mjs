@@ -1,8 +1,9 @@
 import { createServer } from "node:http";
-import { promises as fs, watch } from "node:fs";
+import { promises as fs } from "node:fs";
 import path from "node:path";
 import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
+import chokidar from "chokidar";
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const appRoot = path.resolve(scriptDir, "..");
@@ -34,36 +35,40 @@ let debounceTimer;
 function runBuild({ notify = false } = {}) {
   if (building) {
     pending = true;
-    return;
+    return Promise.resolve(false);
   }
 
   building = true;
-  const child = spawn(process.execPath, ["scripts/build-site.mjs"], {
-    cwd: appRoot,
-    stdio: "inherit"
-  });
 
-  child.on("exit", code => {
-    building = false;
+  return new Promise(resolve => {
+    const child = spawn(process.execPath, ["scripts/build-site.mjs"], {
+      cwd: appRoot,
+      stdio: "inherit"
+    });
 
-    if (code === 0 && notify) {
-      broadcastReload();
-    }
+    child.on("exit", code => {
+      building = false;
+      const hasPendingBuild = pending;
 
-    if (code !== 0) {
-      console.error(`Build failed with exit code ${code}`);
-    }
+      if (code !== 0) {
+        console.error(`Build failed with exit code ${code}`);
+      }
 
-    if (pending) {
-      pending = false;
-      runBuild({ notify: true });
-    }
+      if (hasPendingBuild) {
+        pending = false;
+        runBuild({ notify: true });
+      } else if (code === 0 && notify) {
+        broadcastReload();
+      }
+
+      resolve(code === 0);
+    });
   });
 }
 
 function scheduleBuild() {
   clearTimeout(debounceTimer);
-  debounceTimer = setTimeout(() => runBuild({ notify: true }), 120);
+  debounceTimer = setTimeout(() => runBuild({ notify: true }), 180);
 }
 
 function broadcastReload() {
@@ -80,7 +85,17 @@ async function fileExists(filePath) {
   }
 }
 
-async function resolveRequestPath(urlPath) {
+function preferredLanguage(urlPath, headers) {
+  if (urlPath.startsWith("/en/")) return "en";
+  if (urlPath.startsWith("/ru/")) return "ru";
+
+  const acceptLanguage = String(headers["accept-language"] || "").toLowerCase();
+  if (acceptLanguage.startsWith("en")) return "en";
+
+  return "ru";
+}
+
+async function resolveRequestPath(urlPath, headers = {}) {
   let decodedPath = "/";
 
   try {
@@ -98,10 +113,16 @@ async function resolveRequestPath(urlPath) {
 
   if (await fileExists(filePath)) return filePath;
 
+  const htmlPath = `${filePath}.html`;
+  if (await fileExists(htmlPath)) return htmlPath;
+
   const indexPath = path.join(filePath, "index.html");
   if (await fileExists(indexPath)) return indexPath;
 
-  return path.join(distRoot, "index.html");
+  if (path.extname(decodedPath)) return null;
+
+  const language = preferredLanguage(decodedPath, headers);
+  return path.join(distRoot, language, "404", "index.html");
 }
 
 async function sendFile(request, response) {
@@ -119,9 +140,19 @@ async function sendFile(request, response) {
     return;
   }
 
-  const filePath = await resolveRequestPath(requestUrl.pathname);
+  const filePath = await resolveRequestPath(requestUrl.pathname, request.headers);
+  if (!filePath) {
+    response.writeHead(404, {
+      "content-type": "text/plain; charset=utf-8",
+      ...devCacheHeaders()
+    });
+    response.end("Not found");
+    return;
+  }
+
   const extension = path.extname(filePath).toLowerCase();
   const contentType = mimeTypes.get(extension) || "application/octet-stream";
+  const isFallback404 = /[/\\](ru|en)[/\\]404[/\\]index\.html$/.test(filePath) && requestUrl.pathname !== "/ru/404/" && requestUrl.pathname !== "/en/404/";
 
   try {
     let body = await fs.readFile(filePath);
@@ -130,12 +161,26 @@ async function sendFile(request, response) {
       body = Buffer.from(injectReloadClient(body.toString("utf8")));
     }
 
-    response.writeHead(200, { "content-type": contentType });
+    response.writeHead(isFallback404 ? 404 : 200, {
+      "content-type": contentType,
+      ...devCacheHeaders()
+    });
     response.end(body);
   } catch {
-    response.writeHead(404, { "content-type": "text/plain; charset=utf-8" });
+    response.writeHead(404, {
+      "content-type": "text/plain; charset=utf-8",
+      ...devCacheHeaders()
+    });
     response.end("Not found");
   }
+}
+
+function devCacheHeaders() {
+  return {
+    "cache-control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+    "expires": "0",
+    "pragma": "no-cache"
+  };
 }
 
 function injectReloadClient(html) {
@@ -166,12 +211,35 @@ function startServer(port) {
 }
 
 function watchSources() {
-  for (const folder of ["src", "public"]) {
-    watch(path.join(appRoot, folder), { recursive: true }, scheduleBuild);
-  }
+  const watcher = chokidar.watch([
+    path.join(appRoot, "src"),
+    path.join(appRoot, "public")
+  ], {
+    awaitWriteFinish: {
+      pollInterval: 50,
+      stabilityThreshold: 180
+    },
+    ignoreInitial: true,
+    ignored: [
+      path.join(appRoot, ".build.lock"),
+      path.join(appRoot, "dist"),
+      path.join(appRoot, "node_modules")
+    ]
+  });
+
+  watcher.on("all", (_event, changedPath) => {
+    console.log(`Changed ${path.relative(appRoot, changedPath)}; rebuilding...`);
+    scheduleBuild();
+  });
+
+  watcher.on("error", error => {
+    console.error("Watcher error:", error);
+  });
+
+  return watcher;
 }
 
-runBuild();
+await runBuild();
 startServer(startPort);
 
 if (!noWatch) {

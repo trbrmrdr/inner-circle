@@ -2,5 +2,30 @@
 lang: ru
 title: Ближний круг
 description: Ближний круг / Inner Circle
+bodyClass: _836ebc inner-circle-system-page
+SYSTEM_ARIA: Переход на сайт Ближний круг
+SYSTEM_HOME_HREF: /ru/
+SYSTEM_LOGO_LEFT_SRC: /logo-inner-circle-ru-left.svg
+SYSTEM_LOGO_RIGHT_SRC: /logo-inner-circle-ru-right.svg
+SYSTEM_LOGO_ALT: Ближний круг
+SYSTEM_EYEBROW: Ближний круг
+SYSTEM_TITLE: Переходим на сайт
+SYSTEM_TEXT: Мы откроем нужную языковую версию автоматически. Если переход не начался, нажмите кнопку ниже.
+SYSTEM_BUTTON: Перейти на сайт
 ---
-<p><a href="/ru/">Перейти на сайт</a></p>
+<script>
+(() => {
+  const languages = navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language || ""];
+  const first = String(languages[0] || "").toLowerCase();
+  const usesRussian = languages.some((language) => /^(ru|be|uk|kk|ky|uz|tg|az|hy|ka|mo)(-|$)/i.test(String(language || "")));
+  const home = first.startsWith("en") && !usesRussian ? "/en/" : "/ru/";
+  window.location.replace(home);
+})();
+</script>
+{{> global/background.html }}
+<main class="_7abbf3 inner-circle-system" data-background="green" data-animate="false">
+  <div class="_b28a1c">
+    {{> system/not-found-screen.html }}
+  </div>
+</main>
+{{> loaders/loader.inner-circle.html }}

@@ -1,39 +1,23 @@
 ---
 lang: ru
 title: Не найдено
-bodyClass: _836ebc
+description: Такой страницы нет — Ближний круг
+bodyClass: _836ebc inner-circle-system-page
 ALT_LANG_HREF: /en/
+SYSTEM_ARIA: Страница не найдена
+SYSTEM_HOME_HREF: /ru/
+SYSTEM_LOGO_LEFT_SRC: /logo-inner-circle-ru-left.svg
+SYSTEM_LOGO_RIGHT_SRC: /logo-inner-circle-ru-right.svg
+SYSTEM_LOGO_ALT: Ближний круг
+SYSTEM_EYEBROW: 404
+SYSTEM_TITLE: Такой страницы нет
+SYSTEM_TEXT: Возможно, ссылка изменилась. Вернитесь на сайт и выберите нужный раздел заново.
+SYSTEM_BUTTON: Перейти на сайт
 ---
 {{> global/background.html }}
-			
-		<main
-			class="_7abbf3"
-			data-background="green"
-			data-animate="false"
-		>
-			<div class="_b28a1c">
-						
-		<div
-			class="_fddeb5 _b3c48e"
-		>
-			<div class="_09d861">
-				<div class="_f55a96 _76b310">Ошибка 404</div>
-				<div class="_30ea2f _76b310"><h1>oh oh:(</h1></div>
-			</div>
-			
-			<div class="_756826">
-				<div class="_936645 _76b310"><p>К сожалению, страница не найдена.</p></div>
-				<div class="_b02a17 _76b310"></div>
-				
-				<div class="_783e33 _76b310"><p><a href="/ru/">На главную</a></p></div>
-			</div>
-			
-		</div>
-
-						{{> footers/footer.archive-ru.f842a70340.html }}
-		{{> page-nav/page-nav.inner-circle.ru.html }}
-		{{> headers/header.ru.html }}
-
-	
-		</main>
-{{> loaders/loader.ea1db73cf2.html }}
+<main class="_7abbf3 inner-circle-system" data-background="green" data-animate="false">
+  <div class="_b28a1c">
+    {{> system/not-found-screen.html }}
+  </div>
+</main>
+{{> loaders/loader.inner-circle.html }}

@@ -10,10 +10,48 @@ const appRoot = path.resolve(scriptDir, "..");
 const srcRoot = path.join(appRoot, "src");
 const publicRoot = path.join(appRoot, "public");
 const distRoot = path.join(appRoot, "dist");
+const buildLockRoot = path.join(appRoot, ".build.lock");
 const partialsRoot = path.join(srcRoot, "partials");
 const layoutPath = path.join(srcRoot, "layouts", "default.html");
+const buildVersion = process.env.BUILD_VERSION || String(Date.now());
 
 const styleOrder = ["legacy", "base", "components", "sections", "features", "pages"];
+
+function wait(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function acquireBuildLock() {
+  const staleAfterMs = 30_000;
+
+  for (let attempt = 0; attempt < 300; attempt += 1) {
+    try {
+      await fs.mkdir(buildLockRoot);
+      await fs.writeFile(path.join(buildLockRoot, "pid"), String(process.pid));
+      return async () => {
+        await fs.rm(buildLockRoot, { recursive: true, force: true });
+      };
+    } catch (error) {
+      if (error.code !== "EEXIST") {
+        throw error;
+      }
+
+      try {
+        const stat = await fs.stat(buildLockRoot);
+        if (Date.now() - stat.mtimeMs > staleAfterMs) {
+          await fs.rm(buildLockRoot, { recursive: true, force: true });
+          continue;
+        }
+      } catch {
+        continue;
+      }
+
+      await wait(100);
+    }
+  }
+
+  throw new Error("Build lock timeout");
+}
 
 async function concatFiles(files, banner) {
   const chunks = [banner, ""];
@@ -102,7 +140,8 @@ async function buildPages() {
       ROUTES_HEAD: routesHead,
       TITLE: escapeHtml(data.title || ""),
       LANG: escapeHtml(data.lang || "ru"),
-      BODY_CLASS: escapeHtml(data.bodyClass || "")
+      BODY_CLASS: escapeHtml(data.bodyClass || ""),
+      BUILD_VERSION: escapeHtml(buildVersion)
     }, { partialsRoot });
 
     const target = path.join(distRoot, relative);
@@ -125,13 +164,19 @@ function normalizeContext(data) {
 }
 
 export async function buildSite() {
-  await fs.rm(distRoot, { recursive: true, force: true });
-  await ensureDir(distRoot);
-  await copyDir(publicRoot, distRoot);
-  await buildCss();
-  await buildJs();
-  const pageCount = await buildPages();
-  console.log(`Built dist from src: ${pageCount} pages`);
+  const releaseBuildLock = await acquireBuildLock();
+
+  try {
+    await fs.rm(distRoot, { recursive: true, force: true });
+    await ensureDir(distRoot);
+    await copyDir(publicRoot, distRoot);
+    await buildCss();
+    await buildJs();
+    const pageCount = await buildPages();
+    console.log(`Built dist from src: ${pageCount} pages, version ${buildVersion}`);
+  } finally {
+    await releaseBuildLock();
+  }
 }
 
 await buildSite();

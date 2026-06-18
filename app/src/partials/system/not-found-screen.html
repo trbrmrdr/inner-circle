@@ -1,0 +1,26 @@
+<section class="inner-circle-system-screen" aria-label="{{SYSTEM_ARIA}}">
+  <video
+    class="inner-circle-system-screen__video"
+    src="/assets/inner-circle/lightning-loop.mp4"
+    poster="/assets/inner-circle/lightning-poster.jpg"
+    autoplay
+    muted
+    loop
+    playsinline
+    preload="auto"
+  ></video>
+  <div class="inner-circle-system-screen__shade" aria-hidden="true"></div>
+  <a class="inner-circle-system-screen__split-logo" href="{{SYSTEM_HOME_HREF}}" target="_top" data-language-home>
+    <img class="inner-circle-system-screen__split-logo-part inner-circle-system-screen__split-logo-part--left" src="{{SYSTEM_LOGO_LEFT_SRC}}" alt="{{SYSTEM_LOGO_ALT}}" decoding="async" />
+    <img class="inner-circle-system-screen__split-logo-part inner-circle-system-screen__split-logo-part--right" src="{{SYSTEM_LOGO_RIGHT_SRC}}" alt="" aria-hidden="true" decoding="async" />
+  </a>
+  <div class="inner-circle-system-screen__content">
+    <div class="inner-circle-system-screen__copy">
+      <p class="inner-circle-system-screen__eyebrow">{{SYSTEM_EYEBROW}}</p>
+      <h1>{{SYSTEM_TITLE}}</h1>
+      <p>{{SYSTEM_TEXT}}</p>
+    </div>
+    <a class="inner-circle-system-screen__button" href="{{SYSTEM_HOME_HREF}}" target="_top" data-language-home>{{SYSTEM_BUTTON}}</a>
+  </div>
+</section>
+{{> system/language-home-script.html }}

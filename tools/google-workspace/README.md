@@ -25,6 +25,24 @@ Reads:
 
 It does not download images or videos.
 
+## Build media contact sheets from local files
+
+```bash
+npm run media:contact
+```
+
+This is the default media-review flow. It reads `MEDIA` from Google Sheets only
+to map `media_id` to file names, then creates thumbnails from local files in:
+
+```text
+/Users/trbrmrdr/Documents/Project/Inner-Circle/resources/Place-Location-Photos
+```
+
+Generated previews are written to `tools/google-workspace/out/`, which is
+ignored by git.
+
+Avoid `npm run media:contact:drive` unless local files are unavailable.
+
 ## Test write access safely
 
 ```bash

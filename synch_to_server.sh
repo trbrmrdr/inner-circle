@@ -47,7 +47,7 @@ fi
 
 echo "Sync Inner Circle -> ${INNER_CIRCLE_DOMAIN}"
 ssh $SSH_OPTS "$SERVER" "mkdir -p '$INNER_CIRCLE_REMOTE_DIR'"
-rsync -rlptDz --delete --progress \
+rsync -e "ssh $SSH_OPTS" -rlptDz --delete --progress \
   --no-owner \
   --no-group \
   --exclude '.DS_Store' \
