@@ -1,2 +1,6 @@
 resources/
 app/dist/
+.DS_Store
+app/node_modules/
+secrets/
+node_modules/

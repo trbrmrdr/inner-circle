@@ -1,5 +1,8 @@
 (function () {
   document.documentElement.dataset.innerCircleBuild = "modular";
 
-  document.getElementsByClassName("_9c87df")[0].style.display="none"
+  const footerNavigation = document.querySelector("._9c87df");
+  if (footerNavigation) {
+    footerNavigation.style.display = "none";
+  }
 })();

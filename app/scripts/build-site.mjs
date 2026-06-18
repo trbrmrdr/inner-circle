@@ -1,267 +1,137 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { siteConfig } from "../src/site.config.mjs";
+import { copyDir, ensureDir, listFiles, pageRouteFromRelative, toPosixPath } from "./lib/fs-utils.mjs";
+import { parseFrontmatter } from "./lib/frontmatter.mjs";
+import { escapeHtml, renderTemplate } from "./lib/template.mjs";
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const appRoot = path.resolve(scriptDir, "..");
 const srcRoot = path.join(appRoot, "src");
-const baseDir = path.join(appRoot, siteConfig.baseDir);
-const outDir = path.join(appRoot, siteConfig.outDir);
+const publicRoot = path.join(appRoot, "public");
+const distRoot = path.join(appRoot, "dist");
+const partialsRoot = path.join(srcRoot, "partials");
+const layoutPath = path.join(srcRoot, "layouts", "default.html");
 
-const htmlFile = /\.html$/i;
-const cssFile = /\.css$/i;
-const jsFile = /\.js$/i;
+const styleOrder = ["legacy", "base", "components", "sections", "features", "pages"];
 
-async function exists(filePath) {
-  try {
-    await fs.access(filePath);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-async function copyDirectory(from, to) {
-  await fs.mkdir(to, { recursive: true });
-  const entries = await fs.readdir(from, { withFileTypes: true });
-
-  for (const entry of entries) {
-    const source = path.join(from, entry.name);
-    const target = path.join(to, entry.name);
-
-    if (entry.isDirectory()) {
-      await copyDirectory(source, target);
-      continue;
-    }
-
-    if (entry.isFile()) {
-      await fs.copyFile(source, target);
-    }
-  }
-}
-
-async function listFiles(root, predicate = () => true) {
-  if (!(await exists(root))) {
-    return [];
-  }
-
-  const result = [];
-  const entries = await fs.readdir(root, { withFileTypes: true });
-
-  for (const entry of entries) {
-    const fullPath = path.join(root, entry.name);
-
-    if (entry.isDirectory()) {
-      result.push(...await listFiles(fullPath, predicate));
-      continue;
-    }
-
-    if (entry.isFile() && predicate(fullPath)) {
-      result.push(fullPath);
-    }
-  }
-
-  return result.sort((a, b) => a.localeCompare(b));
-}
-
-async function concatFiles(sourceDir, predicate, banner) {
-  const files = await listFiles(sourceDir, predicate);
-  const chunks = [banner.trim(), ""];
+async function concatFiles(files, banner) {
+  const chunks = [banner, ""];
 
   for (const file of files) {
-    const relative = path.relative(srcRoot, file).split(path.sep).join("/");
+    const relative = toPosixPath(path.relative(srcRoot, file));
     const content = await fs.readFile(file, "utf8");
     chunks.push(`/* ${relative} */`);
     chunks.push(content.trimEnd());
     chunks.push("");
   }
 
-  return chunks.join("\n");
+  return `${chunks.join("\n").trimEnd()}\n`;
 }
 
-async function buildLegacyCss() {
-  const legacyStylesDir = path.join(srcRoot, siteConfig.legacyStylesDir);
+async function collectStyleFiles() {
+  const stylesRoot = path.join(srcRoot, "styles");
+  const allFiles = await listFiles(stylesRoot, file => file.endsWith(".css"));
+  const files = [];
+  const seen = new Set();
 
-  if (await exists(legacyStylesDir)) {
-    return concatFiles(
-      legacyStylesDir,
-      filePath => cssFile.test(filePath),
-      "/* Generated from app/src/legacy-styles. Split from dst_0/index.css. */"
-    );
+  for (const group of styleOrder) {
+    const groupRoot = path.join(stylesRoot, group);
+    for (const file of allFiles.filter(item => item.startsWith(groupRoot + path.sep))) {
+      files.push(file);
+      seen.add(file);
+    }
   }
 
-  return fs.readFile(path.join(baseDir, "index.css"), "utf8");
-}
-
-function assetPrefixFor(htmlPath) {
-  const relativeToRoot = path.relative(path.dirname(htmlPath), outDir).split(path.sep).join("/");
-  return relativeToRoot ? `${relativeToRoot}/` : "./";
-}
-
-function languageFor(relativeHtmlPath, html) {
-  const firstSegment = relativeHtmlPath.split("/")[0];
-
-  if (firstSegment === "ru" || firstSegment === "en") {
-    return firstSegment;
+  for (const file of allFiles) {
+    if (!seen.has(file)) files.push(file);
   }
 
-  const langMatch = html.match(/<html[^>]*\slang="([^"]+)"/i);
-  return langMatch?.[1]?.slice(0, 2) || "ru";
+  return files;
 }
 
-function extractAltLanguageHref(headerHtml) {
-  const switcher = headerHtml.match(/<div class="_c67921 _2575d7">([\s\S]*?)<\/div>/);
-  const link = switcher?.[1]?.match(/<a\s+href="([^"]+)"/i);
-  return link?.[1] || "";
+async function collectRoutes(pageFiles) {
+  const routesPath = path.join(srcRoot, "data", "routes.json");
+
+  try {
+    return JSON.parse(await fs.readFile(routesPath, "utf8"));
+  } catch {
+    return pageFiles
+      .map(file => pageRouteFromRelative(path.relative(path.join(srcRoot, "pages"), file)))
+      .sort();
+  }
 }
 
-function replaceFirstBetween(html, startNeedle, endNeedle, replacement) {
-  const start = html.indexOf(startNeedle);
+function renderRoutesHead(routes) {
+  const prefetch = routes
+    .filter(route => route !== "/" && !route.endsWith(".html"))
+    .map(route => `<link rel="prefetch" href="${route}"/>`)
+    .join("");
+  return `${prefetch}\n  <script>window.__ROUTES__ = ${JSON.stringify(routes)}</script>`;
+}
 
-  if (start === -1) {
-    return html;
+async function buildCss() {
+  const files = await collectStyleFiles();
+  const css = await concatFiles(files, "/* Generated from app/src/styles. Edit source files, not dist/styles.css. */");
+  await fs.writeFile(path.join(distRoot, "styles.css"), css);
+}
+
+async function buildJs() {
+  const files = await listFiles(path.join(srcRoot, "scripts"), file => file.endsWith(".js"));
+  const js = await concatFiles(files, "/* Generated from app/src/scripts. Edit source files, not dist/scripts.js. */");
+  await fs.writeFile(path.join(distRoot, "scripts.js"), js);
+}
+
+async function buildPages() {
+  const pagesRoot = path.join(srcRoot, "pages");
+  const pageFiles = await listFiles(pagesRoot, file => file.endsWith(".html"));
+  const layout = await fs.readFile(layoutPath, "utf8");
+  const routesHead = renderRoutesHead(await collectRoutes(pageFiles));
+
+  for (const file of pageFiles) {
+    const relative = path.relative(pagesRoot, file);
+    const { data, content } = parseFrontmatter(await fs.readFile(file, "utf8"));
+    const bodyContent = await renderTemplate(content, normalizeContext(data), { partialsRoot });
+    const description = data.description
+      ? `<meta name="description" content="${escapeHtml(data.description)}" />`
+      : "";
+    const html = await renderTemplate(layout, {
+      ...normalizeContext(data),
+      CONTENT: bodyContent.trim(),
+      DESCRIPTION_META: description,
+      ROUTES_HEAD: routesHead,
+      TITLE: escapeHtml(data.title || ""),
+      LANG: escapeHtml(data.lang || "ru"),
+      BODY_CLASS: escapeHtml(data.bodyClass || "")
+    }, { partialsRoot });
+
+    const target = path.join(distRoot, relative);
+    await ensureDir(path.dirname(target));
+    await fs.writeFile(target, html);
   }
 
-  const end = html.indexOf(endNeedle, start + startNeedle.length);
-
-  if (end === -1) {
-    return html;
-  }
-
-  return `${html.slice(0, start)}${replacement}\n${html.slice(end)}`;
+  return pageFiles.length;
 }
 
-function rewriteAssets(html, htmlPath) {
-  const prefix = assetPrefixFor(htmlPath);
-  const css = [
-    `<link rel="stylesheet" type="text/css" href="${prefix}${siteConfig.legacyCss}" />`,
-    `<link rel="stylesheet" type="text/css" href="${prefix}${siteConfig.appCss}" />`
-  ].join("\n\t\t\t\t");
-  const js = [
-    `<script async defer src="${prefix}${siteConfig.legacyJs}"></script>`,
-    `<script defer src="${prefix}${siteConfig.appJs}"></script>`
-  ].join("\n\t\t\t\t");
+function normalizeContext(data) {
+  const context = {};
 
-  return html
-    .replace(/<script\s+async\s+defer\s+src="[^"]*index\.js"><\/script>/i, js)
-    .replace(/<link\s+rel="stylesheet"\s+type="text\/css"\s+href="[^"]*index\.css"\s*\/>/i, css);
-}
-
-function stripLegacyContactMapAssets(html) {
-  return html
-    .replace(/\n?\s*<link\s+rel="stylesheet"\s+type="text\/css"\s+href="\/assets\/inner-circle\/inner-circle-map\.css"\s*\/>/i, "")
-    .replace(/\n?\s*<script\s+type="module"\s+src="\/assets\/inner-circle\/inner-circle-map\.js"><\/script>/i, "");
-}
-
-async function readPartial(relativePartialPath) {
-  return fs.readFile(path.join(srcRoot, relativePartialPath), "utf8");
-}
-
-async function renderHeader(html, language) {
-  const partialPath = siteConfig.partials.headers[language];
-
-  if (!partialPath || !(await exists(path.join(srcRoot, partialPath)))) {
-    return html;
+  for (const [key, value] of Object.entries(data)) {
+    context[key] = value;
+    context[key.toUpperCase()] = value;
   }
 
-  const match = html.match(/<header class="_68f6d6">[\s\S]*?<\/header>/);
-
-  if (!match) {
-    return html;
-  }
-
-  const altHref = extractAltLanguageHref(match[0]);
-  const template = await readPartial(partialPath);
-  const rendered = template.replaceAll("{{ALT_LANG_HREF}}", altHref);
-
-  return html.replace(match[0], rendered.trim());
+  return context;
 }
 
-async function renderConfiguredFragments(html, relativeHtmlPath) {
-  const pageConfig = siteConfig.pages[relativeHtmlPath];
-
-  if (!pageConfig) {
-    return html;
-  }
-
-  let nextHtml = html;
-
-  if (pageConfig.details) {
-    const details = await readPartial(pageConfig.details);
-    nextHtml = replaceFirstBetween(
-      nextHtml,
-      `<div class="_424e8e" data-id="details"></div><div class="_7a5709">`,
-      `<div class="_5b8182">`,
-      details.trim()
-    );
-  }
-
-  if (pageConfig.contactLocation) {
-    const contactLocation = await readPartial(pageConfig.contactLocation);
-    nextHtml = stripLegacyContactMapAssets(nextHtml);
-    nextHtml = replaceFirstBetween(
-      nextHtml,
-      `<div class="_fddeb5 _da312f inner-circle-static-map">`,
-      `<div class="_5b8182">`,
-      contactLocation.trim()
-    );
-  }
-
-  if (pageConfig.footer) {
-    const footer = await readPartial(pageConfig.footer);
-    nextHtml = replaceFirstBetween(
-      nextHtml,
-      `<div class="_5b8182">`,
-      `<div class="_4db49f">`,
-      footer.trim()
-    );
-  }
-
-  return nextHtml;
+export async function buildSite() {
+  await fs.rm(distRoot, { recursive: true, force: true });
+  await ensureDir(distRoot);
+  await copyDir(publicRoot, distRoot);
+  await buildCss();
+  await buildJs();
+  const pageCount = await buildPages();
+  console.log(`Built dist from src: ${pageCount} pages`);
 }
 
-async function processHtmlFile(htmlPath) {
-  const relativeHtmlPath = path.relative(outDir, htmlPath).split(path.sep).join("/");
-  const original = await fs.readFile(htmlPath, "utf8");
-  const language = languageFor(relativeHtmlPath, original);
-  let html = rewriteAssets(original, htmlPath);
-
-  html = await renderConfiguredFragments(html, relativeHtmlPath);
-  html = await renderHeader(html, language);
-
-  await fs.writeFile(htmlPath, html);
-}
-
-async function build() {
-  if (!(await exists(baseDir))) {
-    throw new Error(`Base site folder not found: ${baseDir}`);
-  }
-
-  await fs.rm(outDir, { recursive: true, force: true });
-  await copyDirectory(baseDir, outDir);
-
-  await fs.copyFile(path.join(baseDir, "index.js"), path.join(outDir, siteConfig.legacyJs));
-  await fs.writeFile(path.join(outDir, siteConfig.legacyCss), `${await buildLegacyCss()}\n`);
-
-  const appCss = await concatFiles(
-    path.join(srcRoot, "styles"),
-    filePath => cssFile.test(filePath),
-    "/* Generated from app/src/styles. Put new visual work here, not in legacy.css. */"
-  );
-  const appJs = await concatFiles(
-    path.join(srcRoot, "scripts"),
-    filePath => jsFile.test(filePath),
-    "/* Generated from app/src/scripts. Put new behavior here, not in legacy-runtime.js. */"
-  );
-
-  await fs.writeFile(path.join(outDir, siteConfig.appCss), `${appCss}\n`);
-  await fs.writeFile(path.join(outDir, siteConfig.appJs), `${appJs}\n`);
-
-  const htmlFiles = await listFiles(outDir, filePath => htmlFile.test(filePath));
-  await Promise.all(htmlFiles.map(processHtmlFile));
-
-  console.log(`Built ${path.relative(appRoot, outDir)} from ${siteConfig.baseDir}: ${htmlFiles.length} pages`);
-}
-
-await build();
+await buildSite();

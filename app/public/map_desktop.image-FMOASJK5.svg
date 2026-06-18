@@ -1,0 +1,73 @@
+<svg width="1154" height="1208" viewBox="0 0 1154 1208" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="map-title map-desc">
+<title id="map-title">Ближний круг: Янино-2 рядом с Петербургом</title>
+<desc id="map-desc">Векторная схема восточного направления от Санкт-Петербурга к Янино-2 и Колтушским высотам.</desc>
+<defs>
+  <linearGradient id="water" x1="72" y1="848" x2="676" y2="508" gradientUnits="userSpaceOnUse">
+    <stop stop-color="#6F9392" stop-opacity="0.72"/>
+    <stop offset="1" stop-color="#6F9392" stop-opacity="0.16"/>
+  </linearGradient>
+  <linearGradient id="land" x1="266" y1="1009" x2="982" y2="212" gradientUnits="userSpaceOnUse">
+    <stop stop-color="#2D5149"/>
+    <stop offset="0.48" stop-color="#44645A"/>
+    <stop offset="1" stop-color="#78906B"/>
+  </linearGradient>
+  <radialGradient id="homeGlow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(719 596) rotate(90) scale(170)">
+    <stop stop-color="#D75554" stop-opacity="0.72"/>
+    <stop offset="0.48" stop-color="#D75554" stop-opacity="0.18"/>
+    <stop offset="1" stop-color="#D75554" stop-opacity="0"/>
+  </radialGradient>
+  <filter id="softGlow" x="-80" y="-80" width="160" height="160" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+    <feGaussianBlur stdDeviation="14"/>
+  </filter>
+  <style>
+    .label{font-family:Arial;font-size:24px;font-weight:800;letter-spacing:.12em;fill:#D8D8D8}
+    .small{font-family:Arial;font-size:16px;font-weight:700;letter-spacing:.12em;fill:#D8D8D8;opacity:.76}
+    .fine{font-family:Arial;font-size:13px;font-weight:700;letter-spacing:.14em;fill:#FFE1D8;opacity:.72}
+    .serif{font-family:Georgia;font-size:54px;fill:#FFE1D8}
+  </style>
+</defs>
+<rect width="1154" height="1208" fill="#1F3F3E"/>
+<path d="M0 748C110 724 180 754 250 785C339 824 434 835 520 765C603 697 622 590 704 550C614 526 530 536 455 582C370 634 284 640 204 608C126 577 63 566 0 588V748Z" fill="url(#water)"/>
+<path d="M0 811C106 786 208 804 306 864C394 918 502 917 594 858" stroke="#D8D8D8" stroke-opacity=".18" stroke-width="1.4" stroke-dasharray="1 12" stroke-linecap="round"/>
+<path d="M455 176C596 116 784 129 935 210C1081 289 1131 427 1084 565C1046 675 1065 791 1106 904C1003 1034 846 1114 664 1096C519 1081 420 1013 346 906C239 895 154 839 118 747C70 625 130 500 262 440C292 326 356 219 455 176Z" fill="url(#land)" opacity=".72"/>
+<path d="M458 177C598 116 786 130 936 210C1081 289 1131 428 1084 566C1046 676 1064 792 1105 904C1002 1034 846 1114 664 1096C520 1081 420 1013 346 906C239 895 154 839 118 747C70 625 130 500 262 440C292 326 357 219 458 177Z" stroke="#D8D8D8" stroke-opacity=".46" stroke-width="1.5" stroke-dasharray="1 8" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M108 742C84 635 131 538 223 501C321 462 416 512 454 619C497 739 427 866 292 889C201 904 129 836 108 742Z" fill="#253F3E" fill-opacity=".82" stroke="#D8D8D8" stroke-opacity=".4" stroke-width="1.2"/>
+<path d="M135 738C119 653 157 579 230 550C313 517 391 559 423 641C456 727 403 818 302 839C226 855 151 820 135 738Z" stroke="#FFE1D8" stroke-opacity=".36" stroke-width="7" stroke-linecap="round" stroke-dasharray="1 18"/>
+<path d="M138 673C215 626 289 608 364 626C445 646 513 646 588 617C636 599 680 590 721 590" stroke="#FFE1D8" stroke-opacity=".86" stroke-width="9" stroke-linecap="round"/>
+<path d="M138 673C215 626 289 608 364 626C445 646 513 646 588 617C636 599 680 590 721 590" stroke="#1F3F3E" stroke-opacity=".68" stroke-width="2" stroke-linecap="round" stroke-dasharray="1 17"/>
+<path d="M720 590C796 569 872 526 950 471" stroke="#FFE1D8" stroke-opacity=".54" stroke-width="4" stroke-linecap="round" stroke-dasharray="1 13"/>
+<path d="M600 708C637 654 682 614 738 586C794 557 849 522 903 481" stroke="#D8D8D8" stroke-opacity=".26" stroke-width="2" stroke-linecap="round"/>
+<path d="M626 504C684 468 756 468 827 503C839 561 820 623 769 668C700 672 638 640 604 586C600 554 608 528 626 504Z" fill="#6F7F54" fill-opacity=".36" stroke="#FFE1D8" stroke-opacity=".34" stroke-width="1.4"/>
+<path d="M823 414C910 387 1007 411 1056 476C1051 568 994 660 902 704C827 685 785 627 783 548C788 489 803 444 823 414Z" fill="#879C68" fill-opacity=".38" stroke="#D8D8D8" stroke-opacity=".3" stroke-width="1.3"/>
+<path d="M842 471C891 452 965 462 1009 504" stroke="#FFE1D8" stroke-opacity=".25" stroke-width="1.2" stroke-linecap="round" stroke-dasharray="1 10"/>
+<path d="M825 527C882 505 951 518 1003 568" stroke="#FFE1D8" stroke-opacity=".22" stroke-width="1.2" stroke-linecap="round" stroke-dasharray="1 10"/>
+<path d="M818 584C879 561 943 579 987 630" stroke="#FFE1D8" stroke-opacity=".2" stroke-width="1.2" stroke-linecap="round" stroke-dasharray="1 10"/>
+<path d="M154 699L414 635" stroke="#D8D8D8" stroke-opacity=".13" stroke-width="1"/>
+<path d="M206 588L374 815" stroke="#D8D8D8" stroke-opacity=".12" stroke-width="1"/>
+<path d="M272 535L214 861" stroke="#D8D8D8" stroke-opacity=".1" stroke-width="1"/>
+<path d="M327 561L399 789" stroke="#D8D8D8" stroke-opacity=".1" stroke-width="1"/>
+<path d="M503 702C566 690 621 660 668 613" stroke="#D8D8D8" stroke-opacity=".2" stroke-width="1.4" stroke-linecap="round"/>
+<circle cx="719" cy="596" r="156" fill="url(#homeGlow)"/>
+<circle cx="719" cy="596" r="36" fill="#D75554" fill-opacity=".18" filter="url(#softGlow)"/>
+<circle cx="719" cy="596" r="13" fill="#D75554"/>
+<circle cx="719" cy="596" r="31" stroke="#FFE1D8" stroke-opacity=".52" stroke-width="1.4"/>
+<path d="M719 548V644M671 596H767M685 562L753 630M753 562L685 630" stroke="#FFE1D8" stroke-width="1.5" stroke-linecap="round" opacity=".82"/>
+<circle cx="902" cy="482" r="7" fill="#D8D8D8"/>
+<circle cx="902" cy="482" r="24" stroke="#D8D8D8" stroke-opacity=".28" stroke-width="1"/>
+<circle cx="300" cy="704" r="6" fill="#D8D8D8" opacity=".86"/>
+<text class="label" x="96" y="473">САНКТ-ПЕТЕРБУРГ</text>
+<text class="small" x="170" y="813">КАД</text>
+<text class="small" x="501" y="574" transform="rotate(-10 501 574)">КОЛТУШСКОЕ ШОССЕ</text>
+<text class="fine" x="101" y="744">НЕВА</text>
+<text class="fine" x="44" y="842">ФИНСКИЙ ЗАЛИВ</text>
+<text class="small" x="531" y="316">ЛЕНИНГРАДСКАЯ ОБЛАСТЬ</text>
+<text class="fine" x="579" y="348">ВСЕВОЛОЖСКИЙ РАЙОН</text>
+<text class="label" x="763" y="604">ЯНИНО-2</text>
+<text class="small" x="763" y="634">БЛИЖНИЙ КРУГ</text>
+<text class="fine" x="763" y="660">закрытый дом для своего круга</text>
+<text class="small" x="858" y="411">КОЛТУШСКИЕ</text>
+<text class="small" x="858" y="437">ВЫСОТЫ</text>
+<text class="serif" x="134" y="1030">из города — в другой ритм</text>
+<path d="M131 1061H506" stroke="#FFE1D8" stroke-opacity=".42" stroke-width="1"/>
+<text class="fine" x="133" y="1098">INNER CIRCLE / БЛИЖНИЙ КРУГ</text>
+</svg>
