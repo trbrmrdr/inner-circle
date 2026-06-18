@@ -377,7 +377,7 @@ Meta description:
 Заявка -> /ru/kontakt/
 
 Видео в футере:
-/assets/inner-circle/lightning-loop.mp4
+/assets/inner-circle/sun-loop.mp4
 Постер:
 /assets/inner-circle/lightning-poster.jpg
 
@@ -1201,7 +1201,7 @@ WhatsApp -> https://wa.me/79990000000
 правила парковки и удобный способ добраться.
 
 Видео в футере:
-/assets/inner-circle/lightning-loop.mp4
+/assets/inner-circle/sun-loop.mp4
 
 Постер:
 /assets/inner-circle/lightning-poster.jpg

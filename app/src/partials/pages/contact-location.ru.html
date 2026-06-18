@@ -3,44 +3,65 @@
     <p class="contact-location__eyebrow">место</p>
     <h1 class="contact-location__title" id="contact-location-title">Янино-2<br>на восточной линии Петербурга.</h1>
     <p class="contact-location__lead">Вдалеке от цивилизации, но рядом с городом.</p>
-    <div class="contact-location__text">
-      <p>Ближний круг находится в Янино-2, на Колтушском направлении: между восточной границей Петербурга, дорогой к области и зелёным рельефом Колтушских высот.</p>
-      <p>Мы не публикуем точку дома открыто. Схема показывает направление и настроение маршрута, а точный адрес и детали приезда передаются после согласования формата.</p>
+  </div>
+
+  <figure class="contact-location__visual" aria-label="Минимальная схема направления к Ближнему кругу">
+    <svg class="contact-map" viewBox="0 0 920 620" role="img" aria-labelledby="contact-map-title contact-map-desc" xmlns="http://www.w3.org/2000/svg">
+      <title id="contact-map-title">Схема от Петербурга к Колтушским высотам</title>
+      <desc id="contact-map-desc">Лаконичная карта с Петербургом, Янино-2, конным клубом Вента и Колтушскими высотами.</desc>
+      <defs>
+        <clipPath id="ic-contact-map-cloth" clipPathUnits="userSpaceOnUse">
+          <path d="M50 78C138 36 249 42 349 63C463 87 566 40 674 70C793 103 866 196 880 314C894 431 835 543 721 577C617 609 512 564 408 565C294 567 190 615 100 560C22 512 22 406 39 313C54 231 1 120 50 78Z" />
+        </clipPath>
+        <filter id="ic-contact-map-warp" x="-4%" y="-4%" width="108%" height="108%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.006 0.018" numOctaves="1" seed="8" result="clothNoise" />
+          <feDisplacementMap in="SourceGraphic" in2="clothNoise" scale="5" xChannelSelector="R" yChannelSelector="G" />
+        </filter>
+      </defs>
+      <g clip-path="url(#ic-contact-map-cloth)">
+        <g class="contact-map__surface" filter="url(#ic-contact-map-warp)">
+          <rect class="contact-map__background" width="920" height="620" />
+          <path class="contact-map__water" d="M0 355C72 326 146 331 214 365C288 402 361 399 430 351C481 315 528 298 574 308C501 263 420 254 348 281C273 309 199 294 129 267C76 247 35 246 0 255V355Z" />
+          <path class="contact-map__city" d="M93 318C75 232 118 159 198 132C288 102 363 150 383 244C405 344 337 431 236 438C160 443 110 392 93 318Z" />
+          <path class="contact-map__city-ring" d="M129 316C118 255 151 203 208 185C275 164 328 203 342 271C357 345 306 401 237 403C181 405 140 374 129 316Z" />
+          <path class="contact-map__heights" d="M404 118C505 55 664 60 762 149C846 226 870 353 808 454C756 538 654 580 548 548C456 520 396 435 371 344C342 236 333 162 404 118Z" />
+          <path class="contact-map__heights contact-map__heights--soft" d="M505 218C586 174 703 188 752 267C796 337 757 431 680 464C600 498 511 468 472 393C440 330 449 249 505 218Z" />
+          <path class="contact-map__field contact-map__field--venta" d="M552 181C615 153 692 173 731 233C732 299 685 359 617 377C560 354 528 301 535 242C538 215 544 195 552 181Z" />
+          <path class="contact-map__field contact-map__field--ridge" d="M445 307C493 269 566 266 618 307C618 369 578 421 515 432C461 413 431 369 430 318C434 314 439 310 445 307Z" />
+          <path class="contact-map__contour contact-map__contour--one" d="M421 169C505 124 642 128 724 195" />
+          <path class="contact-map__contour contact-map__contour--two" d="M412 243C500 203 636 208 744 287" />
+          <path class="contact-map__contour contact-map__contour--three" d="M428 444C514 500 641 515 749 442" />
+          <path class="contact-map__route contact-map__route--main" d="M117 312C198 273 276 269 354 294C435 320 508 300 589 271C647 250 702 218 761 171" />
+          <path class="contact-map__route contact-map__route--soft" d="M589 271C636 309 682 337 748 358" />
+          <path class="contact-map__path contact-map__path--one" d="M541 351C591 311 648 279 713 256" />
+          <path class="contact-map__path contact-map__path--two" d="M204 187L238 405" />
+          <path class="contact-map__path contact-map__path--three" d="M134 351L383 294" />
+          <g class="contact-map__landmarks" aria-hidden="true">
+            <circle class="contact-map__node contact-map__node--city" cx="235" cy="318" r="7" />
+            <circle class="contact-map__node contact-map__node--venta" cx="706" cy="214" r="7" />
+            <circle class="contact-map__node contact-map__node--heights" cx="742" cy="358" r="7" />
+            <circle class="contact-map__node contact-map__node--home" cx="589" cy="271" r="9" />
+            <circle class="contact-map__home-ring" cx="589" cy="271" r="34" />
+          </g>
+        </g>
+        <path class="contact-map__grain" d="M50 78C138 36 249 42 349 63C463 87 566 40 674 70C793 103 866 196 880 314C894 431 835 543 721 577C617 609 512 564 408 565C294 567 190 615 100 560C22 512 22 406 39 313C54 231 1 120 50 78Z" />
+      </g>
+      <path class="contact-map__edge" d="M50 78C138 36 249 42 349 63C463 87 566 40 674 70C793 103 866 196 880 314C894 431 835 543 721 577C617 609 512 564 408 565C294 567 190 615 100 560C22 512 22 406 39 313C54 231 1 120 50 78Z" />
+    </svg>
+  </figure>
+
+  <div class="contact-location__details">
+    <div class="_d43f79 _76b310 contact-location__points">
+      <ul aria-label="Ориентиры локации">
+        <li><span>город</span><strong>Санкт-Петербург</strong></li>
+        <li><span>рядом</span><strong>Конный клуб Вента</strong></li>
+        <li><span>рельеф</span><strong>Колтушские высоты</strong></li>
+      </ul>
+    </div>
+    <div class="_783e33 _76b310 contact-location__actions">
+      <ul>
+        <li><a href="https://yandex.ru/maps/?text=Янино-2%20Колтушские%20высоты" target="_blank" rel="noopener noreferrer">Открыть в Яндекс.Картах</a></li>
+      </ul>
     </div>
   </div>
-
-  <div class="contact-location__visual" aria-label="Минимальная схема направления к Ближнему кругу">
-    <svg class="contact-map" viewBox="0 0 920 620" role="img" aria-labelledby="contact-map-title contact-map-desc" xmlns="http://www.w3.org/2000/svg">
-      <title id="contact-map-title">Схема Янино-2 рядом с Петербургом</title>
-      <desc id="contact-map-desc">Минимальная схема направления от Петербурга к Янино-2 и соседним зелёным маршрутам.</desc>
-      <rect class="contact-map__background" width="920" height="620" rx="0" />
-      <path class="contact-map__water" d="M0 358C70 336 137 340 205 371C273 402 346 405 418 356C468 322 511 304 558 310C486 266 409 257 338 284C266 311 197 297 130 270C79 250 37 246 0 256V358Z" />
-      <path class="contact-map__city" d="M83 323C63 233 107 154 190 126C285 93 367 145 389 246C412 354 341 450 231 454C154 458 101 404 83 323Z" />
-      <path class="contact-map__ring" d="M124 318C112 252 145 196 205 176C277 153 338 194 351 269C365 349 313 413 235 412C175 411 136 381 124 318Z" />
-      <path class="contact-map__land" d="M335 88C449 34 610 47 731 123C850 198 883 323 817 421C772 488 769 548 785 602C660 627 535 603 445 526C382 472 350 410 320 338C273 327 236 298 221 250C199 177 240 116 335 88Z" />
-      <path class="contact-map__land-border" d="M335 88C449 34 610 47 731 123C850 198 883 323 817 421C772 488 769 548 785 602C660 627 535 603 445 526C382 472 350 410 320 338C273 327 236 298 221 250C199 177 240 116 335 88Z" />
-      <path class="contact-map__field contact-map__field--one" d="M552 195C620 164 698 182 746 238C744 315 693 383 616 404C551 379 520 324 530 260C534 230 542 209 552 195Z" />
-      <path class="contact-map__field contact-map__field--two" d="M419 260C468 226 535 228 585 265C588 325 553 377 493 390C441 373 410 333 407 283C409 274 413 267 419 260Z" />
-      <path class="contact-map__route contact-map__route--main" d="M108 310C194 262 273 256 349 283C433 313 501 289 568 252" />
-      <path class="contact-map__route contact-map__route--branch" d="M568 252C621 225 676 196 735 156" />
-      <path class="contact-map__route contact-map__route--branch contact-map__route--soft" d="M563 256C607 294 658 330 727 354" />
-      <path class="contact-map__path contact-map__path--one" d="M553 330C590 295 636 267 690 246" />
-      <path class="contact-map__path contact-map__path--two" d="M205 176L250 412" />
-      <path class="contact-map__path contact-map__path--three" d="M132 355L382 296" />
-      <circle class="contact-map__node contact-map__node--future" cx="735" cy="156" r="8" />
-      <circle class="contact-map__node contact-map__node--future" cx="727" cy="354" r="7" />
-      <circle class="contact-map__node contact-map__node--future" cx="230" cy="323" r="7" />
-      <g class="contact-map__home" aria-hidden="true">
-        <circle class="contact-map__home-ring" cx="568" cy="252" r="38" />
-        <circle class="contact-map__home-point" cx="568" cy="252" r="9" />
-      </g>
-    </svg>
-  </div>
-
-  <ul class="contact-location__facts" aria-label="Ориентиры локации">
-    <li><span>Петербург</span><strong>рядом</strong></li>
-    <li><span>Дом</span><strong>Янино-2</strong></li>
-    <li><span>Рельеф</span><strong>Колтушские высоты</strong></li>
-    <li><span>Окрестности</span><strong>маршруты позже</strong></li>
-  </ul>
 </section>
