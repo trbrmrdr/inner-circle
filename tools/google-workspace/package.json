@@ -6,6 +6,10 @@
     "inspect": "node inspect-workspace.mjs",
     "inspect:write": "node inspect-workspace.mjs --write-healthcheck",
     "inspect:apps-script": "node inspect-apps-script.mjs",
+    "apps:auth": "node manage-apps-script.mjs auth",
+    "apps:pull": "node manage-apps-script.mjs pull",
+    "apps:diff": "node manage-apps-script.mjs diff",
+    "apps:push": "node manage-apps-script.mjs push",
     "media:contact": "node build-local-media-contact-sheet.mjs",
     "media:contact:drive": "node build-media-contact-sheet.mjs"
   },
