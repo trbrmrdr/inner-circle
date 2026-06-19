@@ -9,6 +9,17 @@ For the full AI/human workflow rules, read:
 tools/google-workspace/AI_WORKFLOW_RU.md
 ```
 
+Website photo-selection tools live separately:
+
+```text
+tools/site-media/README.md
+tools/site-media/AI_WORKFLOW_RU.md
+```
+
+Use `tools/google-workspace/` for Sheets, Drive, Apps Script, `POSTS`, `MEDIA`,
+and autoposting. Use `tools/site-media/` for local website photo selection and
+exporting WebP assets into the static site.
+
 ## Install
 
 ```bash

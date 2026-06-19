@@ -9,6 +9,7 @@ function setupPostsSheet_() {
   ensureColumns_(sheet, POSTS_COLUMNS);
   applyPostsLayout_(sheet);
   updateDateMarkers_();
+  validatePostIds_();
 }
 
 function setupMediaSheet_() {

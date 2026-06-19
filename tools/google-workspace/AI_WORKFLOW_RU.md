@@ -42,10 +42,19 @@ resources/Place-Location-Photos/
                              локальные оригиналы фото/видео для выбора медиа
 secrets/                     ключи Google service account, не хранятся в git
 tools/google-workspace/      утилиты для Google Sheets, Drive, Apps Script
+tools/site-media/            локальная медиаподборка и WebP-экспорт для сайта
 ```
 
-Папки `resources/`, `secrets/`, `tools/google-workspace/out/` должны быть в
+Папки `resources/`, `secrets/`, `tools/google-workspace/out/`,
+`tools/site-media/out/` должны быть в
 `.gitignore`. В репозиторий не кладём ключи и большие медиа.
+
+Если задача касается фотографий для сайта, а не Google Sheets/Drive, использовать
+отдельные правила:
+
+```text
+tools/site-media/AI_WORKFLOW_RU.md
+```
 
 ## Google-доступ
 

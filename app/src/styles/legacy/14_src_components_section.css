@@ -139,30 +139,48 @@
   list-style: none;
   padding: 0;
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(6rem, 1fr);
+  grid-template-columns: none;
+  align-items: stretch;
   font-size: var(--text--small);
   line-height: 1.6;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+}
+._d43f79 ul::-webkit-scrollbar {
+  display: none;
 }
 ._d43f79 li {
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
   margin: 0 0 var(--space)0;
   min-width: 0;
   padding: 0 var(--space-x-small);
   hyphens: none;
-  overflow: hidden;
+  overflow: visible;
+  text-align: left;
 }
 ._d43f79 ul > :nth-child(n) {
   border-right: solid 1px currentColor;
 }
 ._d43f79 ul > :first-child {
-  padding-left: 0;
+  padding-left: var(--space-x-small);
 }
 ._d43f79 ul > :last-child {
   border-right: none;
-  padding-right: 0;
+  padding-right: var(--space-x-small);
 }
 ._d43f79 a {
+  display: block;
   font-weight: 900;
+}
+._d43f79 li:has(> br) > a {
+  margin-top: auto;
 }
 ._783e33 {
 }
@@ -172,7 +190,18 @@
   padding: 0;
   display: flex;
   flex-direction: row;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+  align-items: stretch;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+}
+._783e33 ul::-webkit-scrollbar {
+  display: none;
+}
+._783e33 li {
+  flex: 0 0 auto;
 }
 ._783e33 ul > :first-child a {
   background: var(--background-dark);
@@ -183,6 +212,7 @@
   font-weight: 900;
   padding: 0.75em 1.5em;
   letter-spacing: 0.1em;
+  text-align: left;
 }
 ._f4bd3b {
   position: relative;
@@ -267,12 +297,13 @@
     padding: 0 0 var(--space)0;
   }
   ._d43f79 ul {
-    display: flex;
-    flex-wrap: wrap;
-    left: calc(var(--space)*-1);
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(8rem, 1fr);
+    left: auto;
   }
   ._d43f79 li {
-    flex-basis: auto;
+    min-width: 0;
   }
   ._d43f79 ul > :nth-child(n) {
     border-right: solid 1px currentColor;
@@ -280,7 +311,7 @@
   }
   ._d43f79 ul > :last-child {
     border-right: none;
-    padding-right: 0;
+    padding-right: var(--space);
   }
   ._f4bd3b {
     position: absolute;

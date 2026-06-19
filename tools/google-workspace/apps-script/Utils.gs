@@ -231,9 +231,12 @@ function checkDuplicateIds() {
   if (postsSheet) {
     const postCols = getHeaderMap_(postsSheet);
     if (postCols.post_id) {
-      const duplicates = findDuplicatesInColumn_(postsSheet, postCols.post_id);
-      if (duplicates.length) {
-        messages.push(`POSTS post_id duplicates: ${duplicates.join(', ')}`);
+      const validation = validatePostIds_();
+      if (validation.duplicateIds.length) {
+        messages.push(`POSTS post_id duplicates: ${validation.duplicateIds.join(', ')}`);
+      }
+      if (validation.missingRows.length) {
+        messages.push(`POSTS missing post_id rows: ${validation.missingRows.join(', ')}`);
       }
     }
   }

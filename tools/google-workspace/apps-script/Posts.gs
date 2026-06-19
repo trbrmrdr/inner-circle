@@ -52,6 +52,7 @@ function refreshPostPreviews() {
   }
 
   updateDateMarkers_();
+  validatePostIds_();
 }
 
 function buildFlexiblePreviewFormula_(mediaId, mediaCols) {
@@ -83,6 +84,106 @@ function sortPostsByDateTime() {
     ]);
 
   refreshPostPreviews();
+}
+
+function validatePostIds_() {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(POSTS_SHEET_NAME);
+
+  if (!sheet || sheet.getLastRow() < 2) {
+    return {
+      missingRows: [],
+      duplicateIds: []
+    };
+  }
+
+  const cols = getHeaderMap_(sheet);
+
+  if (!cols.post_id) {
+    return {
+      missingRows: [],
+      duplicateIds: []
+    };
+  }
+
+  const rowCount = sheet.getLastRow() - 1;
+  const values = sheet.getRange(2, 1, rowCount, sheet.getLastColumn()).getValues();
+  const postIds = {};
+  const rowErrors = {};
+  const missingRows = [];
+  const duplicateIds = {};
+
+  values.forEach((row, index) => {
+    const sheetRow = index + 2;
+    const postId = String(row[cols.post_id - 1] || '').trim();
+
+    if (!postId) {
+      if (isPostRowReadyForId_(row, cols)) {
+        rowErrors[sheetRow] = true;
+        missingRows.push(sheetRow);
+      }
+
+      return;
+    }
+
+    const normalizedPostId = postId.toLowerCase();
+
+    if (!postIds[normalizedPostId]) {
+      postIds[normalizedPostId] = {
+        value: postId,
+        rows: []
+      };
+    }
+
+    postIds[normalizedPostId].rows.push(sheetRow);
+  });
+
+  Object.keys(postIds).forEach(key => {
+    const item = postIds[key];
+
+    if (item.rows.length < 2) {
+      return;
+    }
+
+    duplicateIds[item.value] = true;
+    item.rows.forEach(row => rowErrors[row] = true);
+  });
+
+  const backgrounds = values.map((row, index) => {
+    const sheetRow = index + 2;
+    return [rowErrors[sheetRow] ? '#f4cccc' : '#ffffff'];
+  });
+
+  sheet.getRange(2, cols.post_id, rowCount, 1).setBackgrounds(backgrounds);
+
+  return {
+    missingRows,
+    duplicateIds: Object.keys(duplicateIds)
+  };
+}
+
+function isPostRowReadyForId_(row, cols) {
+  if (!cols.date) {
+    return false;
+  }
+
+  const dateValue = row[cols.date - 1];
+  const hasDate = dateValue instanceof Date || String(dateValue || '').trim() !== '';
+
+  if (!hasDate) {
+    return false;
+  }
+
+  return Object.keys(cols).some(name => {
+    if (name === '*date_marker' || name === 'post_id' || name === 'date') {
+      return false;
+    }
+
+    if (/^preview_\d+$/.test(name)) {
+      return false;
+    }
+
+    return String(row[cols[name] - 1] || '').trim() !== '';
+  });
 }
 
 function updateDateMarkers_() {
