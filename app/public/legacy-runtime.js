@@ -24536,6 +24536,11 @@
       this.onResize();
       this.onScroll();
       const animate = this.main?.dataset?.animate === "true";
+      if (animate) {
+        window.scrollTo(0, 0);
+        this.scrollY = 0;
+        this.setBodyFixed();
+      }
       await Promise.all(
         [
           ...this.controllers.map((controller) => controller.load?.()),
@@ -24547,8 +24552,15 @@
       if (animate) {
         this.inner?.style.setProperty("opacity", "1");
       }
-      this.controllers.forEach((controller) => controller.show?.(animate));
-      this.stage.show(animate);
+      const showTasks = [
+        ...this.controllers.map((controller) => controller.show?.(animate)),
+        this.stage.show(animate)
+      ].filter(Boolean);
+      if (animate) {
+        await delay(300);
+        this.unsetBodyFixed();
+      }
+      await Promise.all(showTasks);
       await delay(500);
     }
     onPointerMove(event) {

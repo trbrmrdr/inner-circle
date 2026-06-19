@@ -6,4 +6,5 @@ app/.build.lock/
 secrets/
 node_modules/
 tools/google-workspace/out/
+tools/site-media/out/
 package-lock.json

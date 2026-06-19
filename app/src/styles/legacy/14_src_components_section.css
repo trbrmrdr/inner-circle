@@ -138,22 +138,28 @@
   margin: 0;
   list-style: none;
   padding: 0;
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   font-size: var(--text--small);
   line-height: 1.6;
 }
 ._d43f79 li {
-  flex-basis: 50%;
   box-sizing: border-box;
   margin: 0 0 var(--space)0;
-  padding: 0 0 0 var(--space-small);
+  min-width: 0;
+  padding: 0 var(--space-x-small);
   hyphens: none;
   overflow: hidden;
 }
-._d43f79 ul > :nth-child(2n+1) {
+._d43f79 ul > :nth-child(n) {
   border-right: solid 1px currentColor;
-  padding: 0 var(--space-small)0 0;
+}
+._d43f79 ul > :first-child {
+  padding-left: 0;
+}
+._d43f79 ul > :last-child {
+  border-right: none;
+  padding-right: 0;
 }
 ._d43f79 a {
   font-weight: 900;
