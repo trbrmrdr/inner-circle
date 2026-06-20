@@ -1,0 +1,28 @@
+{
+  "name": "inner-circle-server",
+  "version": "0.1.0",
+  "private": true,
+  "main": "dist/server.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsx watch src/server.ts",
+    "start": "node dist/server.js",
+    "check": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "axios": "^1.12.2",
+    "dotenv": "^16.4.5",
+    "express": "^5.1.0",
+    "form-data": "^4.0.4",
+    "googleapis": "^173.0.0",
+    "nodemailer": "^9.0.1",
+    "telegram": "^2.26.22"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.3",
+    "@types/node": "^24.0.0",
+    "@types/nodemailer": "^6.4.17",
+    "tsx": "^4.20.3",
+    "typescript": "^5.9.3"
+  }
+}
