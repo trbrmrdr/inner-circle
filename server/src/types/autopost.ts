@@ -1,4 +1,5 @@
 export type Platform = "telegram" | "vk" | "instagram" | "facebook";
+export type ServicePlatform = Platform | "email" | `email:${string}` | "sheets" | "telegram-tech";
 
 export type PostType =
   | "text"
@@ -31,10 +32,19 @@ export interface PostTask extends SheetRow {
 }
 
 export interface LeadRequest {
+  lead_uid?: string;
+  leadUid?: string;
   name?: string;
   phone?: string;
   email?: string;
   telegram?: string;
+  date?: string;
+  guests?: string;
+  scenario?: string;
+  consent?: string | boolean;
+  captchaScore?: string;
+  captchaAction?: string;
+  captchaToken?: string;
   message?: string;
   page?: string;
   source?: string;
@@ -43,7 +53,7 @@ export interface LeadRequest {
 
 export interface PublishResult {
   ok: boolean;
-  platform: Platform | "email" | "sheets" | "telegram-tech";
+  platform: ServicePlatform;
   skipped?: boolean;
   disabled?: boolean;
   id?: string;

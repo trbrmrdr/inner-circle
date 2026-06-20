@@ -146,7 +146,7 @@ export class AutoPostRunner {
 
   static ResolveStatus(results: PublishResult[], successCount: number) {
     if (results.length === 0) return "error";
-    if (successCount === results.length) return "published";
+    if (successCount === results.length) return "posted";
     if (successCount > 0) return "partial";
     return "error";
   }

@@ -7,7 +7,16 @@
     "build": "tsc -p tsconfig.json",
     "dev": "tsx watch src/server.ts",
     "start": "node dist/server.js",
-    "check": "tsc -p tsconfig.json --noEmit"
+    "check": "tsc -p tsconfig.json --noEmit",
+    "deploy:ip": "bash scripts/deploy-default-ip.sh",
+    "deploy:network": "bash scripts/check-vps-network.sh",
+    "deploy:static": "bash scripts/check-static-from-vps.sh",
+    "sheets:sync": "tsx scripts/sync-google-sheets.ts",
+    "sheets:check": "tsx scripts/sync-google-sheets.ts --dry-run",
+    "email:test": "tsx scripts/test-email.ts",
+    "telegram:updates": "tsx scripts/telegram-chat-id.ts updates",
+    "telegram:chat": "tsx scripts/telegram-chat-id.ts get-chat",
+    "telegram:test": "tsx scripts/telegram-chat-id.ts send-test"
   },
   "dependencies": {
     "axios": "^1.12.2",

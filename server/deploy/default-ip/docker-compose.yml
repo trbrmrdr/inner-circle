@@ -1,0 +1,37 @@
+name: innercircle
+
+services:
+  innercircle-server:
+    build:
+      context: /opt/server.inner-circle
+      dockerfile: Dockerfile
+    container_name: innercircle-server
+    restart: unless-stopped
+    env_file:
+      - /opt/server.inner-circle/.env
+    environment:
+      NODE_ENV: production
+      SERVER_PORT: 4100
+      AUTOPOST_ENABLED: "false"
+    expose:
+      - "4100"
+    volumes:
+      - /opt/server.inner-circle/private:/app/private
+      - /opt/server.inner-circle/tmp:/app/tmp
+
+  caddy:
+    image: caddy:2.8-alpine
+    container_name: innercircle-caddy
+    restart: unless-stopped
+    depends_on:
+      - innercircle-server
+    ports:
+      - "80:80"
+    volumes:
+      - /opt/server.inner-circle/deploy/default-ip/Caddyfile:/etc/caddy/Caddyfile:ro
+      - innercircle_caddy_data:/data
+      - innercircle_caddy_config:/config
+
+volumes:
+  innercircle_caddy_data:
+  innercircle_caddy_config:
