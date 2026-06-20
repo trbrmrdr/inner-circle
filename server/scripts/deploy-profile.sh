@@ -71,6 +71,7 @@ COMMON_ENV_SOURCE="${COMMON_ENV_SOURCE:-}"
 PUBLIC_HOST="${PUBLIC_HOST:-$(printf '%s' "$PUBLIC_URL" | sed -E 's#^https?://##; s#/.*$##')}"
 GOOGLE_CREDENTIALS_DEFAULT="${GOOGLE_CREDENTIALS_DEFAULT:-$SERVER_DIR/../secrets/inner-circle-499809-1795952a720e.json}"
 GOOGLE_CREDENTIALS_UPLOAD="${GOOGLE_CREDENTIALS_SOURCE:-$GOOGLE_CREDENTIALS_DEFAULT}"
+ENV_AUDIT_PATTERN='^(NODE_ENV|PUBLIC_BASE_URL|PUBLIC_HOST|AUTOPOST_ENABLED|AUTOPOST_INTERVAL_MS|AUTOPOST_BATCH_LIMIT|EMAIL_ENABLED|TELEGRAM_POST_ENABLED|TELEGRAM_TECH_ENABLED|GOOGLE_SHEETS_ENABLED|DEEPSEEK_ENABLED|VK_ENABLED|INSTAGRAM_ENABLED|FACEBOOK_ENABLED)='
 
 if [ -z "$SSH_TARGET" ]; then
   echo "[deploy] нужен SSH target. Заполни ${PROFILE_ENV_PREFIX}_SSH_TARGET или SSH_TARGET."
@@ -116,7 +117,7 @@ echo "[deploy] локальная сборка для $PROFILE"
 npm run build
 
 echo "[deploy] готовлю папки на сервере: ${SSH_TARGET}:${REMOTE_DIR}"
-ssh "$SSH_TARGET" "mkdir -p '$REMOTE_DIR/private' '$REMOTE_DIR/tmp/media'"
+ssh "$SSH_TARGET" "mkdir -p '$REMOTE_DIR/private/tg_sessions' '$REMOTE_DIR/tmp/media' '$REMOTE_DIR/tmp/autopost' '$REMOTE_DIR/tmp/work' '$REMOTE_DIR/tmp/logs' '$REMOTE_DIR/scripts/media'"
 
 echo "[deploy] выгружаю файлы сервера"
 rsync -az --delete \
@@ -148,6 +149,12 @@ ssh "$SSH_TARGET" "cd '$REMOTE_DIR' && if grep -q '^PUBLIC_BASE_URL=' .env; then
 echo "[deploy] проверяю PUBLIC_HOST в remote env"
 ssh "$SSH_TARGET" "cd '$REMOTE_DIR' && if grep -q '^PUBLIC_HOST=' .env; then sed -i 's#^PUBLIC_HOST=.*#PUBLIC_HOST=${PUBLIC_HOST}#' .env; else printf '\nPUBLIC_HOST=${PUBLIC_HOST}\n' >> .env; fi"
 
+echo "[deploy] удаляю запрещенные абстрактные SERVER_* role/profile поля из remote env"
+ssh "$SSH_TARGET" "cd '$REMOTE_DIR' && sed -i '/^SERVER_PROFILE=/d; /^SERVER_ROLE=/d' .env"
+
+echo "[deploy] remote env flags"
+ssh "$SSH_TARGET" "cd '$REMOTE_DIR' && grep -nE '$ENV_AUDIT_PATTERN' .env || true"
+
 if [ "$RUN_REMOTE_COMPOSE" != "true" ]; then
   echo "[deploy] remote compose пропущен для $PROFILE"
   echo "[deploy] запуск/пересборка идёт из host-проекта, где лежат Caddy/docker-compose."
@@ -161,7 +168,13 @@ if [ -n "$LEGACY_CONTAINERS" ]; then
 fi
 
 echo "[deploy] запускаю docker compose"
-ssh "$SSH_TARGET" "cd '$REMOTE_DIR' && REMOTE_DIR='$REMOTE_DIR' COMPOSE_PROJECT_NAME='$COMPOSE_PROJECT_NAME' CONTAINER_PREFIX='$CONTAINER_PREFIX' HTTP_PORT='${HTTP_PORT:-80}' HTTPS_PORT='${HTTPS_PORT:-443}' PUBLIC_HOST='$PUBLIC_HOST' docker compose -f '$COMPOSE_FILE' up -d --build && REMOTE_DIR='$REMOTE_DIR' COMPOSE_PROJECT_NAME='$COMPOSE_PROJECT_NAME' CONTAINER_PREFIX='$CONTAINER_PREFIX' HTTP_PORT='${HTTP_PORT:-80}' HTTPS_PORT='${HTTPS_PORT:-443}' PUBLIC_HOST='$PUBLIC_HOST' docker compose -f '$COMPOSE_FILE' ps"
+ssh "$SSH_TARGET" "cd '$REMOTE_DIR' && REMOTE_DIR='$REMOTE_DIR' COMPOSE_PROJECT_NAME='$COMPOSE_PROJECT_NAME' CONTAINER_PREFIX='$CONTAINER_PREFIX' HTTP_PORT='${HTTP_PORT:-80}' HTTPS_PORT='${HTTPS_PORT:-443}' PUBLIC_HOST='$PUBLIC_HOST' docker compose -f '$COMPOSE_FILE' up -d --build --force-recreate && REMOTE_DIR='$REMOTE_DIR' COMPOSE_PROJECT_NAME='$COMPOSE_PROJECT_NAME' CONTAINER_PREFIX='$CONTAINER_PREFIX' HTTP_PORT='${HTTP_PORT:-80}' HTTPS_PORT='${HTTPS_PORT:-443}' PUBLIC_HOST='$PUBLIC_HOST' docker compose -f '$COMPOSE_FILE' ps"
+
+echo "[deploy] container env flags"
+ssh "$SSH_TARGET" "docker exec '${CONTAINER_PREFIX}-server' sh -lc 'printenv | grep -E \"$ENV_AUDIT_PATTERN\" | sort || true'"
+
+echo "[deploy] container health"
+ssh "$SSH_TARGET" "docker exec '${CONTAINER_PREFIX}-server' node -e 'fetch(\"http://127.0.0.1:4100/api/autopost/health\").then(async r=>{console.log(r.status); console.log(await r.text())}).catch(e=>{console.error(e.message);process.exit(1)})'"
 
 echo "[deploy] health-check с VPS"
 if [ "$REMOTE_HEALTH_MODE" = "container" ]; then

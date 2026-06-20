@@ -18,13 +18,23 @@
 
 ```ts
 const prepared = await AiTextHelper.PreparePostText(task);
-results.push(await InstagramPublisher.PublishPost(task, prepared.instagram));
-results.push(await FacebookPublisher.PublishPost(task, prepared.facebook));
-results.push(await VkPublisher.PublishPost(task, prepared.vk));
-results.push(await TelegramPublisher.PublishPost(task, prepared.telegram));
+const results = await Promise.all([
+  InstagramPublisher.PublishPost(task, prepared.instagram),
+  FacebookPublisher.PublishPost(task, prepared.facebook),
+  VkPublisher.PublishPost(task, prepared.vk),
+  TelegramPublisher.PublishPost(task, prepared.telegram),
+]);
 ```
 
 The caller should see the platform order in one place. Each publisher decides internally whether it is enabled/configured and returns `disabled`, `skipped`, `ok`, or an error result.
+
+## Parallel operations
+
+- Independent external calls must run in parallel with `Promise.all`.
+- Do not wait for Sheets before email, email before Telegram, or one social network before another.
+- A service may wait only when its result is a real input for the next step.
+- Known dependency: `AiTextHelper.PreparePostText`/DeepSeek runs before publisher calls because prepared text is required by every platform.
+- If a channel is optional for a server profile, disable it in env instead of letting a long timeout decide request flow.
 
 ## Google Sheets
 
@@ -88,17 +98,44 @@ Rules:
 
 - `post_id` is our internal unique row key.
 - `media_ids` are resolved through the `MEDIA` sheet.
+- `MEDIA.media_id` uses readable prefixes: `IMG_001`, `IMG_002`, `VID_0001`, `VID_0002`.
+- The media ID prefix is only a human hint. Server media handling must use `MEDIA.type` / `MEDIA.mime_type` / downloaded file metadata.
 - Network IDs are written only after successful network responses.
 - Before publishing to a platform, server checks whether that platform ID already exists.
 - Batch read/write is preferred. Do not update cells one-by-one in loops if a batch is possible.
 - Store raw network response in `last_response` only as compact JSON.
 
+## Runtime files and Docker
+
+- Docker image contains Node.js, compiled server code, npm dependencies, and base processing tools such as `ffmpeg`.
+- Runtime files must live in host-mounted directories, not only inside the container layer.
+- Germany standalone compose mounts `${REMOTE_DIR}/tmp` to `/app/tmp`.
+- Autopost files use `AUTOPOST_TMP_DIR`, default `/app/tmp/autopost` in Docker and `server/tmp/autopost` locally.
+- Media work files use `MEDIA_WORK_DIR`, default `/app/tmp/work` in Docker and `server/tmp/work` locally.
+- Host-side processing scripts live in `scripts/media` and are mounted read-only to `/app/scripts/media`.
+- Deploy scripts must create `private/tg_sessions`, `tmp/media`, `tmp/autopost`, `tmp/work`, `tmp/logs`, and `scripts/media` before starting Docker.
+- Containers should use `restart: unless-stopped`; if the process crashes, Docker restarts it without deleting host-mounted media.
+- `tmp` and `private` are excluded from rsync deploy, so deploy/rebuild must not erase downloaded media, converted media, logs, or Telegram sessions.
+
 ## Posting policy
+
+General media pipeline:
+
+- Every social network has its own media preparation step because size limits, aspect-ratio rules, codecs, containers, captions, and upload flows differ.
+- The source folder keeps original files downloaded from Google Drive.
+- The platform folder keeps only files already normalized for the selected network.
+- A publisher must not silently downgrade unsupported media to a document/file upload. If media cannot be converted to the network format, the post fails before sending.
 
 Telegram:
 
 - Bot API is the default for groups/channels and tech logs.
 - MTProto is reserved for account-based posting or future parser tasks.
+- Autoposting sends only text, photos, and videos. `sendDocument` is forbidden for autopost media.
+- Photo preparation outputs JPEG files for Telegram, including HEIC/HEIF/PNG/WEBP/TIFF sources when conversion is possible.
+- Telegram photo rules are enforced before sending: max 10 MB, width + height <= 10000, aspect ratio <= 20.
+- Multiple media items are sent as one `sendMediaGroup` album with the prepared text as the first media caption.
+- Telegram album/single-media captions are limited to 1024 characters. Long source text must be shortened during Telegram text preparation, not split into document/fallback messages.
+- Video preparation outputs MP4/MPEG4 before sending. Non-MP4 videos and oversized MP4 files are normalized through `scripts/media/telegram-video-normalize.sh`.
 
 Instagram:
 

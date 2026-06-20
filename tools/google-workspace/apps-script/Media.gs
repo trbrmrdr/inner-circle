@@ -331,7 +331,7 @@ function scanFolderSoft_(folder, parentPath, scanned) {
 function readExistingMedia_(sheet, cols) {
   const result = {
     byFileId: {},
-    maxMediaNumber: 0
+    idState: createMediaIdState_()
   };
 
   if (sheet.getLastRow() < 2 || !cols.file_id || !cols.media_id) {
@@ -345,11 +345,11 @@ function readExistingMedia_(sheet, cols) {
     const fileId = row[cols.file_id - 1];
 
     if (mediaId) {
-      const match = String(mediaId).match(/^M(\d+)$/);
+      rememberMediaId_(result.idState, mediaId);
+    }
 
-      if (match) {
-        result.maxMediaNumber = Math.max(result.maxMediaNumber, Number(match[1]));
-      }
+    if (isLegacyMediaId_(mediaId)) {
+      reserveNextMediaId_(result.idState, mediaTypeFromRow_(row, cols));
     }
 
     if (fileId) {
@@ -380,20 +380,86 @@ function updateExistingMediaRows_(sheet, cols, existing, scannedByFileId) {
 }
 
 function appendNewMediaRows_(sheet, cols, existing, scanned) {
-  let maxNumber = existing.maxMediaNumber;
+  const idState = existing.idState || createMediaIdState_();
 
   scanned.forEach(item => {
     if (existing.byFileId[item.fileId]) {
       return;
     }
 
-    maxNumber += 1;
-
-    const mediaId = `M${String(maxNumber).padStart(4, '0')}`;
+    const mediaId = nextMediaId_(idState, item.type);
     const row = sheet.getLastRow() + 1;
 
     setMediaRowValues_(sheet, cols, row, mediaId, item);
   });
+}
+
+function createMediaIdState_() {
+  return {
+    used: {},
+    maxByPrefix: {
+      'IMG_': 0,
+      'VID_': 0
+    }
+  };
+}
+
+function mediaTypeFromRow_(row, cols) {
+  const type = cols.type ? String(row[cols.type - 1] || '').trim().toLowerCase() : '';
+  if (type === 'image' || type === 'video') {
+    return type;
+  }
+
+  const mimeType = cols.mime_type ? String(row[cols.mime_type - 1] || '').trim().toLowerCase() : '';
+  return getMediaType_(mimeType);
+}
+
+function mediaIdPrefixForType_(type) {
+  const clean = String(type || '').trim().toLowerCase();
+  if (clean === 'video') return 'VID_';
+  return 'IMG_';
+}
+
+function isLegacyMediaId_(mediaId) {
+  return /^(M\d+|image\d+|vid\d+)$/i.test(String(mediaId || '').trim());
+}
+
+function rememberMediaId_(state, mediaId) {
+  const clean = String(mediaId || '').trim();
+  if (!clean) {
+    return;
+  }
+
+  state.used[clean.toLowerCase()] = true;
+
+  const match = clean.match(/^(IMG_|VID_)(\d+)$/i);
+  if (!match) {
+    return;
+  }
+
+  const prefix = match[1].toUpperCase();
+  const number = Number(match[2]);
+  state.maxByPrefix[prefix] = Math.max(state.maxByPrefix[prefix] || 0, number);
+}
+
+function reserveNextMediaId_(state, type) {
+  return nextMediaId_(state, type);
+}
+
+function nextMediaId_(state, type) {
+  const prefix = mediaIdPrefixForType_(type);
+  const digits = prefix === 'VID_' ? 4 : 3;
+  let number = (state.maxByPrefix[prefix] || 0) + 1;
+  let mediaId = `${prefix}${String(number).padStart(digits, '0')}`;
+
+  while (state.used[mediaId.toLowerCase()]) {
+    number += 1;
+    mediaId = `${prefix}${String(number).padStart(digits, '0')}`;
+  }
+
+  state.maxByPrefix[prefix] = number;
+  state.used[mediaId.toLowerCase()] = true;
+  return mediaId;
 }
 
 function setMediaRowValues_(sheet, cols, row, mediaId, item) {

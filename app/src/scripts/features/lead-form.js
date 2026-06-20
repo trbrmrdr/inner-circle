@@ -97,6 +97,28 @@
     );
   }
 
+  function todayDateValue() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }
+
+  function clampDateField(date, fillEmpty = false) {
+    const today = todayDateValue();
+    date.min = today;
+
+    if (fillEmpty && !date.value) {
+      date.value = today;
+      return;
+    }
+
+    if (date.value && isValidDateValue(date.value) && date.value < today) {
+      date.value = today;
+    }
+  }
+
   function telegramUsername(value) {
     const raw = String(value || "").trim();
     if (!raw) return "";
@@ -142,7 +164,10 @@
 
   function initDateField(form) {
     const date = form.querySelector('input[name="date"][type="date"]');
-    if (!date || date.closest(".lead-date-control")) return;
+    if (!date) return;
+
+    clampDateField(date, true);
+    if (date.closest(".lead-date-control")) return;
 
     const wrapper = document.createElement("div");
     wrapper.className = "lead-date-control";
@@ -160,6 +185,10 @@
 
     date.parentNode.insertBefore(wrapper, date);
     wrapper.append(date, button);
+
+    date.addEventListener("input", () => clampDateField(date));
+    date.addEventListener("change", () => clampDateField(date, true));
+    date.addEventListener("blur", () => clampDateField(date, true));
 
     button.addEventListener("click", () => {
       date.focus({ preventScroll: true });
@@ -524,6 +553,9 @@
   }
 
   function validateLeadForm(form) {
+    const dateField = form.querySelector('input[name="date"]');
+    if (dateField) clampDateField(dateField, true);
+
     const data = new FormData(form);
     const name = String(data.get("name") || "").trim();
     const email = String(data.get("email") || "").trim();
@@ -534,7 +566,6 @@
     const guests = normalizeGuests(data.get("guests"));
     const scenario = String(data.get("scenario") || "").trim();
     const consent = data.has("consent");
-    const dateField = form.querySelector('input[name="date"]');
 
     form.querySelectorAll("[aria-invalid='true']").forEach((node) => {
       node.removeAttribute("aria-invalid");

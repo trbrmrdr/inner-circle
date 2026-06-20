@@ -66,6 +66,9 @@ export interface PreparedMedia {
   converted: boolean;
   width?: number;
   height?: number;
+  duration?: number;
+  thumbnailPath?: string;
+  thumbnailFilename?: string;
   notes?: string[];
 }
 

@@ -71,7 +71,7 @@ export class TelegramPublisher {
         media: url,
         caption: index === 0 ? this.Limit(text, 1024) : undefined,
         parse_mode: index === 0 ? TelegramConfig.PARSE_MODE : undefined,
-        show_caption_above_media: index === 0 ? true : undefined,
+        show_caption_above_media: true,
       }));
 
       const result = await this.Call("sendMediaGroup", {
@@ -126,16 +126,20 @@ export class TelegramPublisher {
       throw new Error(`Telegram media group supports 2-10 media items. Got ${prepared.media.length}.`);
     }
 
+    if (this.HasMixedVideoAndPhoto(prepared.media)) {
+      return this.PublishMixedVideoAndPhotos(chatId, prepared.media, text, platform);
+    }
+
     if (prepared.media.length > 1) {
       const result = await this.SendMediaGroupFiles(chatId, prepared.media, text);
       return this.Result(result, Array.isArray(result?.result) ? String(result.result[0]?.message_id || "") : "", platform);
     }
 
-    const result = await this.SendSingleFile(chatId, prepared.media[0], text);
+    const result = await this.SendSingleMedia(chatId, prepared.media[0], text);
     return this.Result(result, "", platform);
   }
 
-  static async SendSingleFile(chatId: string, media: PreparedMedia, caption: string) {
+  static async SendSingleMedia(chatId: string, media: PreparedMedia, caption: string) {
     const safeCaption = this.MediaCaption(caption);
     if (media.asset_type === "photo") {
       return this.CallForm("sendPhoto", {
@@ -147,15 +151,60 @@ export class TelegramPublisher {
     }
 
     if (media.asset_type === "video") {
-      return this.CallForm("sendVideo", {
-        chat_id: chatId,
-        caption: safeCaption,
-        parse_mode: TelegramConfig.PARSE_MODE,
-        show_caption_above_media: "true",
-      }, "video", media.preparedPath, media.filename);
+      return this.CallFormFiles("sendVideo", this.VideoFields(chatId, media, safeCaption), [
+        { field: "video", path: media.preparedPath, filename: media.filename },
+        ...(media.thumbnailPath && media.thumbnailFilename
+          ? [{ field: "thumbnail", path: media.thumbnailPath, filename: media.thumbnailFilename }]
+          : []),
+      ]);
     }
 
     throw new Error(`Telegram autopost supports only photo/video media. Got ${media.asset_type}.`);
+  }
+
+  static async PublishMixedVideoAndPhotos(
+    chatId: string,
+    media: PreparedMedia[],
+    caption: string,
+    platform: ServicePlatform,
+  ): Promise<PublishResult> {
+    const videos = media.filter((item) => item.asset_type === "video");
+    const photos = media.filter((item) => item.asset_type === "photo");
+    const raw: unknown[] = [];
+    let firstId = "";
+
+    for (let index = 0; index < videos.length; index += 1) {
+      const result = await this.SendSingleMedia(chatId, videos[index], index === 0 ? caption : "");
+      raw.push(result);
+      if (!firstId) firstId = String(result?.result?.message_id || "");
+    }
+
+    if (photos.length > 1) {
+      const result = await this.SendMediaGroupFiles(chatId, photos, "");
+      raw.push(result);
+    } else if (photos.length === 1) {
+      raw.push(await this.SendSingleMedia(chatId, photos[0], ""));
+    }
+
+    return {
+      ok: true,
+      platform,
+      id: firstId,
+      raw,
+    };
+  }
+
+  static VideoFields(chatId: string, media: PreparedMedia, caption: string) {
+    return {
+      chat_id: chatId,
+      caption,
+      parse_mode: TelegramConfig.PARSE_MODE,
+      show_caption_above_media: "true",
+      supports_streaming: "true",
+      ...(media.width ? { width: String(media.width) } : {}),
+      ...(media.height ? { height: String(media.height) } : {}),
+      ...(media.duration ? { duration: String(Math.round(media.duration)) } : {}),
+    };
   }
 
   static async SendMediaGroupFiles(chatId: string, media: PreparedMedia[], caption: string) {
@@ -166,18 +215,31 @@ export class TelegramPublisher {
     const payload = media.map((item, index) => {
       const attachName = `media_${index}`;
       form.append(attachName, fs.createReadStream(item.preparedPath), item.filename);
+      const thumbnailAttachName = `thumb_${index}`;
+      if (item.asset_type === "video" && item.thumbnailPath && item.thumbnailFilename) {
+        form.append(thumbnailAttachName, fs.createReadStream(item.thumbnailPath), item.thumbnailFilename);
+      }
 
       return {
         type: item.asset_type === "video" ? "video" : "photo",
         media: `attach://${attachName}`,
-        caption: index === 0 ? safeCaption : undefined,
-        parse_mode: index === 0 ? TelegramConfig.PARSE_MODE : undefined,
-        show_caption_above_media: index === 0 ? true : undefined,
+        thumbnail: item.asset_type === "video" && item.thumbnailPath ? `attach://${thumbnailAttachName}` : undefined,
+        width: item.asset_type === "video" ? item.width : undefined,
+        height: item.asset_type === "video" ? item.height : undefined,
+        duration: item.asset_type === "video" && item.duration ? Math.round(item.duration) : undefined,
+        supports_streaming: item.asset_type === "video" ? true : undefined,
+        caption: index === 0 && safeCaption ? safeCaption : undefined,
+        parse_mode: index === 0 && safeCaption ? TelegramConfig.PARSE_MODE : undefined,
+        show_caption_above_media: true,
       };
     });
 
     form.append("media", JSON.stringify(payload));
     return this.CallFormData("sendMediaGroup", form);
+  }
+
+  static HasMixedVideoAndPhoto(media: PreparedMedia[]) {
+    return media.some((item) => item.asset_type === "video") && media.some((item) => item.asset_type === "photo");
   }
 
   static async Call(method: string, data: Record<string, unknown>) {
@@ -196,11 +258,19 @@ export class TelegramPublisher {
     filePath: string,
     filename: string,
   ) {
+    return this.CallFormFiles(method, fields, [{ field: fileField, path: filePath, filename }]);
+  }
+
+  static async CallFormFiles(
+    method: string,
+    fields: Record<string, string | undefined>,
+    files: Array<{ field: string; path: string; filename: string }>,
+  ) {
     const form = new FormData();
     Object.entries(fields).forEach(([key, value]) => {
       if (value !== undefined && value !== "") form.append(key, value);
     });
-    form.append(fileField, fs.createReadStream(filePath), filename);
+    files.forEach((file) => form.append(file.field, fs.createReadStream(file.path), file.filename));
     return this.CallFormData(method, form);
   }
 

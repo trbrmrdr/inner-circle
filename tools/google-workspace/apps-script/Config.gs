@@ -43,7 +43,7 @@
  * Вручную не запускать.
  */
 
-const CONTENT_PLANNER_VERSION = '1.2.2';
+const CONTENT_PLANNER_VERSION = '1.2.5';
 
 const ROOT_FOLDER_ID = '1UcE35OVOx1IwQDl4pp4sQgOGZRDzzrkq';
 

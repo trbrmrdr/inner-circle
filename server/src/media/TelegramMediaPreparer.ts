@@ -1,7 +1,13 @@
 import fs from "fs";
 import path from "path";
+import { execFile } from "child_process";
+import { promisify } from "util";
 import sharp from "sharp";
+import heicConvert = require("heic-convert");
+import { ServerConfig } from "../config/ServerConfig";
 import { DownloadedMedia, PreparedMedia } from "../types/autopost";
+
+const ExecFile = promisify(execFile);
 
 type TelegramSourceKind = "image" | "video" | "unsupported";
 type TelegramResizeFit = "inside" | "contain";
@@ -21,8 +27,15 @@ interface TelegramImageWriteResult {
   quality: number;
 }
 
+interface TelegramVideoInfo {
+  width?: number;
+  height?: number;
+  duration?: number;
+}
+
 export class TelegramMediaPreparer {
   static readonly MAX_PHOTO_BYTES = 10 * 1024 * 1024;
+  static readonly MAX_VIDEO_THUMB_BYTES = 200 * 1024;
   static readonly MAX_PHOTO_DIMENSION_SUM = 10_000;
   static readonly MAX_PHOTO_ASPECT_RATIO = 20;
   static readonly MAX_VIDEO_BYTES = 50 * 1024 * 1024;
@@ -56,25 +69,26 @@ export class TelegramMediaPreparer {
   static async PreparePhoto(item: DownloadedMedia, targetDir: string): Promise<PreparedMedia> {
     const filename = this.PreparedFilename(item, "photo", ".jpg");
     const targetPath = path.join(targetDir, filename);
-    const metadata = await sharp(item.sourcePath, { limitInputPixels: false }).metadata();
-    const size = this.OrientedSize(metadata.width, metadata.height, metadata.orientation);
-    const target = this.PhotoTarget(size.width, size.height);
     const notes = [
       `source_mime:${item.mime_type || "unknown"}`,
       "telegram_photo:jpeg",
     ];
+    const readableSourcePath = await this.ReadableImageSourcePath(item, targetDir, notes);
+    const metadata = await sharp(readableSourcePath, { limitInputPixels: false }).metadata();
+    const size = this.OrientedSize(metadata.width, metadata.height, metadata.orientation);
+    const target = this.PhotoTarget(size.width, size.height);
 
     if (target.resized) notes.push(`resized_to_fit_sum:${TelegramMediaPreparer.MAX_PHOTO_DIMENSION_SUM}`);
     if (target.padded) notes.push(`padded_to_fit_ratio:${TelegramMediaPreparer.MAX_PHOTO_ASPECT_RATIO}`);
 
     let result: TelegramImageWriteResult | null = null;
     for (const quality of this.JPEG_QUALITIES) {
-      result = await this.WriteJpeg(item.sourcePath, targetPath, target, quality);
+      result = await this.WriteJpeg(readableSourcePath, targetPath, target, quality);
       if (result.size <= this.MAX_PHOTO_BYTES) break;
     }
 
     if (!result || result.size > this.MAX_PHOTO_BYTES) {
-      result = await this.CompressByResize(item.sourcePath, targetPath, target, result);
+      result = await this.CompressByResize(readableSourcePath, targetPath, target, result);
     }
 
     if (result.size > this.MAX_PHOTO_BYTES) {
@@ -101,23 +115,34 @@ export class TelegramMediaPreparer {
   }
 
   static async PrepareVideo(item: DownloadedMedia, targetDir: string): Promise<PreparedMedia> {
-    if (!this.IsTelegramVideoCompatible(item.mime_type, item.filename)) {
-      throw new Error(
-        `Telegram video ${item.media.media_id || item.filename} must be MP4/MPEG4 before posting. ` +
-        "Video conversion will be added through ffmpeg in the next stage; documents are not sent.",
-      );
+    const filename = this.PreparedFilename(item, "video", ".mp4");
+    const targetPath = path.join(targetDir, filename);
+    const notes = [
+      `source_mime:${item.mime_type || "unknown"}`,
+      "telegram_video:mp4",
+    ];
+    const shouldNormalize = !this.IsTelegramVideoCompatible(item.mime_type, item.filename) || item.size > this.MAX_VIDEO_BYTES;
+
+    if (shouldNormalize) {
+      await this.NormalizeVideo(item.sourcePath, targetPath);
+      notes.push("ffmpeg:normalized");
+    } else {
+      fs.copyFileSync(item.sourcePath, targetPath);
     }
 
-    if (item.size > this.MAX_VIDEO_BYTES) {
+    const size = fs.statSync(targetPath).size;
+    if (size > this.MAX_VIDEO_BYTES) {
       throw new Error(
-        `Telegram video ${item.media.media_id || item.filename} is ${(item.size / 1024 / 1024).toFixed(2)} MB. ` +
+        `Telegram video ${item.media.media_id || item.filename} is ${(size / 1024 / 1024).toFixed(2)} MB after conversion. ` +
         "Bot API sendVideo limit is 50 MB.",
       );
     }
 
-    const filename = this.PreparedFilename(item, "video", ".mp4");
-    const targetPath = path.join(targetDir, filename);
-    fs.copyFileSync(item.sourcePath, targetPath);
+    const videoInfo = await this.ProbeVideo(targetPath);
+    const thumbnail = await this.CreateVideoThumbnail(targetPath, targetDir, item);
+    notes.push(`video_size:${videoInfo.width || 0}x${videoInfo.height || 0}`);
+    if (videoInfo.duration) notes.push(`duration:${Math.round(videoInfo.duration)}s`);
+    if (thumbnail) notes.push("thumbnail:jpeg");
 
     return {
       media_id: item.media.media_id,
@@ -126,13 +151,132 @@ export class TelegramMediaPreparer {
       filename,
       mime_type: "video/mp4",
       asset_type: "video",
-      size: fs.statSync(targetPath).size,
-      converted: false,
-      notes: [
-        `source_mime:${item.mime_type || "unknown"}`,
-        "telegram_video:mp4",
-      ],
+      size,
+      converted: shouldNormalize,
+      width: videoInfo.width,
+      height: videoInfo.height,
+      duration: videoInfo.duration,
+      thumbnailPath: thumbnail?.path,
+      thumbnailFilename: thumbnail?.filename,
+      notes,
     };
+  }
+
+  static async NormalizeVideo(sourcePath: string, targetPath: string) {
+    const scriptPath = path.join(ServerConfig.MEDIA_TOOLS_DIR, "telegram-video-normalize.sh");
+    if (!fs.existsSync(scriptPath)) {
+      throw new Error(`Telegram video normalizer not found: ${scriptPath}`);
+    }
+
+    try {
+      await ExecFile(scriptPath, [sourcePath, targetPath], {
+        timeout: 20 * 60 * 1000,
+        maxBuffer: 1024 * 1024,
+      });
+    } catch (error: any) {
+      const stderr = String(error?.stderr || "").trim();
+      const stdout = String(error?.stdout || "").trim();
+      const details = [stderr, stdout, error?.message].filter(Boolean).join("\n");
+      throw new Error(`Telegram video normalization failed: ${details}`);
+    }
+  }
+
+  static async ProbeVideo(videoPath: string): Promise<TelegramVideoInfo> {
+    try {
+      const { stdout } = await ExecFile("ffprobe", [
+        "-v", "error",
+        "-select_streams", "v:0",
+        "-show_entries", "stream=width,height,duration:format=duration",
+        "-of", "json",
+        videoPath,
+      ], {
+        timeout: 30_000,
+        maxBuffer: 1024 * 1024,
+      });
+      const parsed = JSON.parse(stdout);
+      const stream = parsed?.streams?.[0] || {};
+      const duration = Number(stream.duration || parsed?.format?.duration || 0);
+      return {
+        width: Number(stream.width || 0) || undefined,
+        height: Number(stream.height || 0) || undefined,
+        duration: Number.isFinite(duration) && duration > 0 ? duration : undefined,
+      };
+    } catch {
+      return {};
+    }
+  }
+
+  static async CreateVideoThumbnail(videoPath: string, targetDir: string, item: DownloadedMedia) {
+    const filename = this.PreparedFilename(item, "photo", ".jpg").replace(/^photo_/, "thumb_");
+    const targetPath = path.join(targetDir, filename);
+
+    for (const second of [1, 0, 2]) {
+      await ExecFile("ffmpeg", [
+        "-y",
+        "-hide_banner",
+        "-loglevel", "error",
+        "-ss", String(second),
+        "-i", videoPath,
+        "-frames:v", "1",
+        "-vf", "scale='min(320,iw)':'min(320,ih)':force_original_aspect_ratio=decrease",
+        "-q:v", "4",
+        targetPath,
+      ], {
+        timeout: 60_000,
+        maxBuffer: 1024 * 1024,
+      }).catch(() => undefined);
+
+      if (fs.existsSync(targetPath) && fs.statSync(targetPath).size > 0) break;
+    }
+
+    if (!fs.existsSync(targetPath) || fs.statSync(targetPath).size === 0) return null;
+    if (fs.statSync(targetPath).size > this.MAX_VIDEO_THUMB_BYTES) {
+      await this.RewriteThumbnailSmaller(targetPath);
+    }
+
+    if (fs.statSync(targetPath).size > this.MAX_VIDEO_THUMB_BYTES) return null;
+    return { path: targetPath, filename };
+  }
+
+  static async RewriteThumbnailSmaller(targetPath: string) {
+    const tempPath = `${targetPath}.tmp.jpg`;
+    for (const quality of [75, 65, 55, 45]) {
+      await sharp(targetPath)
+        .jpeg({ quality, mozjpeg: true })
+        .toFile(tempPath);
+      fs.renameSync(tempPath, targetPath);
+      if (fs.statSync(targetPath).size <= this.MAX_VIDEO_THUMB_BYTES) break;
+    }
+  }
+
+  static async ReadableImageSourcePath(item: DownloadedMedia, targetDir: string, notes: string[]) {
+    if (this.IsHeic(item.mime_type, item.filename)) {
+      return this.ConvertHeicToJpeg(item, targetDir, notes);
+    }
+
+    try {
+      await sharp(item.sourcePath, { limitInputPixels: false }).metadata();
+      return item.sourcePath;
+    } catch (error) {
+      throw new Error(
+        `Cannot read image ${item.media.media_id || item.filename}: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+  }
+
+  static async ConvertHeicToJpeg(item: DownloadedMedia, targetDir: string, notes: string[]) {
+    const workDir = path.join(targetDir, "_work");
+    fs.mkdirSync(workDir, { recursive: true });
+    const fallbackPath = path.join(workDir, this.PreparedFilename(item, "photo", ".heic-source.jpg"));
+    const outputBuffer = await heicConvert({
+      buffer: fs.readFileSync(item.sourcePath),
+      format: "JPEG",
+      quality: 0.95,
+    });
+
+    fs.writeFileSync(fallbackPath, Buffer.from(outputBuffer));
+    notes.push("heic_convert:fallback");
+    return fallbackPath;
   }
 
   static async WriteJpeg(
@@ -263,7 +407,13 @@ export class TelegramMediaPreparer {
     return cleanMime === "video/mp4" || ext === ".mp4" || ext === ".m4v";
   }
 
-  static PreparedFilename(item: DownloadedMedia, assetType: "photo" | "video", extension: ".jpg" | ".mp4") {
+  static IsHeic(mimeType: string, filename: string) {
+    const cleanMime = mimeType.toLowerCase();
+    const ext = path.extname(filename).toLowerCase();
+    return cleanMime === "image/heic" || cleanMime === "image/heif" || ext === ".heic" || ext === ".heif";
+  }
+
+  static PreparedFilename(item: DownloadedMedia, assetType: "photo" | "video", extension: ".jpg" | ".mp4" | ".heic-source.jpg") {
     const originalBase = path.basename(item.filename, path.extname(item.filename));
     const id = item.media.media_id || "media";
     const clean = `${id}_${originalBase}`.replace(/[^\w.\-а-яА-ЯёЁ]+/g, "_").slice(0, 120);

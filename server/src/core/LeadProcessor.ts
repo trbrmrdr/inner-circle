@@ -53,8 +53,9 @@ export class LeadProcessor {
     if (!lead.name) return "Укажите имя";
     if (!hasContact) return "Укажите телефон, Telegram или почту, чтобы мы могли связаться";
     if (lead.telegram && !this.IsTelegramValid(lead.telegram)) return "Некорректный Telegram username";
-    if (!lead.date) return "Укажите желаемую дату заезда";
-    if (!lead.guests) return "Укажите количество гостей";
+    if (!lead.date || !this.IsDateValid(lead.date)) return "Укажите реальную желаемую дату заезда";
+    if (this.IsDatePast(lead.date)) return "Дата заезда не может быть в прошлом";
+    if (!lead.guests || Number(lead.guests) < 1) return "Укажите количество гостей";
     if (!lead.scenario) return "Опишите сценарий заезда";
     if (lead.consent !== "true") return "Подтвердите согласие на обратную связь по заявке";
     return "";
@@ -97,6 +98,34 @@ export class LeadProcessor {
   static IsTelegramValid(value: string) {
     const username = value.replace(/^@/, "");
     return /^[A-Za-z0-9_]{5,32}$/.test(username);
+  }
+
+  static IsDateValid(value: string) {
+    const match = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (!match) return false;
+
+    const year = Number(match[1]);
+    const month = Number(match[2]);
+    const day = Number(match[3]);
+    const parsed = new Date(Date.UTC(year, month - 1, day));
+
+    return (
+      parsed.getUTCFullYear() === year &&
+      parsed.getUTCMonth() === month - 1 &&
+      parsed.getUTCDate() === day
+    );
+  }
+
+  static IsDatePast(value: string) {
+    return value < this.TodayDateValue();
+  }
+
+  static TodayDateValue() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
   }
 
   static RequiredStatus(results: PublishResult[]) {

@@ -10,7 +10,7 @@ export class MediaPipeline {
   static async PrepareTelegramPost(task: PostTask, text: string): Promise<PreparedPost> {
     const runId = `${new Date().toISOString().replace(/[:.]/g, "-")}_${randomUUID().slice(0, 8)}`;
     const safePostId = this.SafePathPart(task.post_uid || `row-${task.rowNumber}`);
-    const rootDir = path.join(ServerConfig.ROOT_DIR, "tmp", "autopost", safePostId, runId);
+    const rootDir = path.join(ServerConfig.AUTOPOST_TMP_DIR, safePostId, runId);
     const sourceDir = path.join(rootDir, "source");
     const platformDir = path.join(rootDir, "telegram");
 
@@ -58,6 +58,9 @@ export class MediaPipeline {
         size: item.size,
         width: item.width,
         height: item.height,
+        duration: item.duration,
+        thumbnailPath: item.thumbnailPath,
+        thumbnailFilename: item.thumbnailFilename,
         converted: item.converted,
         notes: item.notes || [],
       })),

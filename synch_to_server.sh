@@ -18,8 +18,9 @@ INNER_CIRCLE_REMOTE_DIR="${INNER_CIRCLE_REMOTE_DIR:-/srv/static/${INNER_CIRCLE_H
 
 RUN_STATIC=false
 RUN_MOSCOW_CADDY=false
-SERVER_PROFILE=""
+SERVER_TARGET=""
 SHEETS_MODE=""
+SERVER_ENV_AUDIT_PATTERN='^(NODE_ENV|PUBLIC_BASE_URL|PUBLIC_HOST|AUTOPOST_ENABLED|AUTOPOST_INTERVAL_MS|AUTOPOST_BATCH_LIMIT|EMAIL_ENABLED|TELEGRAM_POST_ENABLED|TELEGRAM_TECH_ENABLED|GOOGLE_SHEETS_ENABLED|DEEPSEEK_ENABLED|VK_ENABLED|INSTAGRAM_ENABLED|FACEBOOK_ENABLED)='
 
 help() {
   cat <<EOF
@@ -54,16 +55,16 @@ while [[ $# -gt 0 ]]; do
       shift
       ;;
     --secondary)
-      SERVER_PROFILE="moscow"
+      SERVER_TARGET="moscow"
       shift
       ;;
     --primary)
-      SERVER_PROFILE="germany"
+      SERVER_TARGET="germany"
       shift
       ;;
     --all)
       RUN_STATIC=true
-      SERVER_PROFILE="all"
+      SERVER_TARGET="all"
       shift
       ;;
     --caddy-secondary)
@@ -126,6 +127,13 @@ run_sheets() {
   cd "$ROOT_DIR"
 }
 
+verify_moscow_server() {
+  echo "Verify Moscow Inner Circle env -> api2.inner-circle.spi.ski"
+  ssh $SSH_OPTS "$SERVER" "cd /opt/server.inner-circle-moscow && echo '[verify] remote .env flags' && grep -nE '$SERVER_ENV_AUDIT_PATTERN' .env || true"
+  ssh $SSH_OPTS "$SERVER" "echo '[verify] container env flags' && docker exec innercircle-moscow-server sh -lc 'printenv | grep -E \"$SERVER_ENV_AUDIT_PATTERN\" | sort || true'"
+  ssh $SSH_OPTS "$SERVER" "echo '[verify] container health' && docker exec innercircle-moscow-server node -e 'fetch(\"http://127.0.0.1:4100/api/autopost/health\").then(async r=>{console.log(r.status); console.log(await r.text())}).catch(e=>{console.error(e.message);process.exit(1)})'"
+}
+
 deploy_server_profile() {
   local profile="$1"
   local profile_sync_sheets="$SERVER_SYNC_SHEETS"
@@ -141,6 +149,7 @@ deploy_server_profile() {
       fi
       INNER_CIRCLE_SERVER_SYNC_SHEETS="$profile_sync_sheets" \
         bash "$SPISKI_SYNC_SCRIPT" --inner-circle-server
+      verify_moscow_server
       ;;
     germany)
       cd "$ROOT_DIR/server"
@@ -160,20 +169,20 @@ deploy_server_profile() {
 }
 
 deploy_server() {
-  if [[ -z "$SERVER_PROFILE" ]]; then
+  if [[ -z "$SERVER_TARGET" ]]; then
     return
   fi
 
-  case "$SERVER_PROFILE" in
+  case "$SERVER_TARGET" in
     moscow|germany)
-      deploy_server_profile "$SERVER_PROFILE"
+      deploy_server_profile "$SERVER_TARGET"
       ;;
     all)
       deploy_server_profile moscow
       deploy_server_profile germany
       ;;
     *)
-      echo "Unknown server profile: $SERVER_PROFILE" >&2
+      echo "Unknown server target: $SERVER_TARGET" >&2
       echo "Expected: moscow, germany, all" >&2
       exit 1
       ;;

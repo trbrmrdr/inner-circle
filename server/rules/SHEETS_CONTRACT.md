@@ -88,3 +88,28 @@ Legacy lead columns after this contract cleanup: `lead_uid`, `message`, `page`, 
 | `file_id` | optional | Server builds `https://drive.google.com/uc?export=download&id=...`. |
 
 For Instagram and Facebook, media must be a public HTTPS URL. Private Google Drive files will not work for Meta publishing.
+
+## Telegram test autopost
+
+Local command:
+
+```bash
+npm run autopost:telegram:test
+npm run autopost:telegram:test -- --post-id 0000a --prepare-only --yes
+npm run autopost:telegram:test -- --post-id 0000a --yes
+```
+
+Rules:
+
+- reads `POSTS` and `MEDIA` once per CLI session and reuses in-memory candidates;
+- accepts any post status for test mode: `draft`, `ready`, `posted`, etc.;
+- downloads private Google Drive files through the service account into `server/tmp/autopost/<post_id>/<run_id>/source`;
+- prepares Telegram-specific files in `server/tmp/autopost/<post_id>/<run_id>/telegram`;
+- Telegram photo output is always JPEG media, not documents; HEIC/HEIF sources use `heic-convert` fallback, other image sources are normalized through `sharp`;
+- Telegram video output is MP4/MPEG4; non-MP4 videos and oversized MP4 files are normalized through `scripts/media/telegram-video-normalize.sh`;
+- Telegram test publishing uses `sendMediaGroup` for 2-10 media items and never uses `sendDocument`;
+- writes `manifest.json` in the run folder;
+- sends only to `TELEGRAM_TECH_CHAT_ID`;
+- never updates Google Sheets in test mode.
+
+`--prepare-only` downloads and prepares media but does not send Telegram messages.

@@ -1,12 +1,23 @@
 import express from "express";
 import fs from "fs";
+import { DeepSeekConfig } from "./config/DeepSeekConfig";
+import { EmailConfig } from "./config/EmailConfig";
+import { FacebookConfig } from "./config/FacebookConfig";
+import { GoogleConfig } from "./config/GoogleConfig";
+import { InstagramConfig } from "./config/InstagramConfig";
 import { ServerConfig } from "./config/ServerConfig";
+import { TelegramConfig } from "./config/TelegramConfig";
+import { VkConfig } from "./config/VkConfig";
 import { AutoPostRunner } from "./core/AutoPostRunner";
 import { HttpHelper } from "./core/HttpHelper";
 import { TechLog } from "./core/TechLog";
 import { ApiRoutes } from "./routes";
 
-fs.mkdirSync(ServerConfig.TMP_MEDIA_DIR, { recursive: true });
+[
+  ServerConfig.TMP_MEDIA_DIR,
+  ServerConfig.AUTOPOST_TMP_DIR,
+  ServerConfig.MEDIA_WORK_DIR,
+].forEach((dir) => fs.mkdirSync(dir, { recursive: true }));
 
 const app = express();
 
@@ -43,5 +54,30 @@ app.use((error: unknown, _req: express.Request, res: express.Response, _next: ex
 app.listen(ServerConfig.PORT, () => {
   console.log(`[server] listening on ${ServerConfig.PORT}`);
   if (ServerConfig.AUTOPOST_ENABLED) AutoPostRunner.Start();
-  TechLog.Status(`Сервер запущен.\nPort: ${ServerConfig.PORT}\nAutopost: ${ServerConfig.AUTOPOST_ENABLED ? "on" : "off"}`).catch(() => undefined);
+  TechLog.Status(StartupStatusText()).catch(() => undefined);
 });
+
+function StartupStatusText() {
+  const readyEmailProviders = EmailConfig.ReadyProviders().map((provider) => provider.name).join(", ") || "-";
+
+  return [
+    "Сервер запущен.",
+    `Node env: ${ServerConfig.NODE_ENV}`,
+    `Public URL: ${ServerConfig.PUBLIC_BASE_URL || "-"}`,
+    `Public host: ${ServerConfig.PUBLIC_HOST || "-"}`,
+    `Port: ${ServerConfig.PORT}`,
+    "",
+    `Autopost worker: ${ServerConfig.AUTOPOST_ENABLED ? "on" : "off"}`,
+    `Autopost interval: ${ServerConfig.AUTOPOST_INTERVAL_MS} ms`,
+    `Google Sheets: ${GoogleConfig.IsReady() ? "ready" : "off/not ready"}`,
+    "",
+    `Telegram tech: ${TelegramConfig.IsTechReady() ? "ready" : "off/not ready"}`,
+    `Telegram public posting: ${TelegramConfig.IsBotReady() && TelegramConfig.PUBLIC_CHAT_ID ? "ready" : "off/not ready"}`,
+    `Email: ${EmailConfig.IsReady() ? `ready (${readyEmailProviders})` : "off/not ready"}`,
+    `DeepSeek: ${DeepSeekConfig.IsReady() ? "ready" : "off/not ready"}`,
+    "",
+    `VK: ${VkConfig.IsReady() ? "ready" : "off/not ready"}`,
+    `Instagram: ${InstagramConfig.IsReady() ? "ready" : "off/not ready"}`,
+    `Facebook: ${FacebookConfig.IsReady() ? "ready" : "off/not ready"}`,
+  ].join("\n");
+}
