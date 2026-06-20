@@ -5,6 +5,11 @@ export interface SheetColumn {
   required?: boolean;
   defaultValue?: string;
   note?: string;
+  numberFormat?: {
+    type: string;
+    pattern?: string;
+  };
+  pixelSize?: number;
 }
 
 export interface SheetDefinition {
@@ -80,18 +85,19 @@ export class SheetsSchema {
 
   static LeadsColumns: SheetColumn[] = [
     { name: "created_at", required: true },
-    { name: "lead_uid" },
     { name: "name" },
-    { name: "phone" },
+    {
+      name: "phone",
+      numberFormat: { type: "TEXT" },
+      pixelSize: 170,
+      note: "Displayed as +7 999 000-00-00. Server receives raw digits and formats the sheet value.",
+    },
     { name: "email" },
     { name: "telegram" },
     { name: "date" },
     { name: "guests" },
     { name: "scenario" },
     { name: "consent" },
-    { name: "message" },
-    { name: "page" },
-    { name: "source" },
     { name: "meta_json" },
   ];
 
@@ -109,11 +115,11 @@ export class SheetsSchema {
   ];
 
   static SettingsDefaults = [
-    ["autopost.enabled", "false", "Runtime switch. Env AUTOPOST_ENABLED still controls process startup."],
-    ["autopost.interval_ms", "60000", "Recommended polling interval for local/VPS worker."],
-    ["autopost.batch_limit", "3", "Maximum posts per run."],
-    ["parser.enabled", "false", "Reserved for later parser worker."],
-    ["parser.interval_ms", "300000", "Reserved parser interval."],
+    ["autopost.enabled", "false", "Включает автопостинг из таблицы. Env AUTOPOST_ENABLED тоже должен быть включен, иначе worker не стартует."],
+    ["autopost.interval_ms", "60000", "Частота проверки новых постов в миллисекундах для локального сервера или VPS."],
+    ["autopost.batch_limit", "3", "Максимальное количество постов за один проход автопостинга."],
+    ["parser.enabled", "false", "Резерв для будущего парсера комментариев и реакций. Сейчас не используется."],
+    ["parser.interval_ms", "300000", "Резервная частота запуска будущего парсера в миллисекундах."],
   ];
 
   static Definitions(): SheetDefinition[] {

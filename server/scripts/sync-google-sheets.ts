@@ -1,7 +1,7 @@
 import fs from "fs";
 import { google, sheets_v4 } from "googleapis";
 import { GoogleConfig } from "../src/config/GoogleConfig";
-import { SheetsSchema, SheetDefinition } from "../src/sheets/SheetsSchema";
+import { SheetsSchema, SheetColumn, SheetDefinition } from "../src/sheets/SheetsSchema";
 
 interface CliOptions {
   dryRun: boolean;
@@ -21,15 +21,29 @@ interface ExistingSheet {
   sheetId: number;
   title: string;
   headers: string[];
+  headerIndexByName: Map<string, number>;
   usedRowCount: number;
+  usedColumnCount: number;
   rowCount: number;
   columnCount: number;
+}
+
+interface ExistingSettingsRow {
+  rowNumber: number;
+  key: string;
+  value: string;
+  description: string;
 }
 
 class GoogleSheetsSync {
   static Options: CliOptions = this.ParseArgs();
 
   static async Run() {
+    if (process.argv.includes("--help") || process.argv.includes("-h")) {
+      this.PrintHelp();
+      return;
+    }
+
     this.ApplyOptions();
     this.AssertConfig();
 
@@ -42,8 +56,10 @@ class GoogleSheetsSync {
     const existing = await this.ExistingSheets(sheets, spreadsheet.data);
     const requests: sheets_v4.Schema$Request[] = [];
     const valueUpdates: sheets_v4.Schema$ValueRange[] = [];
+    const rawValueUpdates: sheets_v4.Schema$ValueRange[] = [];
     const notes: string[] = [];
-    const missingSettingsRows = await this.MissingSettingsRows(sheets);
+    const settingsRows = await this.ReadSettingsRows(sheets);
+    const missingSettingsRows = this.MissingSettingsRows(settingsRows);
 
     for (const definition of SheetsSchema.Definitions()) {
       let sheet = existing.get(definition.name);
@@ -66,35 +82,43 @@ class GoogleSheetsSync {
           sheetId: -1,
           title: definition.name,
           headers: [],
+          headerIndexByName: new Map(),
           usedRowCount: 1,
+          usedColumnCount: 0,
           rowCount: 1 + this.Options.gridPaddingRows,
           columnCount: definition.columns.length + this.Options.gridPaddingColumns,
         };
         existing.set(definition.name, sheet);
       }
 
-      const missingColumns = definition.columns.filter((column) => !sheet.headers.includes(column.name));
-      const headerCountAfterSync = sheet.headers.length + missingColumns.length;
-      const requiredColumnCount = Math.max(headerCountAfterSync, definition.columns.length) + this.Options.gridPaddingColumns;
+      const missingColumns = definition.columns.filter((column) => !sheet.headerIndexByName.has(column.name));
+      const appendStartColumn = this.AppendStartColumn(sheet);
+      const syncedColumnCount = missingColumns.length > 0
+        ? appendStartColumn + missingColumns.length - 1
+        : Math.max(sheet.usedColumnCount, sheet.headers.length, definition.columns.length);
+      const requiredColumnCount = Math.max(syncedColumnCount, definition.columns.length) + this.Options.gridPaddingColumns;
       const extraRows = definition.name === GoogleConfig.SETTINGS_SHEET ? missingSettingsRows.length : 0;
       const requiredRowCount = Math.max(sheet.usedRowCount + extraRows, 1) + this.Options.gridPaddingRows;
       this.QueueGridResize(definition.name, sheet, requiredRowCount, requiredColumnCount, requests, notes);
 
       if (missingColumns.length > 0) {
         notes.push(`append columns in ${definition.name}: ${missingColumns.map((column) => column.name).join(", ")}`);
-        const startColumn = sheet.headers.length + 1;
         valueUpdates.push({
-          range: this.Range(definition.name, `${this.Column(startColumn)}1:${this.Column(startColumn + missingColumns.length - 1)}1`),
+          range: this.Range(definition.name, `${this.Column(appendStartColumn)}1:${this.Column(appendStartColumn + missingColumns.length - 1)}1`),
           values: [missingColumns.map((column) => column.name)],
         });
       }
 
       this.QueueDefaultValues(definition, sheet, missingColumns, valueUpdates);
       this.QueueSettingsRows(definition, sheet, missingSettingsRows, valueUpdates, notes);
+      this.QueueSettingsDescriptionUpdates(definition, settingsRows, valueUpdates, notes);
+      this.QueueColumnFormatting(definition, sheet, missingColumns, requests, notes);
+      await this.QueueLeadPhoneValueUpdates(definition, sheet, missingColumns, sheets, rawValueUpdates, notes);
     }
 
     await this.ApplyRequests(sheets, requests);
     await this.ApplyValues(sheets, valueUpdates);
+    await this.ApplyRawValues(sheets, rawValueUpdates);
 
     console.log(JSON.stringify({
       ok: true,
@@ -129,7 +153,7 @@ class GoogleSheetsSync {
       settingsSheet: this.ArgValue("--settings-sheet"),
       gridPaddingRows: this.ArgNumber("--grid-padding-rows", 1),
       gridPaddingColumns: this.ArgNumber("--grid-padding-columns", 1),
-      trimGrid: process.argv.includes("--trim-grid"),
+      trimGrid: !process.argv.includes("--no-trim-grid"),
     };
   }
 
@@ -145,6 +169,28 @@ class GoogleSheetsSync {
     const value = Number(rawValue);
     if (!Number.isFinite(value) || value < 0) return fallback;
     return Math.floor(value);
+  }
+
+  static PrintHelp() {
+    console.log([
+      "Использование:",
+      "  npm run sheets:check",
+      "  npm run sheets:sync",
+      "  ENV_FILE=env/moscow.env npm run sheets:check",
+      "",
+      "Опции:",
+      "  --dry-run                         Только показать будущие изменения.",
+      "  --spreadsheet-id <id>              Использовать другую Google таблицу.",
+      "  --credentials <path>               Использовать другой service account.",
+      "  --posts-sheet <name>               Имя листа постов.",
+      "  --media-sheet <name>               Имя листа медиа.",
+      "  --leads-sheet <name>               Имя листа заявок.",
+      "  --logs-sheet <name>                Имя листа логов.",
+      "  --settings-sheet <name>            Имя листа настроек.",
+      "  --grid-padding-rows <number>       Сколько пустых строк держать в запасе.",
+      "  --grid-padding-columns <number>    Сколько пустых колонок держать в запасе.",
+      "  --no-trim-grid                     Не сжимать сетку таблицы.",
+    ].join("\n"));
   }
 
   static ApplyOptions() {
@@ -186,39 +232,55 @@ class GoogleSheetsSync {
       const columnCount = item.properties?.gridProperties?.columnCount || 0;
       if (!title) continue;
 
-      const [headers, usedRowCount] = await Promise.all([
-        this.ReadHeaders(sheets, title),
-        this.ReadUsedRowCount(sheets, title),
-      ]);
-      map.set(title, { title, sheetId, headers, usedRowCount, rowCount, columnCount });
+      const usedRange = await this.ReadUsedRange(sheets, title);
+      map.set(title, {
+        title,
+        sheetId,
+        headers: usedRange.headers,
+        headerIndexByName: usedRange.headerIndexByName,
+        usedRowCount: usedRange.usedRowCount,
+        usedColumnCount: usedRange.usedColumnCount,
+        rowCount,
+        columnCount,
+      });
     }
 
     return map;
   }
 
-  static async ReadHeaders(sheets: sheets_v4.Sheets, title: string) {
+  static async ReadUsedRange(sheets: sheets_v4.Sheets, title: string) {
     try {
       const response = await sheets.spreadsheets.values.get({
         spreadsheetId: GoogleConfig.SPREADSHEET_ID,
-        range: this.Range(title, "1:1"),
+        range: this.Range(title, "A1:ZZZ"),
+        valueRenderOption: "UNFORMATTED_VALUE",
       });
 
-      return (response.data.values?.[0] || []).map((value) => String(value || "").trim()).filter(Boolean);
-    } catch {
-      return [];
-    }
-  }
+      const rows = response.data.values || [];
+      const headerIndexByName = new Map<string, number>();
+      const headerValues = rows[0] || [];
+      const headers: string[] = [];
 
-  static async ReadUsedRowCount(sheets: sheets_v4.Sheets, title: string) {
-    try {
-      const response = await sheets.spreadsheets.values.get({
-        spreadsheetId: GoogleConfig.SPREADSHEET_ID,
-        range: this.Range(title, "A:ZZ"),
+      headerValues.forEach((value, index) => {
+        const name = this.CellText(value);
+        if (!name || headerIndexByName.has(name)) return;
+        headers.push(name);
+        headerIndexByName.set(name, index + 1);
       });
 
-      return response.data.values?.length || 0;
+      return {
+        headers,
+        headerIndexByName,
+        usedRowCount: rows.length,
+        usedColumnCount: rows.reduce((max, row) => Math.max(max, this.LastUsedColumn(row)), 0),
+      };
     } catch {
-      return 0;
+      return {
+        headers: [],
+        headerIndexByName: new Map<string, number>(),
+        usedRowCount: 0,
+        usedColumnCount: 0,
+      };
     }
   }
 
@@ -234,12 +296,7 @@ class GoogleSheetsSync {
     const existingDataRowCount = Math.max(0, sheet.usedRowCount - 1);
     if (existingDataRowCount === 0) return;
 
-    const columnIndexByName = new Map<string, number>();
-
-    sheet.headers.forEach((name, index) => columnIndexByName.set(name, index + 1));
-    missingColumns.forEach((column, index) => {
-      columnIndexByName.set(column.name, sheet.headers.length + index + 1);
-    });
+    const columnIndexByName = this.ColumnIndexByName(sheet, missingColumns);
 
     for (const column of columnsWithDefaults) {
       const columnIndex = columnIndexByName.get(column.name);
@@ -291,25 +348,151 @@ class GoogleSheetsSync {
     });
   }
 
+  static QueueColumnFormatting(
+    definition: SheetDefinition,
+    sheet: ExistingSheet,
+    missingColumns: SheetColumn[],
+    requests: sheets_v4.Schema$Request[],
+    notes: string[],
+  ) {
+    if (sheet.sheetId < 0) return;
+
+    const columnIndexes = this.ColumnIndexByName(sheet, missingColumns);
+    for (const column of definition.columns) {
+      const columnIndex = columnIndexes.get(column.name);
+      if (!columnIndex) continue;
+
+      if (column.numberFormat) {
+        notes.push(`format column ${definition.name}.${column.name}: ${column.numberFormat.type}`);
+        requests.push({
+          repeatCell: {
+            range: {
+              sheetId: sheet.sheetId,
+              startRowIndex: 1,
+              startColumnIndex: columnIndex - 1,
+              endColumnIndex: columnIndex,
+            },
+            cell: {
+              userEnteredFormat: {
+                numberFormat: column.numberFormat,
+              },
+            },
+            fields: "userEnteredFormat.numberFormat",
+          },
+        });
+      }
+
+      if (column.pixelSize) {
+        notes.push(`resize column ${definition.name}.${column.name}: ${column.pixelSize}px`);
+        requests.push({
+          updateDimensionProperties: {
+            range: {
+              sheetId: sheet.sheetId,
+              dimension: "COLUMNS",
+              startIndex: columnIndex - 1,
+              endIndex: columnIndex,
+            },
+            properties: {
+              pixelSize: column.pixelSize,
+            },
+            fields: "pixelSize",
+          },
+        });
+      }
+    }
+  }
+
+  static async QueueLeadPhoneValueUpdates(
+    definition: SheetDefinition,
+    sheet: ExistingSheet,
+    missingColumns: SheetColumn[],
+    sheets: sheets_v4.Sheets,
+    rawValueUpdates: sheets_v4.Schema$ValueRange[],
+    notes: string[],
+  ) {
+    if (definition.name !== GoogleConfig.LEADS_SHEET) return;
+
+    const columnIndex = this.ColumnIndexByName(sheet, missingColumns).get("phone");
+    if (!columnIndex || sheet.usedRowCount < 2) return;
+
+    const column = this.Column(columnIndex);
+    const range = this.Range(definition.name, `${column}2:${column}${sheet.usedRowCount}`);
+    const response = await sheets.spreadsheets.values.get({
+      spreadsheetId: GoogleConfig.SPREADSHEET_ID,
+      range,
+      valueRenderOption: "UNFORMATTED_VALUE",
+    });
+
+    const values = response.data.values || [];
+    const updates: sheets_v4.Schema$ValueRange[] = [];
+
+    values.forEach((row, index) => {
+      const current = row[0];
+      const formatted = this.FormatPhoneForSheet(current);
+      if (!formatted || formatted === String(current || "").trim()) return;
+
+      const rowNumber = index + 2;
+      updates.push({
+        range: this.Range(definition.name, `${column}${rowNumber}`),
+        values: [[formatted]],
+      });
+    });
+
+    if (updates.length === 0) return;
+    notes.push(`format existing lead phones: ${updates.length}`);
+    rawValueUpdates.push(...updates);
+  }
+
+  static ColumnIndexByName(sheet: ExistingSheet, missingColumns: SheetColumn[]) {
+    const map = new Map(sheet.headerIndexByName);
+    const appendStartColumn = this.AppendStartColumn(sheet);
+    missingColumns.forEach((column, index) => map.set(column.name, appendStartColumn + index));
+    return map;
+  }
+
   static ShouldResize(current: number, required: number) {
     if (current < required) return true;
     return this.Options.trimGrid && current > required;
   }
 
-  static async MissingSettingsRows(sheets: sheets_v4.Sheets): Promise<string[][]> {
+  static AppendStartColumn(sheet: ExistingSheet) {
+    return Math.max(sheet.usedColumnCount, sheet.headers.length) + 1;
+  }
+
+  static CellText(value: unknown) {
+    if (value === undefined || value === null) return "";
+    return String(value).trim();
+  }
+
+  static LastUsedColumn(row: unknown[]) {
+    for (let index = row.length - 1; index >= 0; index -= 1) {
+      if (this.CellText(row[index])) return index + 1;
+    }
+
+    return 0;
+  }
+
+  static async ReadSettingsRows(sheets: sheets_v4.Sheets): Promise<ExistingSettingsRow[]> {
     const range = this.Range(GoogleConfig.SETTINGS_SHEET, "A:C");
-    let existingRows: string[][] = [];
     try {
       const response = await sheets.spreadsheets.values.get({
         spreadsheetId: GoogleConfig.SPREADSHEET_ID,
         range,
       });
-      existingRows = (response.data.values || []) as string[][];
-    } catch {
-      return SheetsSchema.SettingsDefaults;
-    }
 
-    const existingKeys = new Set(existingRows.slice(1).map((row) => String(row[0] || "").trim()).filter(Boolean));
+      return ((response.data.values || []) as string[][]).slice(1).map((row, index) => ({
+        rowNumber: index + 2,
+        key: String(row[0] || "").trim(),
+        value: String(row[1] || "").trim(),
+        description: String(row[2] || "").trim(),
+      })).filter((row) => Boolean(row.key));
+    } catch {
+      return [];
+    }
+  }
+
+  static MissingSettingsRows(existingRows: ExistingSettingsRow[]) {
+    const existingKeys = new Set(existingRows.map((row) => row.key));
     return SheetsSchema.SettingsDefaults.filter(([key]) => !existingKeys.has(key));
   }
 
@@ -331,6 +514,34 @@ class GoogleSheetsSync {
     });
   }
 
+  static QueueSettingsDescriptionUpdates(
+    definition: SheetDefinition,
+    existingRows: ExistingSettingsRow[],
+    valueUpdates: sheets_v4.Schema$ValueRange[],
+    notes: string[],
+  ) {
+    if (definition.name !== GoogleConfig.SETTINGS_SHEET) return;
+    if (existingRows.length === 0) return;
+
+    const defaults = new Map(SheetsSchema.SettingsDefaults.map(([key, value, description]) => [key, { value, description }]));
+    const updatedKeys: string[] = [];
+
+    for (const row of existingRows) {
+      const defaultRow = defaults.get(row.key);
+      if (!defaultRow || row.description === defaultRow.description) continue;
+
+      updatedKeys.push(row.key);
+      valueUpdates.push({
+        range: this.Range(definition.name, `C${row.rowNumber}`),
+        values: [[defaultRow.description]],
+      });
+    }
+
+    if (updatedKeys.length > 0) {
+      notes.push(`update setting descriptions: ${updatedKeys.join(", ")}`);
+    }
+  }
+
   static async ApplyRequests(sheets: sheets_v4.Sheets, requests: sheets_v4.Schema$Request[]) {
     if (requests.length === 0 || this.Options.dryRun) return;
 
@@ -350,6 +561,34 @@ class GoogleSheetsSync {
         data,
       },
     });
+  }
+
+  static async ApplyRawValues(sheets: sheets_v4.Sheets, data: sheets_v4.Schema$ValueRange[]) {
+    if (data.length === 0 || this.Options.dryRun) return;
+
+    await sheets.spreadsheets.values.batchUpdate({
+      spreadsheetId: GoogleConfig.SPREADSHEET_ID,
+      requestBody: {
+        valueInputOption: "RAW",
+        data,
+      },
+    });
+  }
+
+  static FormatPhoneForSheet(value: unknown) {
+    const raw = String(value || "").trim();
+    const digits = raw.replace(/\D/g, "");
+    if (!digits) return raw;
+
+    let normalized = digits;
+    if (normalized.startsWith("8")) normalized = `7${normalized.slice(1)}`;
+    if (normalized.startsWith("9")) normalized = `7${normalized}`;
+    if (!normalized.startsWith("7")) normalized = `7${normalized}`;
+    normalized = normalized.slice(0, 11);
+
+    if (normalized.length !== 11 || !normalized.startsWith("7")) return raw;
+
+    return `+7 ${normalized.slice(1, 4)} ${normalized.slice(4, 7)}-${normalized.slice(7, 9)}-${normalized.slice(9, 11)}`;
   }
 
   static Column(index: number) {

@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { ServerConfig } from "../config/ServerConfig";
 import { LeadProcessor } from "../core/LeadProcessor";
+import { RecaptchaService } from "../core/RecaptchaService";
 
 export const LeadRoutes = Router();
 
@@ -13,7 +14,32 @@ LeadRoutes.post("/", async (req, res) => {
     }
   }
 
-  const lead = LeadProcessor.Normalize(req.body || {});
+  const body = req.body || {};
+  const captcha = await RecaptchaService.Verify(String(body.captchaToken || body["g-recaptcha-response"] || ""), req.ip);
+  if (!captcha.ok) {
+    res.status(400).json({
+      ok: false,
+      accepted: false,
+      requiredOk: false,
+      shouldFallback: false,
+      message: captcha.message || "reCAPTCHA verification failed",
+      captcha,
+    });
+    return;
+  }
+
+  const lead = LeadProcessor.Normalize({
+    ...body,
+    captchaAction: "inner-circle-lead",
+    meta: {
+      ...(body.meta || {}),
+      recaptcha: {
+        skipped: Boolean(captcha.skipped),
+        hostname: captcha.hostname || "",
+        challenge_ts: captcha.challenge_ts || "",
+      },
+    },
+  });
   const validationError = LeadProcessor.Validate(lead);
   if (validationError) {
     res.status(400).json({ ok: false, message: validationError });

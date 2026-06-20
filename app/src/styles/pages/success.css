@@ -1,0 +1,108 @@
+@layer inner-circle.pages {
+  .inner-circle-success-screen {
+    position: relative;
+    min-height: 100svh;
+    overflow: visible;
+    color: var(--grey);
+    background: var(--green);
+  }
+
+  .inner-circle-success-screen__video {
+    position: absolute;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    min-height: 100svh;
+    object-fit: cover;
+    object-position: center;
+    background: var(--green);
+  }
+
+  .inner-circle-success-screen__overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background: rgba(31, 63, 62, 0.62);
+    background: color-mix(in srgb, var(--green) 62%, transparent);
+    pointer-events: none;
+  }
+
+  .inner-circle-success-panel,
+  .inner-circle-success-contacts {
+    position: relative;
+    z-index: 2;
+  }
+
+  .inner-circle-success-panel {
+    display: grid;
+    align-content: center;
+    min-height: auto;
+    padding-top: var(--space-large);
+    padding-bottom: var(--space);
+  }
+
+  .inner-circle-success-panel ._09d861,
+  .inner-circle-success-panel ._756826 {
+    z-index: 1;
+  }
+
+  .inner-circle-success-panel ._09d861 {
+    padding-bottom: var(--space-small);
+  }
+
+  .inner-circle-success-panel ._936645 {
+    padding-bottom: var(--space-x-small);
+  }
+
+  .inner-circle-success-panel ._b02a17 {
+    padding-bottom: 0;
+  }
+
+  .inner-circle-success-contacts {
+    gap: var(--space);
+    padding: 0 var(--space-small) var(--space-x-large);
+    text-shadow: 0 0.125rem 0.875rem rgba(0, 0, 0, 0.42);
+  }
+
+  .inner-circle-success-contacts ._302284 {
+    max-width: 34rem;
+  }
+
+  .inner-circle-success-contacts .inner-circle-contact-button {
+    background: rgba(31, 63, 62, 0.24);
+  }
+
+  @media (min-width: 1024px) {
+    .inner-circle-success-screen {
+      display: grid;
+      grid-template-columns: repeat(16, minmax(0, 1fr));
+      gap: 0 var(--space-small);
+      min-height: 100vh;
+      padding: 0 var(--space-small);
+    }
+
+    .inner-circle-success-screen__video,
+    .inner-circle-success-screen__overlay {
+      grid-column: 1 / -1;
+      grid-row: 1 / span 2;
+      margin: 0 calc(-1 * var(--space-small));
+      width: calc(100% + (2 * var(--space-small)));
+    }
+
+    .inner-circle-success-panel {
+      grid-column: 1 / -1;
+      grid-row: 1;
+      grid-template-columns: repeat(16, minmax(0, 1fr));
+      gap: 0 var(--space-small);
+      min-height: auto;
+      padding: var(--space-x-large) 0 var(--space-medium);
+    }
+
+    .inner-circle-success-contacts {
+      grid-column: 1 / -1;
+      grid-row: 2;
+      padding: 0 0 var(--space-x-large);
+    }
+  }
+}

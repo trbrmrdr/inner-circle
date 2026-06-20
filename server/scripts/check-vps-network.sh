@@ -3,6 +3,20 @@ set -euo pipefail
 
 SSH_TARGET="${SSH_TARGET:-root@78.17.131.89}"
 
+if [ "${1:-}" = "--help" ] || [ "${1:-}" = "-h" ]; then
+  cat <<'EOF'
+Использование: bash scripts/check-vps-network.sh
+
+Проверяет с VPS доступность Telegram, Meta, VK, Google Sheets и DeepSeek.
+По умолчанию проверяет primary/Germany: root@78.17.131.89.
+
+Переменные:
+  SSH_TARGET=root@host
+EOF
+  exit 0
+fi
+
+echo "[network] проверяю внешние API с ${SSH_TARGET}"
 ssh "$SSH_TARGET" 'set -e; for u in \
   https://api.telegram.org/botINVALID/getMe \
   https://graph.facebook.com \

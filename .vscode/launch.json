@@ -9,12 +9,82 @@
       "runtimeExecutable": "node",
       "runtimeArgs": [
         "--import",
-        "tsx",
-        "src/server.ts"
+        "tsx"
       ],
-      "envFile": "${workspaceFolder}/server/.env",
+      "program": "${workspaceFolder}/server/src/server.ts",
+      "env": {
+        "ENV_FILE": "env/local.env"
+      },
+      "envFile": "${workspaceFolder}/server/env/local.env",
       "console": "integratedTerminal",
-      "restart": true,
+      "sourceMaps": true,
+      "smartStep": true,
+      "skipFiles": [
+        "<node_internals>/**"
+      ]
+    },
+    {
+      "name": "Inner Circle Server: debug local",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/server",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "--import",
+        "tsx"
+      ],
+      "program": "${workspaceFolder}/server/src/server.ts",
+      "env": {
+        "ENV_FILE": "env/local.env"
+      },
+      "envFile": "${workspaceFolder}/server/env/local.env",
+      "console": "integratedTerminal",
+      "sourceMaps": true,
+      "smartStep": true,
+      "skipFiles": [
+        "<node_internals>/**"
+      ]
+    },
+    {
+      "name": "Inner Circle Server: debug moscow",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/server",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "--import",
+        "tsx"
+      ],
+      "program": "${workspaceFolder}/server/src/server.ts",
+      "env": {
+        "ENV_FILE": "env/moscow.env"
+      },
+      "envFile": "${workspaceFolder}/server/env/moscow.env",
+      "console": "integratedTerminal",
+      "sourceMaps": true,
+      "smartStep": true,
+      "skipFiles": [
+        "<node_internals>/**"
+      ]
+    },
+    {
+      "name": "Inner Circle Server: debug germany",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/server",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "--import",
+        "tsx"
+      ],
+      "program": "${workspaceFolder}/server/src/server.ts",
+      "env": {
+        "ENV_FILE": "env/germany.env"
+      },
+      "envFile": "${workspaceFolder}/server/env/germany.env",
+      "console": "integratedTerminal",
+      "sourceMaps": true,
+      "smartStep": true,
       "skipFiles": [
         "<node_internals>/**"
       ]

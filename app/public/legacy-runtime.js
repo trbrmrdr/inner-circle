@@ -22743,6 +22743,9 @@
       await Promise.all([this.intro.hide(), this.images.hide()]);
     }
     onProgress(url, loaded, total) {
+      if (this.loader?.classList?.contains("lead-submit-runtime-loader")) {
+        return;
+      }
       const progress = loaded / total;
       this.progress.style.setProperty("transform", `scaleX(${progress})`);
       this.percentage.textContent = `${Math.round(progress * 100)}%`;
@@ -24479,6 +24482,8 @@
 	    main;
 	    inner;
 	    routeTransition;
+	    submitTransitionActive = false;
+	    submitTransitionLoaderState = null;
 	    controllers = [];
 	    isNavigating = false;
 	    isBodyFixed = true;
@@ -24628,6 +24633,128 @@
 	      this.isNavigating = false;
 	      document.documentElement.classList.remove("is-route-transitioning");
 	    }
+	    showSubmitLoader(label = "Отправка заявки") {
+	      const loader = this.stage?.loader || document.querySelector(`.${Stage_default.Loader}`);
+	      if (!loader) {
+	        return;
+	      }
+	      const progress = loader.querySelector(`.${Stage_default.Progress}`);
+	      const percentage = loader.querySelector(`.${Stage_default.Percentage}`);
+	      if (!this.submitTransitionLoaderState) {
+	        this.submitTransitionLoaderState = {
+	          display: loader.style.getPropertyValue("display"),
+	          progressTransform: progress?.style.getPropertyValue("transform") || "",
+	          text: percentage?.textContent || ""
+	        };
+	      }
+	      if (percentage) {
+	        percentage.textContent = label;
+	      }
+	      progress?.style.removeProperty("transform");
+	      loader.classList.add("lead-submit-runtime-loader");
+	      loader.style.setProperty("display", "grid");
+	    }
+	    hideSubmitLoader() {
+	      const loader = this.stage?.loader || document.querySelector(`.${Stage_default.Loader}`);
+	      if (!loader) {
+	        return;
+	      }
+	      const state = this.submitTransitionLoaderState;
+	      const progress = loader.querySelector(`.${Stage_default.Progress}`);
+	      const percentage = loader.querySelector(`.${Stage_default.Percentage}`);
+	      loader.classList.remove("lead-submit-runtime-loader");
+	      if (percentage && state) {
+	        percentage.textContent = state.text;
+	      }
+	      if (progress && state) {
+	        state.progressTransform ? progress.style.setProperty("transform", state.progressTransform) : progress.style.removeProperty("transform");
+	      }
+	      state?.display ? loader.style.setProperty("display", state.display) : loader.style.removeProperty("display");
+	      this.submitTransitionLoaderState = null;
+	    }
+	    resetSubmitTransition() {
+	      this.hideSubmitLoader();
+	      this.unsetBodyFixed();
+	      this.isNavigating = false;
+	      this.submitTransitionActive = false;
+	      document.documentElement.classList.remove("is-route-transitioning", "is-lead-submit-transitioning");
+	    }
+	    async fadeIn() {
+	      const header = this.inner?.querySelector(`.${Header_default.Main}`);
+	      const nodes = Array.from(this.inner?.children ?? []).filter((node) => node !== header);
+	      if (!nodes.length) {
+	        return;
+	      }
+	      return new Promise(
+	        (resolve) => new Tween({ opacity: 0 }, this.group).to({ opacity: 1 }, 520).easing(Easing.Cubic.InOut).onUpdate(({ opacity }) => {
+	          nodes.forEach((node) => node.style.setProperty("opacity", `${opacity}`));
+	        }).onComplete(() => {
+	          nodes.forEach((node) => node.style.removeProperty("opacity"));
+	          resolve();
+	        }).start()
+	      );
+	    }
+	    async showSubmitTransition(label = "Отправка заявки") {
+	      if (this.submitTransitionActive || this.isNavigating) {
+	        return;
+	      }
+	      this.submitTransitionActive = true;
+	      this.isNavigating = true;
+	      document.documentElement.classList.add("is-route-transitioning", "is-lead-submit-transitioning");
+	      this.setBodyFixed();
+	      const stageHide = this.stage.hide();
+	      this.showSubmitLoader(label);
+	      await Promise.all([
+	        stageHide,
+	        this.showRouteTransition(),
+	        this.fadeOut(),
+	        ...this.controllers.map((controller) => controller.hide?.()).filter(Boolean)
+	      ]);
+	    }
+	    async hideSubmitTransition() {
+	      if (!this.submitTransitionActive) {
+	        return;
+	      }
+	      const showTasks = [
+	        ...this.controllers.map((controller) => controller.show?.(false)),
+	        this.stage.show(false),
+	        this.fadeIn()
+	      ].filter(Boolean);
+	      this.hideSubmitLoader();
+	      await Promise.all(showTasks);
+	      this.unsetBodyFixed();
+	      this.onResize();
+	      await this.hideRouteTransition();
+	      this.resetSubmitTransition();
+	    }
+	    async completeSubmitTransition(route) {
+	      if (!this.submitTransitionActive) {
+	        this.router.push(route);
+	        return;
+	      }
+	      const url = new URL(route || window.location.pathname, window.location.origin);
+	      const routePath = this.router.routes.includes(url.pathname) ? url.pathname : `/${document.documentElement.lang}/404/`;
+	      const activeRoute = `${routePath}${url.search}${url.hash}`;
+	      const html = await this.loadPage(routePath);
+	      if (!html) {
+	        throw new Error("Не удалось открыть страницу результата");
+	      }
+	      this.router.activeRoute = activeRoute;
+	      window.history.pushState({}, this.router.activeRoute, `${window.location.origin}${this.router.activeRoute}`);
+	      this.stage.dispose();
+	      this.controllers.forEach((controller) => controller.dispose?.());
+	      this.updatePage(html);
+	      const animate = this.main?.dataset?.animate === "true";
+	      this.initControllers();
+	      await Promise.all([...this.controllers.map((controller) => controller.load?.()), this.stage.load()]);
+	      this.hideSubmitLoader();
+	      this.controllers.forEach((controller) => controller.show?.(animate));
+	      this.stage.show(animate);
+	      this.unsetBodyFixed();
+	      this.onResize();
+	      await this.hideRouteTransition();
+	      this.resetSubmitTransition();
+	    }
     async loadPage(route) {
       if (this.hasPreview && this.previewRef) {
         return await getPreview(this.previewRef, route);
@@ -24756,7 +24883,17 @@
   };
 
   // src/index.ts
-  document.readyState === "loading" ? document.addEventListener("DOMContentLoaded", () => new App()) : new App();
+  function createInnerCircleApp() {
+    const app = new App();
+    window.InnerCircleRuntime = {
+      showLeadSubmitTransition: (label) => app.showSubmitTransition(label),
+      hideLeadSubmitTransition: () => app.hideSubmitTransition(),
+      completeLeadSubmitTransition: (route) => app.completeSubmitTransition(route)
+    };
+    window.dispatchEvent(new CustomEvent("inner-circle-runtime-ready"));
+    return app;
+  }
+  document.readyState === "loading" ? document.addEventListener("DOMContentLoaded", () => createInnerCircleApp()) : createInnerCircleApp();
 })();
 /*! Bundled license information:
 

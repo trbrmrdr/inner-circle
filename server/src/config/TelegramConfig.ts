@@ -3,7 +3,7 @@ import { Env } from "./Env";
 import { ServerConfig } from "./ServerConfig";
 
 export class TelegramConfig {
-  static ENABLED = Env.Bool("TELEGRAM_ENABLED", true);
+  static POST_ENABLED = Env.Bool("TELEGRAM_POST_ENABLED", true);
   static TECH_ENABLED = Env.Bool("TELEGRAM_TECH_ENABLED", true);
   static BOT_TOKEN = Env.Str("TELEGRAM_BOT_TOKEN", "");
   static TECH_CHAT_ID = Env.Str("TELEGRAM_TECH_CHAT_ID", "");
@@ -17,10 +17,10 @@ export class TelegramConfig {
   static SESSION_FILE = path.resolve(ServerConfig.ROOT_DIR, Env.Str("TELEGRAM_SESSION_FILE", "./private/tg_sessions/main.session"));
 
   static IsBotReady() {
-    return Boolean(this.ENABLED && this.BOT_TOKEN);
+    return Boolean(this.POST_ENABLED && this.BOT_TOKEN);
   }
 
   static IsTechReady() {
-    return Boolean(this.ENABLED && this.TECH_ENABLED && this.BOT_TOKEN && this.TECH_CHAT_ID);
+    return Boolean(this.TECH_ENABLED && this.BOT_TOKEN && this.TECH_CHAT_ID);
   }
 }

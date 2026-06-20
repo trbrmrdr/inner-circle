@@ -3,8 +3,11 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "___________comment_build": "Собрать статический сайт в app/dist.",
     "build": "node scripts/build-site.mjs",
+    "___________comment_dev": "Запустить локальный dev-сервер статического сайта.",
     "dev": "node scripts/dev-server.mjs",
+    "___________comment_serve": "Запустить статический сайт без watch-режима.",
     "serve": "node scripts/dev-server.mjs --no-watch"
   },
   "devDependencies": {

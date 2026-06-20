@@ -8,3 +8,10 @@ node_modules/
 tools/google-workspace/out/
 tools/site-media/out/
 package-lock.json
+server/dist/
+server/tmp/
+server/private/
+server/.env
+server/.env.*
+!server/.env.example
+!server/env/*.env.example

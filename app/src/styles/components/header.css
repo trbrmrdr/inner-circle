@@ -1,6 +1,7 @@
 @layer inner-circle.components {
-  /*
-    Header overrides live here. The initial modular build keeps the legacy
-    visual state unchanged.
-  */
+  @media (min-width: 1024px) {
+    ._df3134 {
+      pointer-events: none;
+    }
+  }
 }

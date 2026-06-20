@@ -7,7 +7,7 @@ This file is the quick sync point between:
 - `server/src/sheets/SheetsSchema.ts`
 - `server/scripts/sync-google-sheets.ts`
 
-Run this before enabling autoposting on a local machine or VPS:
+Run this before enabling autoposting. The script runs from this project and checks the remote Google Sheet configured by the active env file:
 
 ```bash
 npm run sheets:check
@@ -21,7 +21,7 @@ npm run sheets:check -- --spreadsheet-id <sheet-id> --credentials <service-accou
 npm run sheets:sync -- --spreadsheet-id <sheet-id> --posts-sheet POSTS --media-sheet MEDIA
 ```
 
-Grid rule: every synced sheet is resized to keep one blank row and one blank column after the required/used area. Change this with `--grid-padding-rows` and `--grid-padding-columns`. Use `--no-trim-grid` for expand-only mode.
+Grid rule: sync keeps every managed sheet compact by default. It reads the actually used values, creates missing rows/columns when needed, and trims empty trailing rows/columns so the grid ends at the required/used area plus one blank row and one blank column. It must not shrink below existing non-empty data. Change padding with `--grid-padding-rows` and `--grid-padding-columns`. Use `--no-trim-grid` only when you explicitly want expand-only behavior.
 
 ## Sheets
 
@@ -32,6 +32,27 @@ Grid rule: every synced sheet is resized to keep one blank row and one blank col
 | Site leads | `LEADS` |
 | Server logs | `LOGS` |
 | Runtime settings | `SETTINGS` |
+
+## LEADS fields used by server
+
+| Field | Required | Source / notes |
+| --- | --- | --- |
+| `created_at` | yes | Server timestamp. |
+| `name` | no | Form field. |
+| `phone` | contact | At least one contact field should be present. API may receive digits only; Google Sheets stores/display it as text: `+7 999 000-00-00`. |
+| `email` | contact | At least one contact field should be present. |
+| `telegram` | contact | Optional `@username`. At least one contact field should be present. Frontend/server validate only username format; they do not verify account existence. |
+| `date` | no | Form date/day preference. |
+| `guests` | no | Form guests count/range. |
+| `scenario` | no | Form scenario/comment selection. |
+| `consent` | no | Form consent flag. |
+| `meta_json` | no | Compact JSON with extra frontend/captcha metadata. |
+
+Runtime rule: `GoogleSheetsService.AppendLead` writes by header names. On the first lead after process start it checks `LEADS`, creates the sheet if missing, and appends missing server columns without deleting or reordering existing user columns.
+
+Phone display rule: `GoogleSheetsService.AppendLead` writes new lead phones with `valueInputOption=RAW`, so Google Sheets must not convert them to numbers/scientific notation. `npm run sheets:sync` also formats the `LEADS.phone` column as plain text, sets a readable width, and rewrites existing numeric phones to `+7 999 000-00-00` where possible.
+
+Legacy lead columns after this contract cleanup: `lead_uid`, `message`, `page`, `source`. Normal `sheets:sync` does not delete columns. If these columns already exist in a live Google Sheet, delete them manually after checking that the data is no longer needed.
 
 ## POSTS fields used by server
 

@@ -1,39 +1,45 @@
 ---
 lang: ru
-title: Форма успешно отправлена
-bodyClass: _836ebc
+title: Заявка отправлена - Ближний круг
+description: Заявка отправлена. Контакты Ближнего круга для связи: телефон, Telegram, WhatsApp и почта.
+bodyClass: _836ebc inner-circle-page-success
 ALT_LANG_HREF: /en/
 ---
 {{> global/background.html }}
-			
-		<main
-			class="_7abbf3"
-			data-background="green"
-			data-animate="false"
-		>
-			<div class="_b28a1c">
-						
-		<div
-			class="_fddeb5 _b3c48e"
-		>
-			<div class="_09d861">
-				<div class="_f55a96 _76b310">Готово</div>
-				<div class="_30ea2f _76b310"><h1>Благодарим вас за отзыв.</h1></div>
-			</div>
-			
-			<div class="_756826">
-				<div class="_936645 _76b310"><p>Мы свяжемся с вами как можно скорее.</p></div>
-				<div class="_b02a17 _76b310"><p>А пока мы просим вас проявить терпение и желаем вам хорошего дня.</p></div>
-				
-				
-			</div>
-			
-		</div>
 
-						{{> footers/footer.archive-ru.f842a70340.html }}
-		{{> page-nav/page-nav.inner-circle.ru.html }}
+		<main class="_7abbf3" data-background="green" data-animate="true">
+			<div class="_b28a1c">
+		<section class="inner-circle-success-screen" aria-labelledby="inner-circle-success-title">
+			<video class="inner-circle-success-screen__video" src="/assets/inner-circle/sun-loop.mp4" poster="/assets/inner-circle/lightning-poster.jpg" autoplay muted loop playsinline preload="metadata"></video>
+			<div class="inner-circle-success-screen__overlay"></div>
+			<div class="_fddeb5 _b3c48e inner-circle-success-panel">
+				<div class="_09d861">
+					<div class="_30ea2f _76b310"><h1 id="inner-circle-success-title">Заявка<br />отправлена.</h1></div>
+				</div>
+
+				<div class="_756826">
+					<div class="_936645 _76b310"><p>Мы получили вашу заявку.</p></div>
+					<div class="_b02a17 _76b310"><p>Свяжемся с вами по указанным контактам, чтобы уточнить дату, состав гостей и сценарий заезда.</p></div>
+				</div>
+			</div>
+
+			<div class="_e13d64 inner-circle-success-contacts"><div class="_06ff1d _76b310">
+			<div class="_0d4d9a">где мы</div>
+			<div class="_2db789"><h1>Ближний<br />круг</h1></div>
+			<div class="_302284"><p>Янино-2, Всеволожский район. Приватный дом рядом с Петербургом для заездов, где важны тишина, внимание и заранее собранный ритм.</p></div>
+		</div><div class="_06ff1d _76b310">
+			<div class="_0d4d9a">связь</div>
+			<div class="_2db789"><h1>Написать<br />или позвонить</h1></div>
+			<div class="_302284"><p><a href="tel:+79990000000">+7 999 000-00-00</a><br /><a href="mailto:hello@inner-circle.place">hello@inner-circle.place</a></p><div class="inner-circle-contact-actions"><a class="inner-circle-contact-button inner-circle-contact-button--primary" href="tel:+79990000000">Телефон</a><a class="inner-circle-contact-button" href="https://t.me/innercircle_place" target="_blank" rel="noopener noreferrer">Telegram</a><a class="inner-circle-contact-button" href="https://wa.me/79990000000" target="_blank" rel="noopener noreferrer">WhatsApp</a><a class="inner-circle-contact-button" href="mailto:hello@inner-circle.place">Почта</a></div></div>
+		</div><div class="_06ff1d _76b310">
+			<div class="_0d4d9a">приезд</div>
+			<div class="_2db789"><h1>Маршрут<br />после заявки</h1></div>
+			<div class="_302284"><p>Точный адрес, ориентиры по Янино-2 и детали приезда передаются после согласования формата.</p></div>
+	</div></div>
+		</section>
+
 		{{> headers/header.ru.html }}
 
-	
+			</div>
 		</main>
-{{> loaders/loader.ea1db73cf2.html }}
+{{> loaders/loader.inner-circle.html }}

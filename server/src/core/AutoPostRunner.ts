@@ -4,7 +4,7 @@ import { InstagramPublisher } from "../publishers/InstagramPublisher";
 import { TelegramPublisher } from "../publishers/TelegramPublisher";
 import { VkPublisher } from "../publishers/VkPublisher";
 import { GoogleSheetsService } from "../sheets/GoogleSheetsService";
-import { Platform, PostTask, PublishResult } from "../types/autopost";
+import { Platform, PostTask, PreparedText, PublishResult } from "../types/autopost";
 import { AiTextHelper } from "./AiTextHelper";
 import { HttpHelper } from "./HttpHelper";
 import { TechLog } from "./TechLog";
@@ -77,16 +77,7 @@ export class AutoPostRunner {
 
     try {
       const texts = await AiTextHelper.PreparePostText(task);
-      const results: PublishResult[] = [];
-
-      for (const platform of task.platforms) {
-        if (this.AlreadyPublished(task, platform)) {
-          results.push({ ok: true, skipped: true, platform, message: "Already has published id" });
-          continue;
-        }
-
-        results.push(await this.Publish(platform, task, texts[platform]));
-      }
+      const results = await this.PublishAllPlatforms(task, texts);
 
       const successResults = results.filter((result) => result.ok || result.skipped);
       const status = this.ResolveStatus(results, successResults.length);
@@ -106,13 +97,31 @@ export class AutoPostRunner {
     }
   }
 
-  static async Publish(platform: Platform, task: PostTask, text: string): Promise<PublishResult> {
+  static async PublishAllPlatforms(task: PostTask, texts: PreparedText) {
+    const platformJobs: Array<Promise<PublishResult | null>> = [
+      this.PublishPlatform("instagram", task, () => InstagramPublisher.PublishPost(task, texts.instagram)),
+      this.PublishPlatform("facebook", task, () => FacebookPublisher.PublishPost(task, texts.facebook)),
+      this.PublishPlatform("vk", task, () => VkPublisher.PublishPost(task, texts.vk)),
+      this.PublishPlatform("telegram", task, () => TelegramPublisher.PublishPost(task, texts.telegram)),
+    ];
+
+    const results = await Promise.all(platformJobs);
+    return results.filter((result): result is PublishResult => Boolean(result));
+  }
+
+  static async PublishPlatform(
+    platform: Platform,
+    task: PostTask,
+    publish: () => Promise<PublishResult>,
+  ): Promise<PublishResult | null> {
+    if (!task.platforms.includes(platform)) return null;
+
+    if (this.AlreadyPublished(task, platform)) {
+      return { ok: true, skipped: true, platform, message: "Already has published id" };
+    }
+
     try {
-      if (platform === "telegram") return await TelegramPublisher.PublishPost(task, text);
-      if (platform === "vk") return await VkPublisher.PublishPost(task, text);
-      if (platform === "instagram") return await InstagramPublisher.PublishPost(task, text);
-      if (platform === "facebook") return await FacebookPublisher.PublishPost(task, text);
-      return { ok: false, platform, message: `Unsupported platform: ${platform}` };
+      return await publish();
     } catch (error) {
       return {
         ok: false,

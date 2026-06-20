@@ -14,27 +14,52 @@
 5. No `getInstance`, no singleton facade, no hidden container.
 6. Files should stay below 1000-1500 lines. Split by platform or responsibility before a file grows.
 7. Config is explicit and separate per service in `src/config`.
+8. Feature checks live inside the static service classes. The orchestrator should stay readable and show the actual flow:
+
+```ts
+const prepared = await AiTextHelper.PreparePostText(task);
+results.push(await InstagramPublisher.PublishPost(task, prepared.instagram));
+results.push(await FacebookPublisher.PublishPost(task, prepared.facebook));
+results.push(await VkPublisher.PublishPost(task, prepared.vk));
+results.push(await TelegramPublisher.PublishPost(task, prepared.telegram));
+```
+
+The caller should see the platform order in one place. Each publisher decides internally whether it is enabled/configured and returns `disabled`, `skipped`, `ok`, or an error result.
 
 ## Google Sheets
 
 Recommended sheets:
 
-- `settings` - key/value controls.
-- `posts` - autoposting queue.
-- `leads` - incoming site form requests.
-- `logs` - server events and publication attempts.
+- `SETTINGS` - key/value controls.
+- `POSTS` - autoposting queue.
+- `MEDIA` - Google Drive media catalog.
+- `LEADS` - incoming site form requests.
+- `LOGS` - server events and publication attempts.
 
-Recommended `posts` columns:
+Recommended `POSTS` columns:
 
 ```text
-post_uid
-status
-publish_at
+*date_marker
+post_id
+date
+time
 title
 text
-media_urls
 platforms
+media_ids
+preview_1
+preview_2
+preview_3
+preview_4
+preview_5
+preview_6
+preview_7
+preview_8
+preview_9
+preview_10
+status
 post_type
+publish_at
 attempt
 lock_until
 telegram_message_id
@@ -53,15 +78,16 @@ updated_at
 Statuses:
 
 - `draft` - ignore.
-- `ready` - can be published when `publish_at` is empty or in the past.
+- `ready` - can be published when `publish_at` or `date` + `time` is empty or in the past.
 - `processing` - temporary lock while server publishes.
-- `published` - all requested platforms succeeded.
+- `posted` - all requested platforms succeeded.
 - `partial` - at least one platform succeeded and at least one failed/skipped.
 - `error` - no requested platform succeeded.
 
 Rules:
 
-- `post_uid` is our internal unique row key.
+- `post_id` is our internal unique row key.
+- `media_ids` are resolved through the `MEDIA` sheet.
 - Network IDs are written only after successful network responses.
 - Before publishing to a platform, server checks whether that platform ID already exists.
 - Batch read/write is preferred. Do not update cells one-by-one in loops if a batch is possible.
@@ -102,3 +128,4 @@ Facebook:
 - Use platform-specific output:
   - Telegram: HTML-safe formatting.
   - VK/Facebook/Instagram: plain caption.
+- DeepSeek never publishes. It only transforms/prepares text before publisher calls.

@@ -22,6 +22,7 @@ export interface PostTask extends SheetRow {
   title?: string;
   text: string;
   media_urls: string[];
+  media_items: PostMediaItem[];
   platforms: Platform[];
   post_type: PostType;
   attempt: number;
@@ -31,9 +32,55 @@ export interface PostTask extends SheetRow {
   facebook_post_id?: string;
 }
 
+export interface PostMediaItem {
+  media_id: string;
+  file_id?: string;
+  name?: string;
+  type?: string;
+  mime_type?: string;
+  drive_url?: string;
+  preview_url?: string;
+  public_url?: string;
+  media_url?: string;
+  raw: Record<string, string>;
+}
+
+export interface DownloadedMedia {
+  media: PostMediaItem;
+  sourcePath: string;
+  filename: string;
+  mime_type: string;
+  size: number;
+}
+
+export type PreparedMediaAssetType = "photo" | "video";
+
+export interface PreparedMedia {
+  media_id: string;
+  originalPath: string;
+  preparedPath: string;
+  filename: string;
+  mime_type: string;
+  asset_type: PreparedMediaAssetType;
+  size: number;
+  converted: boolean;
+  width?: number;
+  height?: number;
+  notes?: string[];
+}
+
+export interface PreparedPost {
+  task: PostTask;
+  run_id: string;
+  rootDir: string;
+  sourceDir: string;
+  platformDir: string;
+  manifestPath: string;
+  text: string;
+  media: PreparedMedia[];
+}
+
 export interface LeadRequest {
-  lead_uid?: string;
-  leadUid?: string;
   name?: string;
   phone?: string;
   email?: string;
@@ -45,9 +92,6 @@ export interface LeadRequest {
   captchaScore?: string;
   captchaAction?: string;
   captchaToken?: string;
-  message?: string;
-  page?: string;
-  source?: string;
   meta?: Record<string, unknown>;
 }
 

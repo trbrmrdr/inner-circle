@@ -22,8 +22,13 @@ class TelegramChatIdTool {
   static Token = this.ResolveToken();
 
   static async Run() {
+    if (process.argv.includes("--help") || process.argv.includes("-h")) {
+      this.PrintHelp();
+      return;
+    }
+
     if (!this.Token) {
-      throw new Error("Telegram bot token is required. Set TELEGRAM_BOT_TOKEN or pass --token-env <ENV_NAME>.");
+      throw new Error("Нужен Telegram bot token. Заполни TELEGRAM_BOT_TOKEN или передай --token-env <ENV_NAME>.");
     }
 
     if (this.Command === "updates") {
@@ -76,15 +81,15 @@ class TelegramChatIdTool {
         last_text: hit.text || "",
       })),
       nextSteps: [
-        "For a group: add the bot to the group and send /chatid or /start in that group, then rerun this command.",
-        "For a channel: add the bot as admin and publish one test post, or use get-chat with a public @username.",
+        "Для группы: добавь бота в группу, отправь /chatid или /start и запусти команду снова.",
+        "Для канала: добавь бота админом и опубликуй тестовый пост, либо используй get-chat с публичным @username.",
       ],
     }, null, 2));
   }
 
   static async GetChat() {
     const chatId = this.ArgValue("--chat");
-    if (!chatId) throw new Error("Pass --chat <chat_id_or_@username>");
+    if (!chatId) throw new Error("Передай --chat <chat_id_or_@username>");
 
     const data = await this.Call("getChat", { chat_id: chatId });
     const chat = data.result;
@@ -100,9 +105,9 @@ class TelegramChatIdTool {
 
   static async SendTest() {
     const chatId = this.ArgValue("--chat");
-    if (!chatId) throw new Error("Pass --chat <chat_id>");
+    if (!chatId) throw new Error("Передай --chat <chat_id>");
 
-    const text = this.ArgValue("--text") || "Inner Circle server test message";
+    const text = this.ArgValue("--text") || "Тестовое сообщение Inner Circle server";
     const data = await this.Call("sendMessage", {
       chat_id: chatId,
       text,
@@ -162,12 +167,12 @@ class TelegramChatIdTool {
 
   static PrintHelp() {
     console.log([
-      "Usage:",
+      "Использование:",
       "  npm run telegram:updates",
       "  npm run telegram:chat -- --chat @public_channel_or_group",
       "  npm run telegram:test -- --chat <chat_id> --text \"test\"",
       "",
-      "Options:",
+      "Опции:",
       "  --token-env TELEGRAM_BOT_TOKEN",
       "  --token <bot-token>",
     ].join("\n"));

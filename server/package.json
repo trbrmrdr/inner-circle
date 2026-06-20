@@ -4,16 +4,48 @@
   "private": true,
   "main": "dist/server.js",
   "scripts": {
+    "___________comment_build": "Собрать TypeScript сервер в папку dist.",
     "build": "tsc -p tsconfig.json",
-    "dev": "tsx watch src/server.ts",
-    "start": "node dist/server.js",
+
+    "___________comment_dev": "Запустить сервер в watch-режиме с env/local.env.",
+    "dev": "ENV_FILE=env/local.env tsx watch src/server.ts",
+    "___________comment_dev:*": "Запустить сервер в watch-режиме с конкретным env-профилем из server/env.",
+    "dev:local": "ENV_FILE=env/local.env tsx watch src/server.ts",
+    "dev:moscow": "ENV_FILE=env/moscow.env tsx watch src/server.ts",
+    "dev:germany": "ENV_FILE=env/germany.env tsx watch src/server.ts",
+
+    "___________comment_start": "Запустить собранный dist/server.js с env/local.env.",
+    "start": "ENV_FILE=env/local.env node dist/server.js",
+    "___________comment_start:*": "Запустить собранный dist/server.js с конкретным env-профилем из server/env.",
+    "start:local": "ENV_FILE=env/local.env node dist/server.js",
+    "start:moscow": "ENV_FILE=env/moscow.env node dist/server.js",
+    "start:germany": "ENV_FILE=env/germany.env node dist/server.js",
+
+    "___________comment_check": "Проверить TypeScript без сборки файлов.",
     "check": "tsc -p tsconfig.json --noEmit",
+
+    "___________comment_deploy": "Выгрузить сервер на временный IP-профиль.",
     "deploy:ip": "bash scripts/deploy-default-ip.sh",
+    "___________comment_deploy:*": "Выгрузить сервер на Moscow/Germany VPS-профиль или оба профиля подряд.",
+    "deploy:moscow": "DEPLOY_PROFILE=moscow bash scripts/deploy-profile.sh",
+    "deploy:germany": "DEPLOY_PROFILE=germany bash scripts/deploy-profile.sh",
+    "deploy:all": "npm run deploy:moscow && npm run deploy:germany",
+    "___________comment_deploy:check:*": "Проверить с VPS доступность внешних API и опубликованной статики.",
     "deploy:network": "bash scripts/check-vps-network.sh",
     "deploy:static": "bash scripts/check-static-from-vps.sh",
+
+    "___________comment_sheets": "Проверить или синхронизировать удаленную Google таблицу. Другой env-профиль можно передать через ENV_FILE.",
     "sheets:sync": "tsx scripts/sync-google-sheets.ts",
     "sheets:check": "tsx scripts/sync-google-sheets.ts --dry-run",
-    "email:test": "tsx scripts/test-email.ts",
+
+    "___________comment_email": "Проверить отправку email через все включенные SMTP-провайдеры из env/local.env.",
+    "email:test": "ENV_FILE=env/local.env tsx scripts/test-email.ts",
+    "___________comment_email:*": "Проверить отправку email через конкретный env-профиль.",
+    "email:test:local": "ENV_FILE=env/local.env tsx scripts/test-email.ts",
+    "email:test:moscow": "ENV_FILE=env/moscow.env tsx scripts/test-email.ts",
+    "email:test:germany": "ENV_FILE=env/germany.env tsx scripts/test-email.ts",
+
+    "___________comment_telegram": "Получить chat_id или отправить тестовое Telegram-сообщение через Bot API.",
     "telegram:updates": "tsx scripts/telegram-chat-id.ts updates",
     "telegram:chat": "tsx scripts/telegram-chat-id.ts get-chat",
     "telegram:test": "tsx scripts/telegram-chat-id.ts send-test"

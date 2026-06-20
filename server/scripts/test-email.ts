@@ -12,7 +12,7 @@ class EmailTestTool {
     const to = this.ArgValue("--to") || EmailConfig.EMAIL_TO;
     const subject = this.ArgValue("--subject") || "Inner Circle email test";
     const text = this.ArgValue("--text") || [
-      "Test email from Inner Circle server.",
+      "Тестовое письмо от Inner Circle server.",
       `Time: ${new Date().toISOString()}`,
     ].join("\n");
 
@@ -52,16 +52,16 @@ class EmailTestTool {
 
   static PrintHelp() {
     console.log([
-      "Usage:",
+      "Использование:",
       "  npm run email:test",
       "  npm run email:test -- --provider google",
       "  npm run email:test -- --provider yandex --to target@example.com",
       "",
-      "Options:",
+      "Опции:",
       "  --provider google|yandex|legacy",
-      "  --to comma,separated,recipients",
-      "  --subject \"subject\"",
-      "  --text \"message\"",
+      "  --to email1@example.com,email2@example.com",
+      "  --subject \"тема\"",
+      "  --text \"сообщение\"",
     ].join("\n"));
   }
 }

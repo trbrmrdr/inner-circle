@@ -11,11 +11,12 @@ import { HttpHelper } from "./HttpHelper";
 export class LeadProcessor {
   static async Handle(lead: LeadRequest) {
     const cleanLead = this.Normalize(lead);
-    const results: PublishResult[] = [];
-
-    results.push(await this.Safe("sheets", () => GoogleSheetsService.AppendLead(cleanLead)));
-    results.push(...await this.SafeMany("email", () => EmailPublisher.SendLead(cleanLead)));
-    results.push(await this.Safe("telegram-tech", () => TelegramPublisher.SendTechMessage(this.TelegramText(cleanLead))));
+    const [sheetsResult, emailResults, telegramTechResult] = await Promise.all([
+      this.Safe("sheets", () => GoogleSheetsService.AppendLead(cleanLead)),
+      this.SafeMany("email", () => EmailPublisher.SendLead(cleanLead)),
+      this.Safe("telegram-tech", () => TelegramPublisher.SendTechMessage(this.TelegramText(cleanLead))),
+    ]);
+    const results: PublishResult[] = [sheetsResult, ...emailResults, telegramTechResult];
 
     await GoogleSheetsService.AppendLog("lead", "New lead processed", { lead: cleanLead, results }).catch(() => undefined);
 
@@ -36,24 +37,26 @@ export class LeadProcessor {
       name: this.Trim(lead.name),
       phone: this.Trim(lead.phone),
       email: this.Trim(lead.email),
-      telegram: this.Trim(lead.telegram),
-      lead_uid: this.Trim(lead.lead_uid || lead.leadUid),
+      telegram: this.NormalizeTelegram(lead.telegram),
       date: this.Trim(lead.date),
       guests: this.Trim(lead.guests),
       scenario: this.Trim(lead.scenario),
       consent: this.NormalizeConsent(lead.consent),
       captchaScore: this.Trim(lead.captchaScore),
       captchaAction: this.Trim(lead.captchaAction),
-      message: this.Trim(lead.message),
-      page: this.Trim(lead.page),
-      source: this.Trim(lead.source || "site-form"),
       meta: lead.meta || {},
     };
   }
 
   static Validate(lead: LeadRequest) {
     const hasContact = Boolean(lead.phone || lead.email || lead.telegram);
-    if (!hasContact) return "Нужен хотя бы один контакт: phone, email или telegram";
+    if (!lead.name) return "Укажите имя";
+    if (!hasContact) return "Укажите телефон, Telegram или почту, чтобы мы могли связаться";
+    if (lead.telegram && !this.IsTelegramValid(lead.telegram)) return "Некорректный Telegram username";
+    if (!lead.date) return "Укажите желаемую дату заезда";
+    if (!lead.guests) return "Укажите количество гостей";
+    if (!lead.scenario) return "Опишите сценарий заезда";
+    if (lead.consent !== "true") return "Подтвердите согласие на обратную связь по заявке";
     return "";
   }
 
@@ -67,9 +70,6 @@ export class LeadProcessor {
       `Дата: ${AiTextHelper.EscapeHtml(lead.date || "-")}`,
       `Гостей: ${AiTextHelper.EscapeHtml(lead.guests || "-")}`,
       `Сценарий: ${AiTextHelper.EscapeHtml(lead.scenario || "-")}`,
-      `Страница: ${AiTextHelper.EscapeHtml(lead.page || "-")}`,
-      "",
-      AiTextHelper.EscapeHtml(lead.message || "-"),
     ].join("\n");
   }
 
@@ -83,6 +83,22 @@ export class LeadProcessor {
     return this.Trim(value);
   }
 
+  static NormalizeTelegram(value: unknown) {
+    const raw = this.Trim(value);
+    if (!raw) return "";
+
+    const withoutProtocol = raw.replace(/^https?:\/\//i, "");
+    const withoutHost = withoutProtocol.replace(/^(t\.me|telegram\.me)\//i, "");
+    const withoutAt = withoutHost.replace(/^@/, "");
+    const username = withoutAt.split(/[/?#]/)[0].trim();
+    return username ? `@${username}` : "";
+  }
+
+  static IsTelegramValid(value: string) {
+    const username = value.replace(/^@/, "");
+    return /^[A-Za-z0-9_]{5,32}$/.test(username);
+  }
+
   static RequiredStatus(results: PublishResult[]) {
     const emailProviders = EmailConfig.EnabledProviders();
     const channels = {
@@ -92,13 +108,13 @@ export class LeadProcessor {
       },
       email: {
         required: EmailConfig.ENABLED,
-        ok: !EmailConfig.ENABLED || (emailProviders.length > 0 && emailProviders.every((provider) =>
+        ok: !EmailConfig.ENABLED || (emailProviders.length > 0 && emailProviders.some((provider) =>
           results.some((result) => result.platform === `email:${provider.name}` && result.ok),
         )),
       },
       telegramTech: {
-        required: TelegramConfig.ENABLED && TelegramConfig.TECH_ENABLED,
-        ok: !(TelegramConfig.ENABLED && TelegramConfig.TECH_ENABLED) || results.some((result) => result.platform === "telegram-tech" && result.ok),
+        required: TelegramConfig.TECH_ENABLED,
+        ok: !TelegramConfig.TECH_ENABLED || results.some((result) => result.platform === "telegram-tech" && result.ok),
       },
     };
 

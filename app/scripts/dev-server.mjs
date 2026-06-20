@@ -1,4 +1,4 @@
-import { createServer } from "node:http";
+import { createServer, request as httpRequest } from "node:http";
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import { spawn } from "node:child_process";
@@ -10,6 +10,7 @@ const appRoot = path.resolve(scriptDir, "..");
 const distRoot = path.join(appRoot, "dist");
 const noWatch = process.argv.includes("--no-watch");
 const startPort = Number(process.env.PORT || 4177);
+const apiProxyTarget = process.env.API_PROXY_TARGET || "http://127.0.0.1:4100";
 const reloadClients = new Set();
 
 const mimeTypes = new Map([
@@ -140,6 +141,11 @@ async function sendFile(request, response) {
     return;
   }
 
+  if (requestUrl.pathname.startsWith("/api/")) {
+    proxyApiRequest(request, response, requestUrl);
+    return;
+  }
+
   const filePath = await resolveRequestPath(requestUrl.pathname, request.headers);
   if (!filePath) {
     response.writeHead(404, {
@@ -173,6 +179,33 @@ async function sendFile(request, response) {
     });
     response.end("Not found");
   }
+}
+
+function proxyApiRequest(clientRequest, clientResponse, requestUrl) {
+  const target = new URL(requestUrl.pathname + requestUrl.search, apiProxyTarget);
+  const headers = { ...clientRequest.headers, host: target.host };
+
+  const proxyRequest = httpRequest(target, {
+    method: clientRequest.method,
+    headers
+  }, proxyResponse => {
+    clientResponse.writeHead(proxyResponse.statusCode || 502, proxyResponse.headers);
+    proxyResponse.pipe(clientResponse);
+  });
+
+  proxyRequest.on("error", error => {
+    clientResponse.writeHead(502, {
+      "content-type": "application/json; charset=utf-8",
+      ...devCacheHeaders()
+    });
+    clientResponse.end(JSON.stringify({
+      ok: false,
+      message: `Local API proxy failed: ${error.message}`,
+      target: target.toString()
+    }));
+  });
+
+  clientRequest.pipe(proxyRequest);
 }
 
 function devCacheHeaders() {

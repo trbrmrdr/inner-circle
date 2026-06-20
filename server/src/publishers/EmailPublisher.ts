@@ -89,11 +89,6 @@ export class EmailPublisher {
       `Гостей: ${lead.guests || "-"}`,
       `Сценарий: ${lead.scenario || "-"}`,
       `Согласие: ${lead.consent || "-"}`,
-      `Страница: ${lead.page || "-"}`,
-      `Источник: ${lead.source || "-"}`,
-      "",
-      "Сообщение:",
-      lead.message || "-",
       "",
       `Meta: ${JSON.stringify(lead.meta || {}, null, 2)}`,
     ].join("\n");

@@ -11,6 +11,33 @@
       "problemMatcher": []
     },
     {
+      "label": "Inner Circle Server: dev local",
+      "type": "shell",
+      "command": "npm run dev:local",
+      "options": {
+        "cwd": "${workspaceFolder}/server"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Inner Circle Server: dev moscow",
+      "type": "shell",
+      "command": "npm run dev:moscow",
+      "options": {
+        "cwd": "${workspaceFolder}/server"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Inner Circle Server: dev germany",
+      "type": "shell",
+      "command": "npm run dev:germany",
+      "options": {
+        "cwd": "${workspaceFolder}/server"
+      },
+      "problemMatcher": []
+    },
+    {
       "label": "Inner Circle Server: build",
       "type": "shell",
       "command": "npm run build",
@@ -29,9 +56,63 @@
       "problemMatcher": []
     },
     {
+      "label": "Inner Circle Sheets: check local",
+      "type": "shell",
+      "command": "npm run sheets:check:local",
+      "options": {
+        "cwd": "${workspaceFolder}/server"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Inner Circle Sheets: check moscow",
+      "type": "shell",
+      "command": "npm run sheets:check:moscow",
+      "options": {
+        "cwd": "${workspaceFolder}/server"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Inner Circle Sheets: check germany",
+      "type": "shell",
+      "command": "npm run sheets:check:germany",
+      "options": {
+        "cwd": "${workspaceFolder}/server"
+      },
+      "problemMatcher": []
+    },
+    {
       "label": "Inner Circle Sheets: sync",
       "type": "shell",
       "command": "npm run sheets:sync",
+      "options": {
+        "cwd": "${workspaceFolder}/server"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Inner Circle Email: test local",
+      "type": "shell",
+      "command": "npm run email:test:local",
+      "options": {
+        "cwd": "${workspaceFolder}/server"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Inner Circle Email: test moscow",
+      "type": "shell",
+      "command": "npm run email:test:moscow",
+      "options": {
+        "cwd": "${workspaceFolder}/server"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Inner Circle Email: test germany",
+      "type": "shell",
+      "command": "npm run email:test:germany",
       "options": {
         "cwd": "${workspaceFolder}/server"
       },

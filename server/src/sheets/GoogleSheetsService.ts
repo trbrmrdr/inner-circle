@@ -1,11 +1,14 @@
 import fs from "fs";
 import { google, sheets_v4 } from "googleapis";
 import { GoogleConfig } from "../config/GoogleConfig";
-import { LeadRequest, Platform, PostTask, PostType, PublishResult, SheetRow } from "../types/autopost";
+import { LeadRequest, Platform, PostMediaItem, PostTask, PostType, PublishResult, SheetRow } from "../types/autopost";
 import { SheetsSchema } from "./SheetsSchema";
 
 export class GoogleSheetsService {
   static SheetsClient: sheets_v4.Sheets | null = null;
+  static LeadHeaders: string[] = [];
+  static PostCandidatesCache: { loadedAt: number; posts: PostTask[] } | null = null;
+  static PostCandidatesCacheMs = 60_000;
 
   static IsReady() {
     return Boolean(GoogleConfig.IsReady() && fs.existsSync(GoogleConfig.CREDENTIALS_FILE));
@@ -16,13 +19,13 @@ export class GoogleSheetsService {
       return { ok: false, disabled: true, platform: "sheets", message: "Google Sheets is not configured" };
     }
 
-    const headers = await this.SafeHeaders(GoogleConfig.LEADS_SHEET, SheetsSchema.LeadsColumns.map((column) => column.name));
+    const headers = await this.EnsureLeadHeaders();
     const values = [headers.map((header) => this.LeadValue(header, lead))];
 
     const response = await this.Client().spreadsheets.values.append({
       spreadsheetId: GoogleConfig.SPREADSHEET_ID,
       range: `${GoogleConfig.LEADS_SHEET}!A:${this.Column(Math.max(headers.length, 1))}`,
-      valueInputOption: "USER_ENTERED",
+      valueInputOption: "RAW",
       requestBody: { values },
     });
 
@@ -69,16 +72,10 @@ export class GoogleSheetsService {
   }
 
   static async ReadReadyPosts(limit = 3): Promise<PostTask[]> {
-    if (!this.IsReady()) return [];
-    const [rows, mediaMap] = await Promise.all([
-      this.ReadSheet(GoogleConfig.POSTS_SHEET),
-      this.ReadMediaMap(),
-    ]);
+    const posts = await this.ReadPostCandidates();
     const now = Date.now();
 
-    return rows
-      .map((row) => this.ToPostTask(row, mediaMap))
-      .filter((task): task is PostTask => Boolean(task))
+    return posts
       .filter((task) => {
         const status = task.status.toLowerCase();
         if (!["ready", "scheduled"].includes(status)) return false;
@@ -87,6 +84,49 @@ export class GoogleSheetsService {
         return Number.isNaN(time) || time <= now;
       })
       .slice(0, limit);
+  }
+
+  static async ReadPostCandidates(force = false): Promise<PostTask[]> {
+    if (!this.IsReady()) return [];
+
+    const now = Date.now();
+    if (!force && this.PostCandidatesCache && now - this.PostCandidatesCache.loadedAt < this.PostCandidatesCacheMs) {
+      return this.PostCandidatesCache.posts;
+    }
+
+    const [rows, mediaMap] = await Promise.all([
+      this.ReadSheet(GoogleConfig.POSTS_SHEET),
+      this.ReadMediaMap(),
+    ]);
+
+    const posts = rows
+      .map((row) => this.ToPostTask(row, mediaMap))
+      .filter((task): task is PostTask => Boolean(task));
+
+    this.PostCandidatesCache = {
+      loadedAt: now,
+      posts,
+    };
+
+    return posts;
+  }
+
+  static async FindPostById(postId: string, force = false) {
+    const cleanId = postId.trim().toLowerCase();
+    if (!cleanId) return null;
+
+    const posts = await this.ReadPostCandidates(force);
+    return posts.find((post) => {
+      const ids = [
+        post.post_uid,
+        post.raw.post_id,
+        post.raw.post_uid,
+        post.raw.id,
+        String(post.rowNumber),
+      ].filter(Boolean).map((id) => String(id).toLowerCase());
+
+      return ids.includes(cleanId);
+    }) || null;
   }
 
   static async MarkPostProcessing(task: PostTask) {
@@ -164,24 +204,113 @@ export class GoogleSheetsService {
     }
   }
 
+  static async EnsureLeadHeaders() {
+    if (this.LeadHeaders.length > 0) return this.LeadHeaders;
+
+    const requiredHeaders = SheetsSchema.LeadsColumns.map((column) => column.name);
+    const sheets = this.Client();
+    const spreadsheet = await sheets.spreadsheets.get({
+      spreadsheetId: GoogleConfig.SPREADSHEET_ID,
+      includeGridData: false,
+    });
+
+    const existingSheet = (spreadsheet.data.sheets || []).find((sheet) => sheet.properties?.title === GoogleConfig.LEADS_SHEET);
+    if (!existingSheet) {
+      await sheets.spreadsheets.batchUpdate({
+        spreadsheetId: GoogleConfig.SPREADSHEET_ID,
+        requestBody: {
+          requests: [{
+            addSheet: {
+              properties: {
+                title: GoogleConfig.LEADS_SHEET,
+                gridProperties: {
+                  frozenRowCount: 1,
+                  rowCount: 2,
+                  columnCount: requiredHeaders.length + 1,
+                },
+              },
+            },
+          }],
+        },
+      });
+
+      await this.WriteHeaderRow(GoogleConfig.LEADS_SHEET, requiredHeaders);
+      this.LeadHeaders = requiredHeaders;
+      return this.LeadHeaders;
+    }
+
+    const headers = await this.SafeHeaders(GoogleConfig.LEADS_SHEET, []);
+    if (headers.length === 0) {
+      await this.EnsureGridColumns(existingSheet, requiredHeaders.length + 1);
+      await this.WriteHeaderRow(GoogleConfig.LEADS_SHEET, requiredHeaders);
+      this.LeadHeaders = requiredHeaders;
+      return this.LeadHeaders;
+    }
+
+    const missingHeaders = requiredHeaders.filter((header) => !headers.includes(header));
+    const finalHeaders = [...headers, ...missingHeaders];
+    await this.EnsureGridColumns(existingSheet, finalHeaders.length + 1);
+
+    if (missingHeaders.length > 0) {
+      const startColumn = headers.length + 1;
+      await this.Client().spreadsheets.values.update({
+        spreadsheetId: GoogleConfig.SPREADSHEET_ID,
+        range: `${GoogleConfig.LEADS_SHEET}!${this.Column(startColumn)}1:${this.Column(startColumn + missingHeaders.length - 1)}1`,
+        valueInputOption: "USER_ENTERED",
+        requestBody: { values: [missingHeaders] },
+      });
+    }
+
+    this.LeadHeaders = finalHeaders;
+    return this.LeadHeaders;
+  }
+
+  static async EnsureGridColumns(sheet: sheets_v4.Schema$Sheet, requiredColumnCount: number) {
+    const sheetId = sheet.properties?.sheetId;
+    const currentColumnCount = sheet.properties?.gridProperties?.columnCount || 0;
+    if (sheetId === undefined || currentColumnCount >= requiredColumnCount) return;
+
+    await this.Client().spreadsheets.batchUpdate({
+      spreadsheetId: GoogleConfig.SPREADSHEET_ID,
+      requestBody: {
+        requests: [{
+          updateSheetProperties: {
+            properties: {
+              sheetId,
+              gridProperties: {
+                columnCount: requiredColumnCount,
+              },
+            },
+            fields: "gridProperties.columnCount",
+          },
+        }],
+      },
+    });
+  }
+
+  static async WriteHeaderRow(sheetName: string, headers: string[]) {
+    await this.Client().spreadsheets.values.update({
+      spreadsheetId: GoogleConfig.SPREADSHEET_ID,
+      range: `${sheetName}!A1:${this.Column(headers.length)}1`,
+      valueInputOption: "USER_ENTERED",
+      requestBody: { values: [headers] },
+    });
+  }
+
   static LeadValue(header: string, lead: LeadRequest) {
     const key = header.trim();
     if (!key) return "";
 
     const base: Record<string, unknown> = {
       created_at: new Date().toISOString(),
-      lead_uid: lead.lead_uid || lead.leadUid || "",
       name: lead.name || "",
-      phone: lead.phone || "",
+      phone: this.FormatPhoneForSheet(lead.phone || ""),
       email: lead.email || "",
       telegram: lead.telegram || "",
       date: lead.date || "",
       guests: lead.guests || "",
       scenario: lead.scenario || "",
       consent: lead.consent === true ? "true" : lead.consent || "",
-      message: lead.message || "",
-      page: lead.page || "",
-      source: lead.source || "",
       meta_json: JSON.stringify(lead.meta || {}),
     };
 
@@ -189,6 +318,22 @@ export class GoogleSheetsService {
     if (direct === undefined || direct === null) return "";
     if (typeof direct === "object") return JSON.stringify(direct);
     return String(direct);
+  }
+
+  static FormatPhoneForSheet(value: unknown) {
+    const raw = String(value || "").trim();
+    const digits = raw.replace(/\D/g, "");
+    if (!digits) return raw;
+
+    let normalized = digits;
+    if (normalized.startsWith("8")) normalized = `7${normalized.slice(1)}`;
+    if (normalized.startsWith("9")) normalized = `7${normalized}`;
+    if (!normalized.startsWith("7")) normalized = `7${normalized}`;
+    normalized = normalized.slice(0, 11);
+
+    if (normalized.length !== 11 || !normalized.startsWith("7")) return raw;
+
+    return `+7 ${normalized.slice(1, 4)} ${normalized.slice(4, 7)}-${normalized.slice(7, 9)}-${normalized.slice(9, 11)}`;
   }
 
   static async ReadRange(range: string) {
@@ -219,9 +364,13 @@ export class GoogleSheetsService {
     const text = raw.text || raw.body || raw.caption || "";
     if (!text.trim()) return null;
 
+    const mediaItems = this.Split(raw.media_ids || raw.media_id || "")
+      .map((mediaId) => this.PostMediaItem(mediaId, mediaMap.get(mediaId)))
+      .filter((item): item is PostMediaItem => Boolean(item));
+
     const mediaUrls = [
       ...this.Split(raw.media_urls || raw.media_url || raw.media || ""),
-      ...this.Split(raw.media_ids || raw.media_id || "").map((mediaId) => this.MediaUrl(mediaMap.get(mediaId))).filter(Boolean),
+      ...mediaItems.map((item) => this.MediaUrl(item.raw)).filter(Boolean),
     ];
 
     return {
@@ -232,10 +381,11 @@ export class GoogleSheetsService {
       title: raw.title || "",
       text,
       media_urls: mediaUrls,
+      media_items: mediaItems,
       platforms: this.Split(raw.platforms || raw.platform || "telegram", true).filter((value): value is Platform =>
         ["telegram", "vk", "instagram", "facebook"].includes(value),
       ),
-      post_type: this.PostType(raw.post_type || raw.type || this.InferPostType(mediaUrls)),
+      post_type: this.ResolvePostType(raw.post_type || raw.type || "", mediaUrls),
       attempt: Number(raw.attempt || 0),
       telegram_message_id: raw.telegram_message_id || "",
       vk_post_id: raw.vk_post_id || "",
@@ -276,10 +426,34 @@ export class GoogleSheetsService {
     return "";
   }
 
+  static PostMediaItem(mediaId: string, raw?: Record<string, string>): PostMediaItem | null {
+    if (!mediaId) return null;
+
+    return {
+      media_id: mediaId,
+      file_id: raw?.file_id || "",
+      name: raw?.name || mediaId,
+      type: raw?.type || "",
+      mime_type: raw?.mime_type || "",
+      drive_url: raw?.drive_url || "",
+      preview_url: raw?.preview_url || "",
+      public_url: raw?.public_url || "",
+      media_url: raw?.media_url || "",
+      raw: raw || { media_id: mediaId },
+    };
+  }
+
   static InferPostType(mediaUrls: string[]) {
     if (mediaUrls.length > 1) return "album";
     if (mediaUrls.length === 1) return "image";
     return "text";
+  }
+
+  static ResolvePostType(value: string, mediaUrls: string[]): PostType {
+    const clean = value.toLowerCase().trim();
+    if (!clean) return this.PostType(this.InferPostType(mediaUrls));
+    if (clean === "text" && mediaUrls.length > 0) return this.PostType(this.InferPostType(mediaUrls));
+    return this.PostType(clean);
   }
 
   static PostType(value: string): PostType {

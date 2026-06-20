@@ -21,7 +21,7 @@
 }
 
 .inner-circle-footer-loop {
-  margin: var(--space-large) calc(-1 * var(--space-small)) 0;
+  margin: calc(var(--space-large) + 50px) calc(-1 * var(--space-small)) 0;
   width: calc(100% + (2 * var(--space-small)));
 }
 
@@ -49,7 +49,7 @@
 @media (min-width: 1024px) {
   .inner-circle-footer-loop {
     grid-column: 1 / -1;
-    margin: var(--space-large) calc(-1 * var(--space-small)) 0;
+    margin: calc(var(--space-large) + 50px) calc(-1 * var(--space-small)) 0;
     width: calc(100% + (2 * var(--space-small)));
   }
 

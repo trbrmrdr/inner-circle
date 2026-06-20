@@ -11,7 +11,10 @@ export class GoogleConfig {
   static LEADS_SHEET = Env.Str("GOOGLE_LEADS_SHEET", "LEADS");
   static LOGS_SHEET = Env.Str("GOOGLE_LOGS_SHEET", "LOGS");
   static SETTINGS_SHEET = Env.Str("GOOGLE_SETTINGS_SHEET", "SETTINGS");
-  static SCOPES = ["https://www.googleapis.com/auth/spreadsheets"];
+  static SCOPES = [
+    "https://www.googleapis.com/auth/spreadsheets",
+    "https://www.googleapis.com/auth/drive.readonly",
+  ];
 
   static IsReady() {
     return Boolean(this.ENABLED && this.SPREADSHEET_ID && this.CREDENTIALS_FILE);
