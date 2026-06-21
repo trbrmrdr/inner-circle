@@ -21816,6 +21816,41 @@
 
   // src/components/stage/Stage.module.css
   var Stage_default = { "Container": "_0300ce", "Loader": "_a7f9b9", "Bar": "_ac2116", "Progress": "_3b1a6f", "Info": "_3ee867", "Percentage": "_bd2a67", "Image": "_390565", "Wobble": "_42c532" };
+  function isInnerCircleIOS() {
+    return /iPad|iPhone|iPod/.test(navigator.userAgent) || navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1;
+  }
+  function prefersInnerCircleReducedMotion() {
+    return window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches === true;
+  }
+  function getInnerCircleDeviceProfile() {
+    const lowCpu = (navigator.hardwareConcurrency || 8) <= 4;
+    const lowMemory = navigator.deviceMemory !== void 0 && navigator.deviceMemory <= 4;
+    const smallHighDpr = window.innerWidth < 820 && (window.devicePixelRatio || 1) >= 2;
+    const ios = isInnerCircleIOS();
+    return {
+      ios,
+      lowCpu,
+      lowMemory,
+      smallHighDpr,
+      constrained: ios || lowCpu || lowMemory || smallHighDpr
+    };
+  }
+  function shouldUseStaticWebGLStage() {
+    return prefersInnerCircleReducedMotion();
+  }
+  function shouldUseReducedWebGLStage() {
+    return getInnerCircleDeviceProfile().constrained;
+  }
+  function getInnerCircleStagePixelRatio() {
+    const pixelRatio = window.devicePixelRatio || 1;
+    return shouldUseReducedWebGLStage() ? Math.min(1, pixelRatio) : Math.min(1.5, pixelRatio);
+  }
+  function getInnerCircleMaxRenderTargetSize() {
+    if (shouldUseReducedWebGLStage()) {
+      return window.innerWidth < 820 ? 768 : 1024;
+    }
+    return Math.min(1600, window.innerWidth < 1024 ? 1024 : 1600);
+  }
 
   // src/components/stage/bloom.frag
   var bloom_default = '#define GLSLIFY 1\n//\n// GLSL textureless classic 2D noise "cnoise",\n// with an RSL-style periodic variant "pnoise".\n// Author:  Stefan Gustavson (stefan.gustavson@liu.se)\n// Version: 2011-08-22\n//\n// Many thanks to Ian McEwan of Ashima Arts for the\n// ideas for permutation and gradient selection.\n//\n// Copyright (c) 2011 Stefan Gustavson. All rights reserved.\n// Distributed under the MIT license. See LICENSE file.\n// https://github.com/ashima/webgl-noise\n//\n\nvec4 mod289(vec4 x)\n{\n  return x - floor(x * (1.0 / 289.0)) * 289.0;\n}\n\nvec4 permute(vec4 x)\n{\n  return mod289(((x*34.0)+1.0)*x);\n}\n\nvec4 taylorInvSqrt(vec4 r)\n{\n  return 1.79284291400159 - 0.85373472095314 * r;\n}\n\nvec2 fade(vec2 t) {\n  return t*t*t*(t*(t*6.0-15.0)+10.0);\n}\n\n// Classic Perlin noise\nfloat cnoise(vec2 P)\n{\n  vec4 Pi = floor(P.xyxy) + vec4(0.0, 0.0, 1.0, 1.0);\n  vec4 Pf = fract(P.xyxy) - vec4(0.0, 0.0, 1.0, 1.0);\n  Pi = mod289(Pi); // To avoid truncation effects in permutation\n  vec4 ix = Pi.xzxz;\n  vec4 iy = Pi.yyww;\n  vec4 fx = Pf.xzxz;\n  vec4 fy = Pf.yyww;\n\n  vec4 i = permute(permute(ix) + iy);\n\n  vec4 gx = fract(i * (1.0 / 41.0)) * 2.0 - 1.0 ;\n  vec4 gy = abs(gx) - 0.5 ;\n  vec4 tx = floor(gx + 0.5);\n  gx = gx - tx;\n\n  vec2 g00 = vec2(gx.x,gy.x);\n  vec2 g10 = vec2(gx.y,gy.y);\n  vec2 g01 = vec2(gx.z,gy.z);\n  vec2 g11 = vec2(gx.w,gy.w);\n\n  vec4 norm = taylorInvSqrt(vec4(dot(g00, g00), dot(g01, g01), dot(g10, g10), dot(g11, g11)));\n  g00 *= norm.x;\n  g01 *= norm.y;\n  g10 *= norm.z;\n  g11 *= norm.w;\n\n  float n00 = dot(g00, vec2(fx.x, fy.x));\n  float n10 = dot(g10, vec2(fx.y, fy.y));\n  float n01 = dot(g01, vec2(fx.z, fy.z));\n  float n11 = dot(g11, vec2(fx.w, fy.w));\n\n  vec2 fade_xy = fade(Pf.xy);\n  vec2 n_x = mix(vec2(n00, n01), vec2(n10, n11), fade_xy.x);\n  float n_xy = mix(n_x.x, n_x.y, fade_xy.y);\n  return 2.3 * n_xy;\n}\n\nuniform sampler2D map;\nuniform sampler2D bloomMap;\nuniform vec2 pointer;\nuniform vec2 resolution;\nuniform float random;\nuniform float time;\nuniform float zoom;\nuniform float bloomAmount;\nuniform float strength;\nuniform float alpha;\n\nvarying vec2 vUv;\nvarying float vYPos;\n\nvec2 rotate(vec2 v, float a) {\n	float s = sin(a);\n	float c = cos(a);\n	mat2 m = mat2(c, -s, s, c);\n	return m * v;\n}\n\nvec2 distort(vec2 r, float alpha) {\n	return r * -alpha * (1.0 - dot(r, r));\n\n}\n\nvoid main() {\n	vec2 aspect = vec2(1.0, resolution.y / resolution.x);\n	vec2 uv = vUv;\n\n	float noise1 = cnoise((uv + random) * 1.0 - time * 0.0005);\n	float noise2 = cnoise(rotate(uv + random, time * 0.0001) * 4.0 + time * 0.0002);\n	float noise = mix(0.5, 1.0, noise1 + noise2);\n\n	float dist = distance(pointer * aspect, uv * aspect);\n	float bloom = min(1.0 - smoothstep(0.0, 0.75, dist), noise) * strength * 0.5;\n	bloom = max(bloom, bloomAmount * 2.0);\n\n	vec4 color = texture2D(map, uv);\n	vec4 bloomColor = texture2D(bloomMap, uv) * bloom;\n	gl_FragColor = min(color + bloomColor, vec4(1.0));\n	gl_FragColor.a = alpha;\n\n}\n';
@@ -21896,6 +21931,8 @@
     offset = 0;
     currentSrc = "";
     renderTarget;
+    renderWidth = 256;
+    renderHeight = 256;
     texture = null;
     inView = false;
     hasFinishedLoad = false;
@@ -21957,8 +21994,14 @@
         this.texture = await loader.loadAsync(this.currentSrc);
         this.texture.minFilter = LinearFilter;
         this.texture.generateMipmaps = false;
-        const width = this.texture?.image.naturalWidth || 256;
-        const height = this.texture?.image.naturalHeight || 256;
+        const naturalWidth = this.texture?.image.naturalWidth || 256;
+        const naturalHeight = this.texture?.image.naturalHeight || 256;
+        const maxSize = this.stage.maxRenderTargetSize || 1600;
+        const renderScale = Math.min(1, maxSize / Math.max(naturalWidth, naturalHeight));
+        const width = Math.max(1, Math.round(naturalWidth * renderScale));
+        const height = Math.max(1, Math.round(naturalHeight * renderScale));
+        this.renderWidth = width;
+        this.renderHeight = height;
         this.renderTarget.setSize(width, height);
         this.uniforms.resolution.value.set(width, height);
         this.uniforms.map.value = this.texture;
@@ -22219,8 +22262,8 @@
       }
     }
     renderBloom(node) {
-      const width = node.texture?.image.naturalWidth || 256;
-      const height = node.texture?.image.naturalHeight || 256;
+      const width = node.renderWidth || node.texture?.image.naturalWidth || 256;
+      const height = node.renderHeight || node.texture?.image.naturalHeight || 256;
       this.luminosityPass.setSize(width, height);
       this.vBlur.setSize(width, height);
       this.hBlur.setSize(width, height);
@@ -22253,6 +22296,9 @@
     dispose() {
       this.images.forEach((node) => node.dispose());
       this.camera.position.y = 0;
+    }
+    showFallback() {
+      this.images.forEach((node) => node.showFallback());
     }
     scroll() {
       this.images.forEach((image) => image.scroll());
@@ -22698,14 +22744,19 @@
       this.percentage = this.loader.querySelector(`.${Stage_default.Percentage}`);
       this.loadingManager = new LoadingManager();
       this.scene = new Scene();
+      const pixelRatio = getInnerCircleStagePixelRatio();
+      this.reducedEffects = shouldUseReducedWebGLStage();
+      this.maxRenderTargetSize = getInnerCircleMaxRenderTargetSize();
+      this.onContextLost = this.onContextLost.bind(this);
       this.renderer = new WebGLRenderer({
-        antialias: window.devicePixelRatio < 2,
+        antialias: !this.reducedEffects && pixelRatio <= 1.25,
         alpha: true,
-        powerPreference: "high-performance"
+        powerPreference: this.reducedEffects ? "default" : "high-performance"
       });
       this.renderer.setClearAlpha(0);
       this.renderer.autoClear = false;
-      this.renderer.setPixelRatio(Math.min(2, window.devicePixelRatio));
+      this.renderer.setPixelRatio(pixelRatio);
+      this.renderer.domElement.addEventListener("webglcontextlost", this.onContextLost, false);
       this.container.appendChild(this.renderer.domElement);
       this.intro = new Intro(this, app);
       this.images = new Images(this, app);
@@ -22726,20 +22777,33 @@
     renderer;
     width = 0;
     height = 0;
+    maxRenderTargetSize = 1600;
+    reducedEffects = false;
+    staticFallback = false;
     loadingManager;
     async load(showLoader = false) {
       if (showLoader) {
         this.loader.style.setProperty("display", "grid");
+      }
+      if (this.staticFallback) {
+        this.loader?.style.setProperty("display", "none");
+        return;
       }
       await Promise.all([this.intro.load(), this.images.load()]);
       this.loaded = true;
     }
     async show(animate = false) {
       this.loader.style.setProperty("display", "none");
+      if (this.staticFallback) {
+        return;
+      }
       return this.intro.show(animate);
     }
     async hide() {
       this.loader.style.setProperty("display", "none");
+      if (this.staticFallback) {
+        return;
+      }
       await Promise.all([this.intro.hide(), this.images.hide()]);
     }
     onProgress(url, loaded, total) {
@@ -22755,19 +22819,46 @@
     }
     setImageNodes(nodes) {
       this.images.setImageNodes(nodes);
+      if (this.staticFallback) {
+        this.images.showFallback();
+      }
+    }
+    onContextLost(event) {
+      event.preventDefault();
+      console.warn("WebGL context lost; switching to static images.");
+      this.disableWebGL();
+    }
+    disableWebGL() {
+      if (this.staticFallback) {
+        return;
+      }
+      this.staticFallback = true;
+      this.loaded = false;
+      document.body.classList.add("no-webgl");
+      this.loader?.style.setProperty("display", "none");
+      this.images?.showFallback();
+      this.renderer?.domElement?.removeEventListener("webglcontextlost", this.onContextLost, false);
+      this.renderer?.dispose?.();
+      this.renderer?.domElement?.remove?.();
     }
     onPointerMove(event) {
       this.pointer.set(event.x, event.y);
     }
     scroll() {
+      if (this.staticFallback) {
+        return;
+      }
       this.intro.scroll();
       this.images.scroll();
     }
     resize() {
+      if (this.staticFallback) {
+        return;
+      }
       const { width, height } = this.container?.getBoundingClientRect();
       this.width = width;
       this.height = height;
-      this.renderer.setSize(width, height);
+      this.renderer.setSize(width, height, false);
       this.intro.resize();
       this.images.resize();
     }
@@ -22782,8 +22873,12 @@
     dispose() {
       this.intro.dispose();
       this.images.dispose();
+      this.renderer?.domElement?.removeEventListener("webglcontextlost", this.onContextLost, false);
     }
     update(time) {
+      if (this.staticFallback) {
+        return;
+      }
       if (!this.isFixed) {
         this.container.style.transform = `translateY(${this.app.scrollY}px)`;
       }
@@ -24515,11 +24610,16 @@
       this.intersectionObserver = new IntersectionObserver((entries) => this.emit("intersect", entries));
       const container = document.querySelector(`.${Stage_default.Container}`);
       const loader = document.querySelector(`.${Stage_default.Loader}`);
-      try {
-        this.stage = new Stage(container, loader, this);
-      } catch (error) {
-        console.warn("WebGL stage disabled; using static fallback.", error);
+      if (shouldUseStaticWebGLStage()) {
+        console.info("WebGL stage disabled for this device; using static fallback.");
         this.stage = new StageFallback(container, loader, this);
+      } else {
+        try {
+          this.stage = new Stage(container, loader, this);
+        } catch (error) {
+          console.warn("WebGL stage disabled; using static fallback.", error);
+          this.stage = new StageFallback(container, loader, this);
+        }
       }
       const previewCookie = api.get(cookie_exports.preview);
       this.previewRef = previewCookie;

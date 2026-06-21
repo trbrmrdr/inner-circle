@@ -5,20 +5,26 @@ import { HttpHelper } from "./HttpHelper";
 
 export class AiTextHelper {
   static TELEGRAM_PROMPT_RU =
-    "Подготовь красивый Telegram-текст для автопостинга.\n\
-Сохрани факты, имена, цены, даты, адреса, ссылки и контакты без выдумок.\n\
-Можно использовать только Telegram HTML: <b>, <i>, <u>, <s>, <code>, <pre>, <a href=\"...\">.\n\
-Не используй Markdown, списки с тяжелой версткой, таблицы и неподдерживаемые HTML-теги.\n\
-Если у поста есть медиа, текст станет caption первого медиа в альбоме.\n\
-Сделай текст плотным, читаемым и не длиннее {{telegram_limit}} символов.";
+    "Подготовь эстетичный Telegram-текст для автопостинга в спокойном люксовом и деловом тоне.\n\
+Подача: люди знают своё дело и рассказывают интересно, тезисно, без демонстративной роскоши и без давления на деньги.\n\
+Исходный текст уже написан другой нейросетью: не переписывай агрессивно, а аккуратно выровняй ритм, структуру и Telegram-верстку.\n\
+Сохрани факты, имена, цены, даты, адреса, ссылки, контакты и смысл без выдумок.\n\
+Можно использовать 1-2 уместных emoji максимум, только если они усиливают атмосферу и не удешевляют подачу.\n\
+Используй Telegram HTML для легкой верстки: <b>для главного акцента</b>, <i>для мягкого оттенка</i>, при необходимости <a href=\"...\">ссылка</a>.\n\
+Не используй Markdown, неподдерживаемые HTML-теги, таблицы, крикливые CTA, чрезмерные emoji и длинные списки.\n\
+Если у поста есть медиа, текст станет caption первого медиа в альбоме и должен красиво смотреться под сеткой Telegram.\n\
+Сделай текст плотным, читаемым, визуально аккуратным и не длиннее {{telegram_limit}} символов.";
 
   static TELEGRAM_PROMPT_EN =
-    "Prepare a polished Telegram caption for autoposting.\n\
-Keep facts, names, prices, dates, addresses, links and contacts unchanged. Do not invent details.\n\
-Use only Telegram HTML: <b>, <i>, <u>, <s>, <code>, <pre>, <a href=\"...\">.\n\
-Do not use Markdown, heavy tables, or unsupported HTML tags.\n\
-If the post has media, this text will be the caption of the first media item in one album.\n\
-Make it compact, readable, and no longer than {{telegram_limit}} characters.";
+    "Prepare an elegant Telegram text for autoposting in a calm luxury-business tone.\n\
+The voice should feel like people who know their craft and explain it with taste: interesting, concise, confident, never flashy about money.\n\
+The source text was already generated elsewhere, so do not rewrite it aggressively; refine rhythm, structure, emphasis, and Telegram formatting.\n\
+Keep facts, names, prices, dates, addresses, links, contacts, and meaning unchanged. Do not invent details.\n\
+Use 1-2 tasteful emoji maximum, only when they support the atmosphere and do not cheapen the tone.\n\
+Use Telegram HTML for light layout: <b>for the key accent</b>, <i>for a softer nuance</i>, and <a href=\"...\">links</a> when needed.\n\
+Do not use Markdown, unsupported HTML tags, tables, loud calls to action, excessive emoji, or long lists.\n\
+If the post has media, this text will be the caption of the first media item in a Telegram album and must look good under the media grid.\n\
+Make the result compact, readable, visually neat, and no longer than {{telegram_limit}} characters.";
 
   static async PreparePostText(task: PostTask): Promise<PreparedText> {
     const fallback = this.Fallback(task);

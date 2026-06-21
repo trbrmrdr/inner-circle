@@ -135,6 +135,7 @@ Telegram:
 - Telegram photo rules are enforced before sending: max 10 MB, width + height <= 10000, aspect ratio <= 20.
 - Multiple media items are sent as one `sendMediaGroup` album with the prepared text as the first media caption.
 - Telegram album/single-media captions are limited to 1024 characters. Long source text must be shortened during Telegram text preparation, not split into document/fallback messages.
+- Mixed photo/video posts are still one Telegram album. Telegram chooses the visual grid; the server controls only file normalization, media order, and the first media caption.
 - Video preparation outputs MP4/MPEG4 before sending. Non-MP4 videos and oversized MP4 files are normalized through `scripts/media/telegram-video-normalize.sh`.
 
 Instagram:
@@ -165,4 +166,6 @@ Facebook:
 - Use platform-specific output:
   - Telegram: HTML-safe formatting.
   - VK/Facebook/Instagram: plain caption.
+- Telegram text preparation uses a platform prompt and chooses the limit by post shape: 4096 characters for text-only posts, 1024 characters for media captions.
+- `DEEPSEEK_PROMPT_LANGUAGE=en` is the default because DeepSeek follows the style prompt more reliably in English. Use `DEEPSEEK_PROMPT_LANGUAGE=ru` only for local prompt debugging.
 - DeepSeek never publishes. It only transforms/prepares text before publisher calls.
