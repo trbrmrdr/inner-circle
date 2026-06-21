@@ -1,0 +1,34 @@
+body.ic-booting {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  height: 100svh;
+  overflow: hidden;
+  overscroll-behavior: none;
+  touch-action: none;
+  background: var(--background, #1f3f3e);
+}
+
+body.ic-booting ._b28a1c {
+  opacity: 0;
+  pointer-events: none;
+}
+
+body.ic-booting ._a7f9b9 {
+  display: grid;
+  z-index: 250;
+  opacity: 1;
+  background: var(--background, #1f3f3e);
+}
+
+body.ic-booting ._68f6d6 {
+  z-index: 300;
+}
+
+@media (min-width:1024px) {
+  body.ic-booting ._a7f9b9 {
+    padding: calc(3*var(--space)) 0;
+    align-content: end;
+  }
+}

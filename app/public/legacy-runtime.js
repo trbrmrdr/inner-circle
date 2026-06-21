@@ -24567,6 +24567,15 @@
   };
 
   // src/app/App.ts
+  function waitForFontsReady(timeout = 2200) {
+    if (!document.fonts?.ready) {
+      return Promise.resolve();
+    }
+    return Promise.race([
+      document.fonts.ready.catch(() => void 0),
+      delay(timeout)
+    ]);
+  }
   var App = class extends EventEmitter {
     parser = new DOMParser();
     previewRef;
@@ -24625,9 +24634,15 @@
       this.previewRef = previewCookie;
       this.hasPreview = previewCookie ? !!JSON.parse(previewCookie)[`${repo_name}.prismic.io`] : false;
       this.observer = new ResizeObserver(this.onResize.bind(this));
-      document.fonts.ready.then(() => this.init());
+      this.init();
     }
     async init() {
+      const bootAnimate = this.main?.dataset?.animate === "true";
+      if (bootAnimate) {
+        window.scrollTo(0, 0);
+        this.scrollY = 0;
+        this.setBodyFixed();
+      }
       if (this.hasPreview) {
         const html = await this.loadPage(window.location.pathname);
         if (html)
@@ -24650,12 +24665,14 @@
         [
           ...this.controllers.map((controller) => controller.load?.()),
           this.stage.load(animate),
+          animate ? waitForFontsReady() : null,
           animate ? delay(1e3) : null
         ].filter(Boolean)
       );
       this.observer.observe(document.body);
       if (animate) {
         this.inner?.style.setProperty("opacity", "1");
+        document.body.classList.remove("ic-booting");
       }
       const showTasks = [
         ...this.controllers.map((controller) => controller.show?.(animate)),

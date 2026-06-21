@@ -130,6 +130,8 @@ async function buildPages() {
     const relative = path.relative(pagesRoot, file);
     const { data, content } = parseFrontmatter(await fs.readFile(file, "utf8"));
     const bodyContent = await renderTemplate(content, normalizeContext(data), { partialsRoot });
+    const hasAnimatedBoot = /\bdata-animate=(["'])true\1/.test(bodyContent);
+    const bodyClass = [data.bodyClass || "", hasAnimatedBoot ? "ic-booting" : ""].filter(Boolean).join(" ");
     const description = data.description
       ? `<meta name="description" content="${escapeHtml(data.description)}" />`
       : "";
@@ -140,7 +142,7 @@ async function buildPages() {
       ROUTES_HEAD: routesHead,
       TITLE: escapeHtml(data.title || ""),
       LANG: escapeHtml(data.lang || "ru"),
-      BODY_CLASS: escapeHtml(data.bodyClass || ""),
+      BODY_CLASS: escapeHtml(bodyClass),
       BUILD_VERSION: escapeHtml(buildVersion)
     }, { partialsRoot });
 
