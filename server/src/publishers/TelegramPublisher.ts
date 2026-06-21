@@ -57,7 +57,7 @@ export class TelegramPublisher {
     if (mediaUrls.length === 0 || task.post_type === "text") {
       const result = await this.Call("sendMessage", {
         chat_id: TelegramConfig.PUBLIC_CHAT_ID,
-        text: this.Limit(text, 4096),
+        text: this.Limit(text, TelegramConfig.MESSAGE_TEXT_LIMIT),
         parse_mode: TelegramConfig.PARSE_MODE,
         disable_web_page_preview: false,
       });
@@ -65,11 +65,11 @@ export class TelegramPublisher {
       return this.Result(result);
     }
 
-    if (mediaUrls.length > 1 && task.post_type !== "video") {
-      const media = mediaUrls.slice(0, 10).map((url, index) => ({
+    if (mediaUrls.length > 1) {
+      const media = mediaUrls.slice(0, TelegramConfig.MEDIA_GROUP_LIMIT).map((url, index) => ({
         type: MediaPrepareHelper.IsVideo(url) ? "video" : "photo",
         media: url,
-        caption: index === 0 ? this.Limit(text, 1024) : undefined,
+        caption: index === 0 ? this.MediaCaption(text) : undefined,
         parse_mode: index === 0 ? TelegramConfig.PARSE_MODE : undefined,
         show_caption_above_media: true,
       }));
@@ -87,7 +87,7 @@ export class TelegramPublisher {
     const result = await this.Call(method, {
       chat_id: TelegramConfig.PUBLIC_CHAT_ID,
       [method === "sendVideo" ? "video" : "photo"]: firstMedia,
-      caption: this.Limit(text, 1024),
+      caption: this.MediaCaption(text),
       parse_mode: TelegramConfig.PARSE_MODE,
       show_caption_above_media: true,
     });
@@ -114,7 +114,7 @@ export class TelegramPublisher {
     if (prepared.media.length === 0) {
       const result = await this.Call("sendMessage", {
         chat_id: chatId,
-        text: this.Limit(text, 4096),
+        text: this.Limit(text, TelegramConfig.MESSAGE_TEXT_LIMIT),
         parse_mode: TelegramConfig.PARSE_MODE,
         disable_web_page_preview: false,
       });
@@ -122,12 +122,8 @@ export class TelegramPublisher {
       return this.Result(result, "", platform);
     }
 
-    if (prepared.media.length > 10) {
-      throw new Error(`Telegram media group supports 2-10 media items. Got ${prepared.media.length}.`);
-    }
-
-    if (this.HasMixedVideoAndPhoto(prepared.media)) {
-      return this.PublishMixedVideoAndPhotos(chatId, prepared.media, text, platform);
+    if (prepared.media.length > TelegramConfig.MEDIA_GROUP_LIMIT) {
+      throw new Error(`Telegram media group supports 2-${TelegramConfig.MEDIA_GROUP_LIMIT} media items. Got ${prepared.media.length}.`);
     }
 
     if (prepared.media.length > 1) {
@@ -160,38 +156,6 @@ export class TelegramPublisher {
     }
 
     throw new Error(`Telegram autopost supports only photo/video media. Got ${media.asset_type}.`);
-  }
-
-  static async PublishMixedVideoAndPhotos(
-    chatId: string,
-    media: PreparedMedia[],
-    caption: string,
-    platform: ServicePlatform,
-  ): Promise<PublishResult> {
-    const videos = media.filter((item) => item.asset_type === "video");
-    const photos = media.filter((item) => item.asset_type === "photo");
-    const raw: unknown[] = [];
-    let firstId = "";
-
-    for (let index = 0; index < videos.length; index += 1) {
-      const result = await this.SendSingleMedia(chatId, videos[index], index === 0 ? caption : "");
-      raw.push(result);
-      if (!firstId) firstId = String(result?.result?.message_id || "");
-    }
-
-    if (photos.length > 1) {
-      const result = await this.SendMediaGroupFiles(chatId, photos, "");
-      raw.push(result);
-    } else if (photos.length === 1) {
-      raw.push(await this.SendSingleMedia(chatId, photos[0], ""));
-    }
-
-    return {
-      ok: true,
-      platform,
-      id: firstId,
-      raw,
-    };
   }
 
   static VideoFields(chatId: string, media: PreparedMedia, caption: string) {
@@ -236,10 +200,6 @@ export class TelegramPublisher {
 
     form.append("media", JSON.stringify(payload));
     return this.CallFormData("sendMediaGroup", form);
-  }
-
-  static HasMixedVideoAndPhoto(media: PreparedMedia[]) {
-    return media.some((item) => item.asset_type === "video") && media.some((item) => item.asset_type === "photo");
   }
 
   static async Call(method: string, data: Record<string, unknown>) {
@@ -305,8 +265,8 @@ export class TelegramPublisher {
 
   static MediaCaption(text: string) {
     const clean = text.trim();
-    if (clean.length > 1024) {
-      throw new Error(`Telegram media caption limit is 1024 characters. Prepared text has ${clean.length}.`);
+    if (clean.length > TelegramConfig.MEDIA_CAPTION_LIMIT) {
+      throw new Error(`Telegram media caption limit is ${TelegramConfig.MEDIA_CAPTION_LIMIT} characters. Prepared text has ${clean.length}.`);
     }
 
     return clean;

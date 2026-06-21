@@ -41,6 +41,10 @@ class TelegramAutopostTestCli {
 
       console.log("Preparing Telegram text...");
       const text = (await AiTextHelper.PreparePostText(task)).telegram;
+      const telegramTextMode = task.media_items.length > 0 && task.post_type !== "text" ? "media caption" : "text message";
+      console.log(`Telegram text: ${text.length} chars | ${telegramTextMode}`);
+      console.log(this.OneLine(AiTextHelper.StripHtml(text)).slice(0, 500));
+      console.log("");
 
       console.log("Downloading and preparing media...");
       console.log(`Media IDs: ${task.media_items.map((item) => item.media_id).join(", ") || "-"}`);

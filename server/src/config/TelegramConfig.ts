@@ -10,6 +10,9 @@ export class TelegramConfig {
   static PUBLIC_CHAT_ID = Env.Str("TELEGRAM_PUBLIC_CHAT_ID", "");
   static PARSE_MODE = Env.Str("TELEGRAM_PARSE_MODE", "HTML");
   static API_URL = "https://api.telegram.org/bot";
+  static MESSAGE_TEXT_LIMIT = Math.max(1, Env.Num("TELEGRAM_MESSAGE_TEXT_LIMIT", 4096));
+  static MEDIA_CAPTION_LIMIT = Math.max(1, Env.Num("TELEGRAM_MEDIA_CAPTION_LIMIT", 1024));
+  static MEDIA_GROUP_LIMIT = Math.min(Math.max(Env.Num("TELEGRAM_MEDIA_GROUP_LIMIT", 10), 2), 10);
 
   static MTPROTO_ENABLED = Env.Bool("TELEGRAM_MTPROTO_ENABLED", false);
   static API_ID = Env.Num("TELEGRAM_API_ID", 0);

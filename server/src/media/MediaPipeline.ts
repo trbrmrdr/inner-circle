@@ -48,6 +48,8 @@ export class MediaPipeline {
       rootDir: prepared.rootDir,
       sourceDir: prepared.sourceDir,
       platformDir: prepared.platformDir,
+      text_length: prepared.text.length,
+      text_mode: prepared.media.length > 0 ? "media_caption" : "text_message",
       media: prepared.media.map((item) => ({
         media_id: item.media_id,
         originalPath: item.originalPath,
