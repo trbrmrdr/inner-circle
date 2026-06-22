@@ -160,22 +160,26 @@ async function buildPages() {
   for (const file of pageFiles) {
     const relative = path.relative(pagesRoot, file);
     const { data, content } = parseFrontmatter(await fs.readFile(file, "utf8"));
-    const bodyContent = await renderTemplate(content, normalizeContext(data), { partialsRoot });
+    const pageContext = {
+      ...normalizeContext(data),
+      BUILD_VERSION: escapeHtml(buildVersion),
+      ORIGINAL_NAV_LINK: includeOriginalPages ? ' / <a href="/original/">OR</a>' : "",
+      ROUTES_HEAD: routesHead
+    };
+    const bodyContent = await renderTemplate(content, pageContext, { partialsRoot });
     const hasAnimatedBoot = /\bdata-animate=(["'])true\1/.test(bodyContent);
     const bodyClass = [data.bodyClass || "", hasAnimatedBoot ? "ic-booting" : ""].filter(Boolean).join(" ");
     const description = data.description
       ? `<meta name="description" content="${escapeHtml(data.description)}" />`
       : "";
     const html = await renderTemplate(layout, {
-      ...normalizeContext(data),
+      ...pageContext,
       CONTENT: bodyContent.trim(),
       DESCRIPTION_META: description,
       ROUTES_HEAD: routesHead,
       TITLE: escapeHtml(data.title || ""),
       LANG: escapeHtml(data.lang || "ru"),
-      BODY_CLASS: escapeHtml(bodyClass),
-      BUILD_VERSION: escapeHtml(buildVersion),
-      ORIGINAL_NAV_LINK: includeOriginalPages ? ' / <a href="/original/">OR</a>' : ""
+      BODY_CLASS: escapeHtml(bodyClass)
     }, { partialsRoot });
 
     const target = path.join(distRoot, relative);

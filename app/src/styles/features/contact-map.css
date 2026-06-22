@@ -14,7 +14,7 @@
   .contact-location__visual {
     display: block;
     margin: 0 calc(var(--space-small) * -1);
-    padding: 0 0 var(--space);
+    padding: 0 0 var(--space-small);
   }
 
   .contact-map {
@@ -122,6 +122,14 @@
     max-width: 48ch;
   }
 
+  .contact-location__actions._783e33 {
+    margin-top: var(--space-x-small);
+  }
+
+  .contact-location__points._d43f79 {
+    margin-top: var(--space-small);
+  }
+
   .contact-location__points._d43f79 ul {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
@@ -187,7 +195,8 @@
     }
 
     .contact-map {
-      aspect-ratio: 4 / 3;
+      aspect-ratio: 920 / 620;
+      max-height: min(62vh, 620px);
     }
 
     .contact-location._bfcb5a .contact-location__heading {
