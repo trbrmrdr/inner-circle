@@ -2,11 +2,12 @@ import readline from "readline/promises";
 import { stdin as input, stdout as output } from "process";
 import { AiTextHelper } from "../src/core/AiTextHelper";
 import { MediaPipeline } from "../src/media/MediaPipeline";
-import { TelegramPublisher } from "../src/publishers/TelegramPublisher";
+import { VkConfig } from "../src/config/VkConfig";
+import { VkPublisher } from "../src/publishers/VkPublisher";
 import { GoogleSheetsService } from "../src/sheets/GoogleSheetsService";
 import { PostTask } from "../src/types/autopost";
 
-class TelegramAutopostTestCli {
+class VkAutopostTestCli {
   static async Run() {
     if (this.HasFlag("--help") || this.HasFlag("-h")) {
       this.PrintHelp();
@@ -37,26 +38,34 @@ class TelegramAutopostTestCli {
       this.PrintSelected(task);
 
       if (!yes) {
-        const answer = await rl.question("Download media and send this post to Telegram tech group? y/N: ");
+        const answer = await rl.question("Download media and send this post to VK group? y/N: ");
         if (!["y", "yes", "д", "да"].includes(answer.trim().toLowerCase())) {
           console.log("Canceled. Google Sheets was not changed.");
           return;
         }
       }
 
-      console.log("Preparing Telegram text...");
-      const text = (await AiTextHelper.PreparePostText(task)).telegram;
-      const telegramTextMode = task.media_items.length > 0 && task.post_type !== "text" ? "media caption" : "text message";
-      console.log(`Telegram text: ${text.length} chars | ${telegramTextMode}`);
-      console.log(this.OneLine(AiTextHelper.StripHtml(text)).slice(0, 500));
+      if (!prepareOnly) {
+        if (!VkConfig.IsConfigured()) {
+          throw new Error("VK is not configured. Fill VK_ACCESS_TOKEN and numeric VK_GROUP_ID. VK_ENABLED can stay false for this manual test.");
+        }
+
+        console.log("Checking VK token/upload access...");
+        await VkPublisher.AssertManualPostAccess(task);
+      }
+
+      console.log("Preparing VK text...");
+      const text = (await AiTextHelper.PreparePostText(task)).vk;
+      console.log(`VK text: ${text.length} chars | wall message`);
+      console.log(this.OneLine(text).slice(0, 500));
       console.log("");
 
       console.log("Downloading and preparing media...");
       console.log(`Media IDs: ${task.media_items.map((item) => item.media_id).join(", ") || "-"}`);
-      const prepared = await MediaPipeline.PrepareTelegramPost(task, text);
+      const prepared = await MediaPipeline.PrepareVkPost(task, text);
 
       console.log(`Source dir: ${prepared.sourceDir}`);
-      console.log(`Telegram dir: ${prepared.platformDir}`);
+      console.log(`VK dir: ${prepared.platformDir}`);
       console.log(`Manifest: ${prepared.manifestPath}`);
       this.PrintWarnings(prepared.warnings || []);
       this.PrintPreparedMedia(prepared.media);
@@ -70,13 +79,13 @@ class TelegramAutopostTestCli {
           warnings: prepared.warnings || [],
           manifestPath: prepared.manifestPath,
           sheetsChanged: false,
-          telegramSent: false,
+          vkSent: false,
         }, null, 2));
         return;
       }
 
-      console.log("Sending to Telegram tech group...");
-      const result = await TelegramPublisher.PublishPreparedPostToTech(prepared);
+      console.log(`Sending to VK group ${VkConfig.ResolveGroupId()}...`);
+      const result = await VkPublisher.PublishPreparedPostToGroup(prepared);
       if (result.ok) {
         this.CleanupPrepared(prepared);
       }
@@ -85,6 +94,7 @@ class TelegramAutopostTestCli {
         ok: result.ok,
         platform: result.platform,
         id: result.id,
+        url: result.url,
         message: result.message,
         tempCleaned: result.ok,
         sheetsChanged: false,
@@ -143,8 +153,8 @@ class TelegramAutopostTestCli {
     console.log(this.OneLine(task.text).slice(0, 500));
     console.log("");
 
-    if (!task.platforms.includes("telegram")) {
-      console.log("Note: this post does not include Telegram in platforms, but test mode can still send it to tech group.");
+    if (!task.platforms.includes("vk")) {
+      console.log("Note: this post does not include VK in platforms, but test mode can still send it to VK group.");
       console.log("");
     }
   }
@@ -214,9 +224,9 @@ class TelegramAutopostTestCli {
   static PrintHelp() {
     console.log([
       "Usage:",
-      "  npm run autopost:telegram:test",
-      "  npm run autopost:telegram:test -- --post-id <post_id> --prepare-only --yes",
-      "  npm run autopost:telegram:test -- --post-id <post_id> --yes",
+      "  npm run autopost:vk:test",
+      "  npm run autopost:vk:test -- --post-id <post_id> --prepare-only --yes",
+      "  npm run autopost:vk:test -- --post-id <post_id> --yes",
       "",
       "Options:",
       "  --post-id <post_id>  Select a post without interactive prompt.",
@@ -224,12 +234,13 @@ class TelegramAutopostTestCli {
       "  --yes                Skip confirmation prompt.",
       "  --limit <number>     Number of post candidates to show.",
       "",
+      "VK_ENABLED can stay false. This manual test requires only VK_ACCESS_TOKEN and numeric VK_GROUP_ID.",
       "Google Sheets is not changed by this test command.",
     ].join("\n"));
   }
 }
 
-TelegramAutopostTestCli.Run().catch((error) => {
+VkAutopostTestCli.Run().catch((error) => {
   console.error(error instanceof Error ? error.message : error);
   process.exit(1);
 });

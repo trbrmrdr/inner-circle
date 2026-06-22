@@ -41,6 +41,8 @@ The caller should see the platform order in one place. Each publisher decides in
 Recommended sheets:
 
 - `SETTINGS` - key/value controls.
+- `SETTINGS.value` is the runtime value. `SETTINGS.value_ru` is only a Russian human-readable version for prompts/values and is not read by the server.
+- Empty `SETTINGS.value` means the current server uses its env/code default. Empty values must not break posting.
 - `POSTS` - autoposting queue.
 - `MEDIA` - Google Drive media catalog.
 - `LEADS` - incoming site form requests.
@@ -75,6 +77,13 @@ telegram_message_id
 telegram_url
 telegram_error
 telegram_response
+vk_status
+vk_lock_until
+vk_published_at
+vk_post_id
+vk_url
+vk_error
+vk_response
 ```
 
 Statuses:
@@ -108,9 +117,10 @@ Rules:
 - `MEDIA.preview_url` is only for spreadsheet preview formulas. It must not be used as a publishing source.
 - Platform IDs are written only after successful platform responses.
 - Before publishing to a platform, server checks whether that platform ID already exists.
-- Each platform owns its own status/id/error/response columns. Current sync creates only Telegram platform columns; VK/Instagram/Facebook columns are added when those publishers are implemented.
+- Each platform owns its own status/id/error/response columns. Current sync creates Telegram and VK platform columns; Instagram/Facebook columns are added when those publishers are implemented.
 - Batch read/write is preferred. Do not update cells one-by-one in loops if a batch is possible.
 - Store raw Telegram response in `telegram_response` only as compact JSON.
+- Store raw VK response in `vk_response` only as compact JSON.
 
 ## Runtime files and Docker
 
@@ -157,7 +167,13 @@ Instagram:
 VK:
 
 - Direct VK API calls are enough for the first version.
-- Photo/video uploads use VK upload server flow before `wall.post`.
+- `VK_GROUP_ID` is the positive numeric community ID only. Do not add a second owner env value; VK `wall.post.owner_id` is computed as `-VK_GROUP_ID` inside `VkPublisher`.
+- Media posting requires a VK user token for a user who can post as the community. The token must have the wall/photo/video permissions needed by the used methods.
+- Photo/video uploads use VK upload server flow before `wall.post`: wall photo upload server -> upload file -> save wall photo; video.save -> upload file; then `wall.post` with attachments.
+- VK autopost sends only text, photos, and videos. Document/file fallback is forbidden for autopost media.
+- Photo preparation outputs JPEG files for VK, including HEIC/HEIF/PNG/WEBP/TIFF sources when conversion is possible.
+- Video preparation outputs MP4/H.264/AAC through `scripts/media/vk-video-normalize.sh`, preserving source aspect ratio and avoiding black padding.
+- `wall.post` receives one text message and comma-separated `attachments`. VK decides final wall layout; the server controls media order and normalization.
 
 Facebook:
 
@@ -180,10 +196,14 @@ Facebook:
 ## DeepSeek
 
 - Text preparation is optional.
-- If DeepSeek is disabled or fails, original text is used.
+- DeepSeek is enabled only when both env `DEEPSEEK_ENABLED=true` and Google `SETTINGS.deepseek.enabled=true`.
+- If DeepSeek is disabled by env/settings or fails, original text is used.
+- Platform prompts live in Google `SETTINGS` as `deepseek.<platform>.prompt`. `value` is the English runtime prompt, `value_ru` is the Russian explanation/version. Empty `value` falls back to the server default prompt from code.
 - Use platform-specific output:
   - Telegram: HTML-safe formatting.
-  - VK/Facebook/Instagram: plain caption.
+  - VK: plain text for `wall.post.message`.
 - Telegram text preparation uses a platform prompt and chooses the limit by post shape: 4096 characters for text-only posts, 1024 characters for media captions.
+- VK text preparation uses a platform prompt and produces plain text for `wall.post.message`.
+- Do not add DeepSeek prompt rows for networks that do not have a completed publisher/media pipeline/runtime column/test CLI yet.
 - `DEEPSEEK_PROMPT_LANGUAGE=en` is the default because DeepSeek follows the style prompt more reliably in English. Use `DEEPSEEK_PROMPT_LANGUAGE=ru` only for local prompt debugging.
 - DeepSeek never publishes. It only transforms/prepares text before publisher calls.

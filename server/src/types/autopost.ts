@@ -33,7 +33,13 @@ export interface PostTask extends SheetRow {
   telegram_url?: string;
   telegram_error?: string;
   telegram_response?: string;
+  vk_status?: string;
+  vk_lock_until?: string;
+  vk_published_at?: string;
   vk_post_id?: string;
+  vk_url?: string;
+  vk_error?: string;
+  vk_response?: string;
   instagram_media_id?: string;
   facebook_post_id?: string;
 }

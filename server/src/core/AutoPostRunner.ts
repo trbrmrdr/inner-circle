@@ -16,15 +16,28 @@ import { TechLog } from "./TechLog";
 import { TimeHelper } from "./TimeHelper";
 
 export class AutoPostRunner {
-  static RequiredPostColumns = [
-    "telegram_status",
-    "telegram_lock_until",
-    "telegram_published_at",
-    "telegram_message_id",
-    "telegram_url",
-    "telegram_error",
-    "telegram_response",
-  ];
+  static RequiredPostColumnsByPlatform: Record<Platform, string[]> = {
+    telegram: [
+      "telegram_status",
+      "telegram_lock_until",
+      "telegram_published_at",
+      "telegram_message_id",
+      "telegram_url",
+      "telegram_error",
+      "telegram_response",
+    ],
+    vk: [
+      "vk_status",
+      "vk_lock_until",
+      "vk_published_at",
+      "vk_post_id",
+      "vk_url",
+      "vk_error",
+      "vk_response",
+    ],
+    instagram: [],
+    facebook: [],
+  };
   static Timer: NodeJS.Timeout | null = null;
   static IsStarted = false;
   static IsRunning = false;
@@ -105,17 +118,17 @@ export class AutoPostRunner {
         return result;
       }
 
-      const missingColumns = await GoogleSheetsService.MissingPostColumns(this.RequiredPostColumns);
+      const missingColumns = await GoogleSheetsService.MissingPostColumns(this.RequiredPostColumns());
       if (missingColumns.length > 0) {
         const result = {
           ok: false,
           processed: 0,
-          message: "Google Sheets POSTS is missing required Telegram columns. Run npm run sheets:sync before enabling autopost.",
+          message: "Google Sheets POSTS is missing required columns for enabled posting platforms. Run npm run sheets:sync before enabling these platforms.",
           missingColumns,
         };
         this.LastResult = result;
         await TechLog.Status([
-          "Автопостинг не запущен: в POSTS нет обязательных Telegram-колонок.",
+          "Автопостинг не запущен: в POSTS нет обязательных колонок включенных платформ.",
           `Нет колонок: ${missingColumns.join(", ")}`,
           "Запусти: npm run sheets:sync",
         ].join("\n"));
@@ -188,11 +201,12 @@ export class AutoPostRunner {
   }
 
   static async PublishAllPlatforms(task: PostTask) {
+    const preparedText = await AiTextHelper.PreparePostText(task);
     const platformJobs: Array<Promise<PublishResult | null>> = [
-      this.PublishPlatform("instagram", task, () => InstagramPublisher.PublishPost(task, task.text)),
-      this.PublishPlatform("facebook", task, () => FacebookPublisher.PublishPost(task, task.text)),
-      this.PublishPlatform("vk", task, () => VkPublisher.PublishPost(task, task.text)),
-      this.PublishPlatform("telegram", task, () => TelegramPublisher.PublishPost(task, "")),
+      this.PublishPlatform("instagram", task, () => InstagramPublisher.PublishPost(task, preparedText.instagram)),
+      this.PublishPlatform("facebook", task, () => FacebookPublisher.PublishPost(task, preparedText.facebook)),
+      this.PublishPlatform("vk", task, () => VkPublisher.PublishPost(task, preparedText.vk)),
+      this.PublishPlatform("telegram", task, () => TelegramPublisher.PublishPost(task, preparedText.telegram)),
     ];
 
     const results = await Promise.all(platformJobs);
@@ -255,6 +269,13 @@ export class AutoPostRunner {
     return false;
   }
 
+  static RequiredPostColumns() {
+    const platforms: Platform[] = ["telegram", "vk", "instagram", "facebook"];
+    return platforms.flatMap((platform) => (
+      this.PlatformReady(platform) ? this.RequiredPostColumnsByPlatform[platform] : []
+    ));
+  }
+
   static PlatformLocked(task: PostTask, platform: Platform) {
     const lockUntil = task.raw[`${platform}_lock_until`] || "";
     if (!lockUntil) return false;
@@ -285,9 +306,14 @@ export class AutoPostRunner {
         fields[`${platform}_error`] = result.message || "Unknown platform error";
       }
 
-      if (platform === "telegram" && result.id) {
-        fields.telegram_message_id = result.id;
-        if (result.url) fields.telegram_url = result.url;
+      if (result.id) {
+        if (platform === "telegram") fields.telegram_message_id = result.id;
+        if (platform === "vk") fields.vk_post_id = result.id;
+      }
+
+      if (result.url) {
+        if (platform === "telegram") fields.telegram_url = result.url;
+        if (platform === "vk") fields.vk_url = result.url;
       }
     });
     return fields;
@@ -304,8 +330,10 @@ export class AutoPostRunner {
     if (results.length === 0) return "error";
     const realPosted = results.filter((result) => result.ok && !result.skipped && !result.disabled);
     const errors = results.filter((result) => !result.ok);
+    const disabled = results.filter((result) => result.disabled);
     if (errors.length > 0 && realPosted.length > 0) return "partial";
     if (errors.length > 0) return "error";
+    if (disabled.length > 0 && realPosted.length > 0) return "partial";
     if (realPosted.length > 0) return "posted";
     if (results.some((result) => result.skipped || result.disabled)) return "skipped";
     return "error";

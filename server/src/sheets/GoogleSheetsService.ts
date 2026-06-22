@@ -405,14 +405,20 @@ export class GoogleSheetsService {
       telegram_url: raw.telegram_url || "",
       telegram_error: raw.telegram_error || "",
       telegram_response: raw.telegram_response || "",
+      vk_status: raw.vk_status || "",
+      vk_lock_until: raw.vk_lock_until || "",
+      vk_published_at: raw.vk_published_at || "",
       vk_post_id: raw.vk_post_id || "",
+      vk_url: raw.vk_url || "",
+      vk_error: raw.vk_error || "",
+      vk_response: raw.vk_response || "",
       instagram_media_id: raw.instagram_media_id || "",
       facebook_post_id: raw.facebook_post_id || "",
     };
   }
 
   static IsReadyStatus(status: string) {
-    return status.trim().toLowerCase() === "ready";
+    return ["ready", "partial"].includes(status.trim().toLowerCase());
   }
 
   static BuildPublishAt(raw: Record<string, string>) {

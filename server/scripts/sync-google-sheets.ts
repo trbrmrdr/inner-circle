@@ -12,6 +12,7 @@ interface CliOptions {
   leadsSheet?: string;
   logsSheet?: string;
   settingsSheet?: string;
+  onlySettings: boolean;
   gridPaddingRows: number;
   gridPaddingColumns: number;
   trimGrid: boolean;
@@ -33,6 +34,7 @@ interface ExistingSettingsRow {
   key: string;
   value: string;
   description: string;
+  valueRu: string;
 }
 
 class GoogleSheetsSync {
@@ -61,7 +63,11 @@ class GoogleSheetsSync {
     const settingsRows = await this.ReadSettingsRows(sheets);
     const missingSettingsRows = this.MissingSettingsRows(settingsRows);
 
-    for (const definition of SheetsSchema.Definitions()) {
+    const definitions = this.Options.onlySettings
+      ? SheetsSchema.Definitions().filter((definition) => definition.name === GoogleConfig.SETTINGS_SHEET)
+      : SheetsSchema.Definitions();
+
+    for (const definition of definitions) {
       let sheet = existing.get(definition.name);
 
       if (!sheet) {
@@ -151,6 +157,7 @@ class GoogleSheetsSync {
       leadsSheet: this.ArgValue("--leads-sheet"),
       logsSheet: this.ArgValue("--logs-sheet"),
       settingsSheet: this.ArgValue("--settings-sheet"),
+      onlySettings: process.argv.includes("--only-settings"),
       gridPaddingRows: this.ArgNumber("--grid-padding-rows", 1),
       gridPaddingColumns: this.ArgNumber("--grid-padding-columns", 1),
       trimGrid: !process.argv.includes("--no-trim-grid"),
@@ -187,6 +194,7 @@ class GoogleSheetsSync {
       "  --leads-sheet <name>               Имя листа заявок.",
       "  --logs-sheet <name>                Имя листа логов.",
       "  --settings-sheet <name>            Имя листа настроек.",
+      "  --only-settings                    Синхронизировать только лист SETTINGS.",
       "  --grid-padding-rows <number>       Сколько пустых строк держать в запасе.",
       "  --grid-padding-columns <number>    Сколько пустых колонок держать в запасе.",
       "  --no-trim-grid                     Не сжимать сетку таблицы.",
@@ -492,7 +500,7 @@ class GoogleSheetsSync {
   }
 
   static async ReadSettingsRows(sheets: sheets_v4.Sheets): Promise<ExistingSettingsRow[]> {
-    const range = this.Range(GoogleConfig.SETTINGS_SHEET, "A:C");
+    const range = this.Range(GoogleConfig.SETTINGS_SHEET, "A:D");
     try {
       const response = await sheets.spreadsheets.values.get({
         spreadsheetId: GoogleConfig.SPREADSHEET_ID,
@@ -504,6 +512,7 @@ class GoogleSheetsSync {
         key: String(row[0] || "").trim(),
         value: String(row[1] || "").trim(),
         description: String(row[2] || "").trim(),
+        valueRu: String(row[3] || "").trim(),
       })).filter((row) => Boolean(row.key));
     } catch {
       return [];
@@ -528,7 +537,7 @@ class GoogleSheetsSync {
     const startRow = Math.max(sheet.usedRowCount + 1, 2);
     notes.push(`append settings rows: ${missingRows.map(([key]) => key).join(", ")}`);
     valueUpdates.push({
-      range: this.Range(definition.name, `A${startRow}:C${startRow + missingRows.length - 1}`),
+      range: this.Range(definition.name, `A${startRow}:D${startRow + missingRows.length - 1}`),
       values: missingRows,
     });
   }
@@ -542,22 +551,37 @@ class GoogleSheetsSync {
     if (definition.name !== GoogleConfig.SETTINGS_SHEET) return;
     if (existingRows.length === 0) return;
 
-    const defaults = new Map(SheetsSchema.SettingsDefaults.map(([key, value, description]) => [key, { value, description }]));
-    const updatedKeys: string[] = [];
+    const defaults = new Map(SheetsSchema.SettingsDefaults.map(([key, value, description, valueRu]) => [key, { value, description, valueRu }]));
+    const updatedDescriptions: string[] = [];
+    const filledValueRu: string[] = [];
 
     for (const row of existingRows) {
       const defaultRow = defaults.get(row.key);
-      if (!defaultRow || row.description === defaultRow.description) continue;
+      if (!defaultRow) continue;
 
-      updatedKeys.push(row.key);
-      valueUpdates.push({
-        range: this.Range(definition.name, `C${row.rowNumber}`),
-        values: [[defaultRow.description]],
-      });
+      if (row.description !== defaultRow.description) {
+        updatedDescriptions.push(row.key);
+        valueUpdates.push({
+          range: this.Range(definition.name, `C${row.rowNumber}`),
+          values: [[defaultRow.description]],
+        });
+      }
+
+      if (!row.valueRu && defaultRow.valueRu) {
+        filledValueRu.push(row.key);
+        valueUpdates.push({
+          range: this.Range(definition.name, `D${row.rowNumber}`),
+          values: [[defaultRow.valueRu]],
+        });
+      }
     }
 
-    if (updatedKeys.length > 0) {
-      notes.push(`update setting descriptions: ${updatedKeys.join(", ")}`);
+    if (updatedDescriptions.length > 0) {
+      notes.push(`update setting descriptions: ${updatedDescriptions.join(", ")}`);
+    }
+
+    if (filledValueRu.length > 0) {
+      notes.push(`fill setting value_ru: ${filledValueRu.join(", ")}`);
     }
   }
 

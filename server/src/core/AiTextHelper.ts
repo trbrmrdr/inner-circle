@@ -1,47 +1,38 @@
 import { DeepSeekConfig } from "../config/DeepSeekConfig";
 import { TelegramConfig } from "../config/TelegramConfig";
+import { GoogleSheetsService } from "../sheets/GoogleSheetsService";
 import { PostTask, PreparedText } from "../types/autopost";
+import { DeepSeekPrompts } from "./DeepSeekPrompts";
 import { HttpHelper } from "./HttpHelper";
 
-export class AiTextHelper {
-  static TELEGRAM_PROMPT_RU =
-    "Подготовь эстетичный Telegram-текст для автопостинга в спокойном люксовом и деловом тоне.\n\
-Подача: люди знают своё дело и рассказывают интересно, тезисно, без демонстративной роскоши и без давления на деньги.\n\
-Исходный текст уже написан другой нейросетью: не переписывай агрессивно, а аккуратно выровняй ритм, структуру и Telegram-верстку.\n\
-Сохрани факты, имена, цены, даты, адреса, ссылки, контакты и смысл без выдумок.\n\
-Можно использовать 1-2 уместных emoji максимум, только если они усиливают атмосферу и не удешевляют подачу.\n\
-Используй Telegram HTML для легкой верстки: <b>для главного акцента</b>, <i>для мягкого оттенка</i>, при необходимости <a href=\"...\">ссылка</a>.\n\
-Не используй Markdown, неподдерживаемые HTML-теги, таблицы, крикливые CTA, чрезмерные emoji и длинные списки.\n\
-Если у поста есть медиа, текст станет caption первого медиа в альбоме и должен красиво смотреться под сеткой Telegram.\n\
-Сделай текст плотным, читаемым, визуально аккуратным и не длиннее {{telegram_limit}} символов.";
+interface DeepSeekRuntimeSettings {
+  enabled: boolean;
+  telegramPrompt: string;
+  vkPrompt: string;
+}
 
-  static TELEGRAM_PROMPT_EN =
-    "Prepare an elegant Telegram text for autoposting in a calm luxury-business tone.\n\
-The voice should feel like people who know their craft and explain it with taste: interesting, concise, confident, never flashy about money.\n\
-The source text was already generated elsewhere, so do not rewrite it aggressively; refine rhythm, structure, emphasis, and Telegram formatting.\n\
-Keep facts, names, prices, dates, addresses, links, contacts, and meaning unchanged. Do not invent details.\n\
-Use 1-2 tasteful emoji maximum, only when they support the atmosphere and do not cheapen the tone.\n\
-Use Telegram HTML for light layout: <b>for the key accent</b>, <i>for a softer nuance</i>, and <a href=\"...\">links</a> when needed.\n\
-Do not use Markdown, unsupported HTML tags, tables, loud calls to action, excessive emoji, or long lists.\n\
-If the post has media, this text will be the caption of the first media item in a Telegram album and must look good under the media grid.\n\
-Make the result compact, readable, visually neat, and no longer than {{telegram_limit}} characters.";
+export class AiTextHelper {
+  static SettingsCache: { loadedAt: number; settings: DeepSeekRuntimeSettings } | null = null;
+  static SettingsCacheMs = 60_000;
 
   static async PreparePostText(task: PostTask): Promise<PreparedText> {
     const fallback = this.Fallback(task);
-    if (!DeepSeekConfig.IsReady()) return fallback;
+    const settings = await this.LoadSettings();
+    if (!DeepSeekConfig.API_KEY || !DeepSeekConfig.ENABLED || !settings.enabled) return fallback;
 
     const telegramLimit = this.TelegramLimit(task);
     const prompt = [
       "Rewrite the source text for social media autoposting and return strict JSON.",
-      "Return only JSON with keys telegram, vk, instagram, facebook.",
+      "Return only JSON with keys telegram and vk.",
       "Keep meaning, facts, names, prices and contacts unchanged.",
       `Telegram output must be <= ${telegramLimit} characters.`,
       "VK should be readable without HTML.",
-      "Instagram should be concise and may include 3-8 hashtags if relevant.",
-      "Facebook should be neutral and readable.",
       "",
       "Telegram-specific prompt:",
-      this.TelegramPrompt(telegramLimit),
+      this.TelegramPrompt(telegramLimit, settings.telegramPrompt),
+      "",
+      "VK-specific prompt:",
+      this.VkPrompt(settings.vkPrompt),
       "",
       `Post type: ${task.post_type || ""}`,
       `Telegram media count: ${this.TelegramMediaCount(task)}`,
@@ -79,8 +70,8 @@ Make the result compact, readable, visually neat, and no longer than {{telegram_
       return {
         telegram: this.ToTelegramText(parsed.telegram, fallback.telegram, telegramLimit),
         vk: this.ToText(parsed.vk, fallback.vk),
-        instagram: this.ToText(parsed.instagram, fallback.instagram),
-        facebook: this.ToText(parsed.facebook, fallback.facebook),
+        instagram: fallback.instagram,
+        facebook: fallback.facebook,
       };
     } catch (error) {
       return fallback;
@@ -121,12 +112,56 @@ Make the result compact, readable, visually neat, and no longer than {{telegram_
     return clean;
   }
 
-  static TelegramPrompt(limit: number) {
-    const template = DeepSeekConfig.PROMPT_LANGUAGE === "en"
-      ? this.TELEGRAM_PROMPT_EN
-      : this.TELEGRAM_PROMPT_RU;
+  static async LoadSettings(): Promise<DeepSeekRuntimeSettings> {
+    const now = Date.now();
+    if (this.SettingsCache && now - this.SettingsCache.loadedAt < this.SettingsCacheMs) {
+      return this.SettingsCache.settings;
+    }
+
+    try {
+      const settings = await GoogleSheetsService.ReadSettings();
+      const loaded = {
+        enabled: this.Bool(settings, "deepseek.enabled", DeepSeekConfig.ENABLED),
+        telegramPrompt: this.Str(settings, "deepseek.telegram.prompt", ""),
+        vkPrompt: this.Str(settings, "deepseek.vk.prompt", ""),
+      };
+      this.SettingsCache = { loadedAt: now, settings: loaded };
+      return loaded;
+    } catch {
+      const fallback = {
+        enabled: DeepSeekConfig.ENABLED,
+        telegramPrompt: "",
+        vkPrompt: "",
+      };
+      this.SettingsCache = { loadedAt: now, settings: fallback };
+      return fallback;
+    }
+  }
+
+  static Bool(settings: Map<string, string>, key: string, fallback: boolean) {
+    const raw = settings.get(key);
+    if (raw === undefined || raw.trim() === "") return fallback;
+    return ["1", "true", "yes", "on", "да"].includes(raw.trim().toLowerCase());
+  }
+
+  static Str(settings: Map<string, string>, key: string, fallback: string) {
+    const raw = settings.get(key);
+    if (raw === undefined || raw.trim() === "") return fallback;
+    return raw.trim();
+  }
+
+  static TelegramPrompt(limit: number, settingsPrompt = "") {
+    const template = this.PlatformPrompt(settingsPrompt, DeepSeekPrompts.TELEGRAM_EN, DeepSeekPrompts.TELEGRAM_RU);
 
     return template.replace("{{telegram_limit}}", String(limit));
+  }
+
+  static VkPrompt(settingsPrompt = "") {
+    return this.PlatformPrompt(settingsPrompt, DeepSeekPrompts.VK_EN, DeepSeekPrompts.VK_RU);
+  }
+
+  static PlatformPrompt(settingsPrompt: string, englishDefault: string, russianDefault: string) {
+    return settingsPrompt.trim() || (DeepSeekConfig.PROMPT_LANGUAGE === "en" ? englishDefault : russianDefault);
   }
 
   static TelegramLimit(task: PostTask) {

@@ -35,7 +35,7 @@ Rules:
 - Keep network-specific output in `tmp/autopost/<post_id>/<run_id>/<network>`.
 - Do not write final media only inside the image layer.
 - Do not send unsupported files as documents. Convert to the network format or fail before publishing.
-- Video normalization should use `ffmpeg` and write MP4 output for Telegram before `sendVideo`.
+- Video normalization should use `ffmpeg` and write network-specific MP4 output before publishing.
 
 Telegram video helper:
 
@@ -49,4 +49,19 @@ Defaults:
 TELEGRAM_VIDEO_CRF=23
 TELEGRAM_VIDEO_PRESET=veryfast
 TELEGRAM_VIDEO_MAX_BOX=1920
+```
+
+VK video helper:
+
+```bash
+/app/scripts/media/vk-video-normalize.sh input.mov output.mp4
+```
+
+Defaults:
+
+```text
+VK_VIDEO_CRF=21
+VK_VIDEO_PRESET=veryfast
+VK_VIDEO_MAX_BOX=1920
+VK_VIDEO_AUDIO_BITRATE=160k
 ```

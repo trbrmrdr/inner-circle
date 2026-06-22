@@ -55,7 +55,7 @@
  * Вручную не запускать.
  */
 
-const CONTENT_PLANNER_VERSION = '1.2.12';
+const CONTENT_PLANNER_VERSION = '1.2.14';
 
 const ROOT_FOLDER_ID = '1UcE35OVOx1IwQDl4pp4sQgOGZRDzzrkq';
 
@@ -139,13 +139,19 @@ const POSTS_HEADER_NOTES = {
     'точка с запятой, запятая или перенос строки.',
     '',
     'ПРИМЕР:',
-    '[telegram; vk; instagram]',
+    '[Telegram; VK; Instagram]',
+    '[Telegram;VK;Instagram]',
+    '',
+    'Регистр неважен:',
+    '[Telegram] и [telegram] работают одинаково.',
+    '',
+    'Пробел после разделителя необязателен.',
     '',
     'ЗНАЧЕНИЯ:',
-    '[telegram], [tg], [телеграм]',
-    '[vk], [вк]',
-    '[instagram], [ig], [inst], [инстаграм]',
-    '[facebook], [fb], [фейсбук]',
+    '[Telegram], [TG], [телеграм]',
+    '[VK], [ВК]',
+    '[Instagram], [IG], [Inst], [инстаграм]',
+    '[Facebook], [FB], [фейсбук]',
     '',
     'Публикуются только включенные и настроенные платформы.'
   ].join('\n'),
