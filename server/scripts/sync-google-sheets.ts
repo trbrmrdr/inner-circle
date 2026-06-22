@@ -399,6 +399,25 @@ class GoogleSheetsSync {
           },
         });
       }
+
+      if (column.headerNote) {
+        notes.push(`note header ${definition.name}.${column.name}`);
+        requests.push({
+          repeatCell: {
+            range: {
+              sheetId: sheet.sheetId,
+              startRowIndex: 0,
+              endRowIndex: 1,
+              startColumnIndex: columnIndex - 1,
+              endColumnIndex: columnIndex,
+            },
+            cell: {
+              note: column.headerNote,
+            },
+            fields: "note",
+          },
+        });
+      }
     }
   }
 

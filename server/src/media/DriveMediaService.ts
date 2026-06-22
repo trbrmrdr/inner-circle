@@ -18,8 +18,8 @@ export class DriveMediaService {
 
     if (item.file_id) {
       await this.DownloadDriveFile(item.file_id, targetPath);
-    } else if (item.media_url || item.public_url || item.preview_url) {
-      await this.DownloadUrl(item.media_url || item.public_url || item.preview_url || "", targetPath);
+    } else if (item.media_url || item.public_url) {
+      await this.DownloadUrl(item.media_url || item.public_url || "", targetPath);
     } else {
       throw new Error(`No downloadable source for media_id=${item.media_id}`);
     }

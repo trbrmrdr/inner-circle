@@ -13,14 +13,15 @@ function syncMediaFromDrive() {
   const scannedByFileId = {};
   scanned.forEach(item => scannedByFileId[item.fileId] = item);
 
-  updateExistingMediaRows_(sheet, cols, existing, scannedByFileId);
-  appendNewMediaRows_(sheet, cols, existing, scanned);
+  const updateSummary = updateExistingMediaRows_(sheet, cols, existing, scannedByFileId);
+  const appendSummary = appendNewMediaRows_(sheet, cols, existing, scanned);
 
   refreshMediaUsage_();
   applyMediaVisuals_();
   refreshPostPreviews();
 
-  SpreadsheetApp.getUi().alert('MEDIA sync completed. (Синхронизация MEDIA завершена.)');
+  const statusSummary = countMediaRowsByStatus_(sheet, cols);
+  SpreadsheetApp.getUi().alert(buildMediaSyncMessage_(scanned.length, updateSummary, appendSummary, statusSummary));
 }
 
 function refreshMediaUsage() {
@@ -29,6 +30,72 @@ function refreshMediaUsage() {
   applyMediaVisuals_();
 
   SpreadsheetApp.getUi().alert('MEDIA usage refreshed. (Использование медиа обновлено.)');
+}
+
+function removeMissingMediaRows() {
+  const ui = SpreadsheetApp.getUi();
+  setupMediaSheet_();
+
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(MEDIA_SHEET_NAME);
+
+  if (!sheet || sheet.getLastRow() < 2) {
+    ui.alert('MEDIA has no rows to clean. (В MEDIA нет строк для очистки.)');
+    return;
+  }
+
+  const cols = getHeaderMap_(sheet);
+
+  if (!cols.file_status) {
+    ui.alert('MEDIA is missing file_status column. (В MEDIA нет колонки file_status.)');
+    return;
+  }
+
+  const rowCount = sheet.getLastRow() - 1;
+  const values = sheet.getRange(2, 1, rowCount, sheet.getLastColumn()).getValues();
+  const rowsToDelete = [];
+  const mediaIds = [];
+
+  values.forEach((row, index) => {
+    const status = String(row[cols.file_status - 1] || '').trim().toLowerCase();
+
+    if (status !== 'missing') {
+      return;
+    }
+
+    rowsToDelete.push(index + 2);
+
+    if (cols.media_id) {
+      const mediaId = String(row[cols.media_id - 1] || '').trim();
+
+      if (mediaId) {
+        mediaIds.push(mediaId);
+      }
+    }
+  });
+
+  if (!rowsToDelete.length) {
+    ui.alert('Missing MEDIA rows not found. (Missing-строки MEDIA не найдены.)');
+    return;
+  }
+
+  const preview = mediaIds.slice(0, 25).join(', ');
+  const suffix = mediaIds.length > 25 ? `, ...and ${mediaIds.length - 25} more` : '';
+  const response = ui.alert(
+    'Remove missing MEDIA rows? (Удалить missing-строки MEDIA?)',
+    `Rows will be deleted from MEDIA only. Google Drive files will not be touched.\nСтроки будут удалены только из MEDIA. Файлы Google Drive не трогаем.\n\nRows: ${rowsToDelete.length}\nMedia IDs: ${preview}${suffix}\n\nPosts that still reference these IDs will show NOT FOUND.`,
+    ui.ButtonSet.YES_NO
+  );
+
+  if (response !== ui.Button.YES) {
+    return;
+  }
+
+  deleteSheetRows_(sheet, rowsToDelete);
+  refreshMediaUsage_();
+  applyMediaVisuals_();
+  refreshPostPreviews();
+
+  ui.alert(`Removed ${rowsToDelete.length} missing MEDIA rows.\nУдалено missing-строк MEDIA: ${rowsToDelete.length}.`);
 }
 
 function refreshMediaUsage_() {
@@ -355,7 +422,8 @@ function readExistingMedia_(sheet, cols) {
     if (fileId) {
       result.byFileId[fileId] = {
         row: index + 2,
-        mediaId
+        mediaId,
+        fileStatus: cols.file_status ? String(row[cols.file_status - 1] || '').trim().toLowerCase() : ''
       };
     }
   });
@@ -364,6 +432,12 @@ function readExistingMedia_(sheet, cols) {
 }
 
 function updateExistingMediaRows_(sheet, cols, existing, scannedByFileId) {
+  const summary = {
+    updated: 0,
+    missing: 0,
+    newlyMissing: 0
+  };
+
   Object.keys(existing.byFileId).forEach(fileId => {
     const rowInfo = existing.byFileId[fileId];
     const row = rowInfo.row;
@@ -372,15 +446,27 @@ function updateExistingMediaRows_(sheet, cols, existing, scannedByFileId) {
     if (!item) {
       setCell_(sheet, row, cols.file_status, 'missing');
       setCell_(sheet, row, cols.preview, 'missing');
+      summary.missing += 1;
+
+      if (rowInfo.fileStatus !== 'missing') {
+        summary.newlyMissing += 1;
+      }
+
       return;
     }
 
     setMediaRowValues_(sheet, cols, row, rowInfo.mediaId, item);
+    summary.updated += 1;
   });
+
+  return summary;
 }
 
 function appendNewMediaRows_(sheet, cols, existing, scanned) {
   const idState = existing.idState || createMediaIdState_();
+  const summary = {
+    added: 0
+  };
 
   scanned.forEach(item => {
     if (existing.byFileId[item.fileId]) {
@@ -391,7 +477,10 @@ function appendNewMediaRows_(sheet, cols, existing, scanned) {
     const row = sheet.getLastRow() + 1;
 
     setMediaRowValues_(sheet, cols, row, mediaId, item);
+    summary.added += 1;
   });
+
+  return summary;
 }
 
 function createMediaIdState_() {
@@ -525,6 +614,8 @@ function applyMediaVisuals_() {
       sheet.getRange(row, cols.preview).setBackground('#eeeeee');
     } else if (cols.preview && type === 'video') {
       sheet.getRange(row, cols.preview).setBackground('#d9eaf7');
+    } else if (cols.preview) {
+      sheet.getRange(row, cols.preview).setBackground('#ffffff');
     }
 
     if (cols.media_id) {
@@ -594,4 +685,47 @@ function buildVideoPreviewMap_(files) {
   });
 
   return map;
+}
+
+function countMediaRowsByStatus_(sheet, cols) {
+  const summary = {
+    totalRows: 0,
+    activeRows: 0,
+    missingRows: 0
+  };
+
+  if (!sheet || sheet.getLastRow() < 2 || !cols.file_status) {
+    return summary;
+  }
+
+  const values = sheet.getRange(2, cols.file_status, sheet.getLastRow() - 1, 1).getValues().flat();
+
+  values.forEach(value => {
+    const status = String(value || '').trim().toLowerCase();
+    summary.totalRows += 1;
+
+    if (status === 'missing') {
+      summary.missingRows += 1;
+    } else {
+      summary.activeRows += 1;
+    }
+  });
+
+  return summary;
+}
+
+function buildMediaSyncMessage_(scannedCount, updateSummary, appendSummary, statusSummary) {
+  return [
+    'MEDIA sync completed. (Синхронизация MEDIA завершена.)',
+    '',
+    `Drive media found: ${scannedCount}`,
+    `Existing rows refreshed: ${updateSummary.updated}`,
+    `New rows added: ${appendSummary.added}`,
+    `Missing rows now: ${statusSummary.missingRows}`,
+    `Newly marked missing: ${updateSummary.newlyMissing}`,
+    `MEDIA rows total: ${statusSummary.totalRows}`,
+    '',
+    'If you want to remove missing rows from MEDIA, run Sync > Remove missing MEDIA rows.',
+    'Если нужно убрать missing-строки из MEDIA, запусти Sync > Remove missing MEDIA rows.'
+  ].join('\n');
 }

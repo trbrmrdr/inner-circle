@@ -3,10 +3,10 @@ import { EmailConfig } from "../config/EmailConfig";
 import { GoogleConfig } from "../config/GoogleConfig";
 import { TelegramConfig } from "../config/TelegramConfig";
 import { EmailPublisher } from "../publishers/EmailPublisher";
-import { TelegramPublisher } from "../publishers/TelegramPublisher";
 import { GoogleSheetsService } from "../sheets/GoogleSheetsService";
 import { AiTextHelper } from "./AiTextHelper";
 import { HttpHelper } from "./HttpHelper";
+import { TechLog } from "./TechLog";
 
 export class LeadProcessor {
   static async Handle(lead: LeadRequest) {
@@ -14,7 +14,7 @@ export class LeadProcessor {
     const [sheetsResult, emailResults, telegramTechResult] = await Promise.all([
       this.Safe("sheets", () => GoogleSheetsService.AppendLead(cleanLead)),
       this.SafeMany("email", () => EmailPublisher.SendLead(cleanLead)),
-      this.Safe("telegram-tech", () => TelegramPublisher.SendTechMessage(this.TelegramText(cleanLead))),
+      this.Safe("telegram-tech", () => TechLog.Message(this.TelegramText(cleanLead))),
     ]);
     const results: PublishResult[] = [sheetsResult, ...emailResults, telegramTechResult];
 

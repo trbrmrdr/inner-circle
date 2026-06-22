@@ -5,6 +5,7 @@ import { ServerConfig } from "./ServerConfig";
 export class TelegramConfig {
   static POST_ENABLED = Env.Bool("TELEGRAM_POST_ENABLED", true);
   static TECH_ENABLED = Env.Bool("TELEGRAM_TECH_ENABLED", true);
+  static STARTUP_STATUS_ENABLED = Env.Bool("TELEGRAM_STARTUP_STATUS_ENABLED", true);
   static BOT_TOKEN = Env.Str("TELEGRAM_BOT_TOKEN", "");
   static TECH_CHAT_ID = Env.Str("TELEGRAM_TECH_CHAT_ID", "");
   static PUBLIC_CHAT_ID = Env.Str("TELEGRAM_PUBLIC_CHAT_ID", "");

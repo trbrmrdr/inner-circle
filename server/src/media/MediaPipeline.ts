@@ -2,7 +2,8 @@ import fs from "fs";
 import path from "path";
 import { randomUUID } from "crypto";
 import { ServerConfig } from "../config/ServerConfig";
-import { PreparedPost, PostTask } from "../types/autopost";
+import { DownloadedMedia, PreparedMedia, PreparedPost, PostTask } from "../types/autopost";
+import { HttpHelper } from "../core/HttpHelper";
 import { DriveMediaService } from "./DriveMediaService";
 import { TelegramMediaPreparer } from "./TelegramMediaPreparer";
 
@@ -17,12 +18,24 @@ export class MediaPipeline {
     fs.mkdirSync(sourceDir, { recursive: true });
     fs.mkdirSync(platformDir, { recursive: true });
 
-    const downloaded = [];
+    const downloaded: DownloadedMedia[] = [];
+    const warnings: string[] = [];
     for (const media of task.media_items || []) {
-      downloaded.push(await DriveMediaService.DownloadMedia(media, sourceDir));
+      try {
+        downloaded.push(await DriveMediaService.DownloadMedia(media, sourceDir));
+      } catch (error) {
+        warnings.push(`media ${media.media_id} skipped: ${HttpHelper.ErrorMessage(error)}`);
+      }
     }
 
-    const preparedMedia = await TelegramMediaPreparer.Prepare(downloaded, platformDir);
+    const preparedMedia: PreparedMedia[] = [];
+    for (const media of downloaded) {
+      try {
+        preparedMedia.push(...await TelegramMediaPreparer.Prepare([media], platformDir));
+      } catch (error) {
+        warnings.push(`media ${media.media.media_id} skipped during Telegram preparation: ${HttpHelper.ErrorMessage(error)}`);
+      }
+    }
     const manifestPath = path.join(rootDir, "manifest.json");
     const prepared: PreparedPost = {
       task,
@@ -33,6 +46,7 @@ export class MediaPipeline {
       manifestPath,
       text,
       media: preparedMedia,
+      warnings,
     };
 
     fs.writeFileSync(manifestPath, JSON.stringify(this.Manifest(prepared), null, 2));
@@ -50,6 +64,7 @@ export class MediaPipeline {
       platformDir: prepared.platformDir,
       text_length: prepared.text.length,
       text_mode: prepared.media.length > 0 ? "media_caption" : "text_message",
+      warnings: prepared.warnings || [],
       media: prepared.media.map((item) => ({
         media_id: item.media_id,
         originalPath: item.originalPath,
@@ -71,5 +86,10 @@ export class MediaPipeline {
 
   static SafePathPart(value: string) {
     return value.replace(/[^\w.\-]+/g, "_").slice(0, 100) || "post";
+  }
+
+  static Cleanup(prepared: PreparedPost) {
+    if (!prepared.rootDir) return;
+    fs.rmSync(prepared.rootDir, { recursive: true, force: true });
   }
 }

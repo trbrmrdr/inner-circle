@@ -1,5 +1,6 @@
 export type Platform = "telegram" | "vk" | "instagram" | "facebook";
 export type ServicePlatform = Platform | "email" | `email:${string}` | "sheets" | "telegram-tech";
+export type PostStatus = "" | "template" | "draft" | "ready" | "processing" | "posted" | "partial" | "error" | "skipped" | "done";
 
 export type PostType =
   | "text"
@@ -17,7 +18,7 @@ export interface SheetRow {
 
 export interface PostTask extends SheetRow {
   post_uid: string;
-  status: string;
+  status: PostStatus | string;
   publish_at?: string;
   title?: string;
   text: string;
@@ -25,8 +26,13 @@ export interface PostTask extends SheetRow {
   media_items: PostMediaItem[];
   platforms: Platform[];
   post_type: PostType;
-  attempt: number;
+  telegram_status?: string;
+  telegram_lock_until?: string;
+  telegram_published_at?: string;
   telegram_message_id?: string;
+  telegram_url?: string;
+  telegram_error?: string;
+  telegram_response?: string;
   vk_post_id?: string;
   instagram_media_id?: string;
   facebook_post_id?: string;
@@ -81,6 +87,7 @@ export interface PreparedPost {
   manifestPath: string;
   text: string;
   media: PreparedMedia[];
+  warnings?: string[];
 }
 
 export interface LeadRequest {
@@ -106,7 +113,16 @@ export interface PublishResult {
   id?: string;
   url?: string;
   message?: string;
+  stats?: PublishStats;
   raw?: unknown;
+}
+
+export interface PublishStats {
+  textLength?: number;
+  mediaCount?: number;
+  photoCount?: number;
+  videoCount?: number;
+  warningCount?: number;
 }
 
 export interface PreparedText {

@@ -71,19 +71,18 @@ export class GoogleSheetsService {
     return settings;
   }
 
-  static async ReadReadyPosts(limit = 3): Promise<PostTask[]> {
-    const posts = await this.ReadPostCandidates();
+  static async ReadDuePosts(settings: { publishWindowMinutes: number; futureGraceSeconds: number }): Promise<PostTask[]> {
+    const posts = await this.ReadPostCandidates(true);
     const now = Date.now();
+    const from = now - settings.publishWindowMinutes * 60_000;
+    const to = now + settings.futureGraceSeconds * 1_000;
 
-    return posts
-      .filter((task) => {
-        const status = task.status.toLowerCase();
-        if (!["ready", "scheduled"].includes(status)) return false;
-        if (!task.publish_at) return true;
-        const time = this.ParsePublishAt(task.publish_at);
-        return Number.isNaN(time) || time <= now;
-      })
-      .slice(0, limit);
+    return posts.filter((task) => {
+      if (!this.IsReadyStatus(task.status)) return false;
+      const publishAt = this.ParsePublishAt(task.publish_at || "");
+      if (Number.isNaN(publishAt)) return false;
+      return publishAt >= from && publishAt <= to;
+    });
   }
 
   static async ReadPostCandidates(force = false): Promise<PostTask[]> {
@@ -132,17 +131,22 @@ export class GoogleSheetsService {
   static async MarkPostProcessing(task: PostTask) {
     await this.UpdatePostFields(task.rowNumber, {
       status: "processing",
-      attempt: String(task.attempt + 1),
-      last_error: "",
-      updated_at: new Date().toISOString(),
     });
   }
 
   static async MarkPostResult(task: PostTask, status: string, fields: Record<string, string>) {
     await this.UpdatePostFields(task.rowNumber, {
       status,
-      updated_at: new Date().toISOString(),
       ...fields,
+    });
+  }
+
+  static async MarkPlatformProcessing(task: PostTask, platform: Platform, lockUntil: string) {
+    await this.UpdatePostFields(task.rowNumber, {
+      status: "processing",
+      [`${platform}_status`]: "processing",
+      [`${platform}_lock_until`]: lockUntil,
+      [`${platform}_error`]: "",
     });
   }
 
@@ -193,6 +197,11 @@ export class GoogleSheetsService {
   static async Headers(sheetName: string) {
     const rows = await this.ReadRange(`${sheetName}!1:1`);
     return (rows[0] || []).map((value) => String(value || "").trim());
+  }
+
+  static async MissingPostColumns(columns: string[]) {
+    const headers = await this.Headers(GoogleConfig.POSTS_SHEET);
+    return columns.filter((column) => !headers.includes(column));
   }
 
   static async SafeHeaders(sheetName: string, fallback: string[]) {
@@ -361,8 +370,10 @@ export class GoogleSheetsService {
 
   static ToPostTask(row: SheetRow, mediaMap = new Map<string, Record<string, string>>()): PostTask | null {
     const raw = row.raw;
+    const postId = (raw.post_id || "").trim();
+    const publishAt = raw.publish_at || this.BuildPublishAt(raw);
+    const platforms = this.Platforms(raw.platforms || raw.platform || "");
     const text = raw.text || raw.body || raw.caption || "";
-    if (!text.trim()) return null;
 
     const mediaItems = this.Split(raw.media_ids || raw.media_id || "")
       .map((mediaId) => this.PostMediaItem(mediaId, mediaMap.get(mediaId)))
@@ -373,30 +384,41 @@ export class GoogleSheetsService {
       ...mediaItems.map((item) => this.MediaUrl(item.raw)).filter(Boolean),
     ];
 
+    if (!postId || !publishAt || platforms.length === 0) return null;
+    if (!text.trim() && mediaItems.length === 0 && mediaUrls.length === 0) return null;
+
     return {
       ...row,
-      post_uid: raw.post_uid || raw.post_id || raw.id || `row-${row.rowNumber}`,
+      post_uid: postId,
       status: raw.status || "",
-      publish_at: raw.publish_at || this.BuildPublishAt(raw),
+      publish_at: publishAt,
       title: raw.title || "",
       text,
       media_urls: mediaUrls,
       media_items: mediaItems,
-      platforms: this.Split(raw.platforms || raw.platform || "telegram", true).filter((value): value is Platform =>
-        ["telegram", "vk", "instagram", "facebook"].includes(value),
-      ),
+      platforms,
       post_type: this.ResolvePostType(raw.post_type || raw.type || "", mediaUrls),
-      attempt: Number(raw.attempt || 0),
+      telegram_status: raw.telegram_status || "",
+      telegram_lock_until: raw.telegram_lock_until || "",
+      telegram_published_at: raw.telegram_published_at || "",
       telegram_message_id: raw.telegram_message_id || "",
+      telegram_url: raw.telegram_url || "",
+      telegram_error: raw.telegram_error || "",
+      telegram_response: raw.telegram_response || "",
       vk_post_id: raw.vk_post_id || "",
       instagram_media_id: raw.instagram_media_id || "",
       facebook_post_id: raw.facebook_post_id || "",
     };
   }
 
+  static IsReadyStatus(status: string) {
+    return status.trim().toLowerCase() === "ready";
+  }
+
   static BuildPublishAt(raw: Record<string, string>) {
     const date = raw.date || "";
     const time = raw.time || "";
+    if (!date || !time) return "";
     return [date, time].filter(Boolean).join(" ").trim();
   }
 
@@ -420,7 +442,6 @@ export class GoogleSheetsService {
     if (!raw) return "";
     if (raw.public_url) return raw.public_url;
     if (raw.media_url) return raw.media_url;
-    if (raw.preview_url) return raw.preview_url;
     if (raw.drive_url) return raw.drive_url;
     if (raw.file_id) return `https://drive.google.com/uc?export=download&id=${raw.file_id}`;
     return "";
@@ -470,6 +491,29 @@ export class GoogleSheetsService {
       .map((item) => item.trim())
       .map((item) => (lower ? item.toLowerCase() : item))
       .filter(Boolean);
+  }
+
+  static Platforms(value: string): Platform[] {
+    const seen = new Set<Platform>();
+    const platforms: Platform[] = [];
+
+    this.Split(value, true).forEach((item) => {
+      const platform = this.Platform(item);
+      if (!platform || seen.has(platform)) return;
+      seen.add(platform);
+      platforms.push(platform);
+    });
+
+    return platforms;
+  }
+
+  static Platform(value: string): Platform | null {
+    const clean = value.toLowerCase().trim();
+    if (["telegram", "tg", "телеграм"].includes(clean)) return "telegram";
+    if (["vk", "вк", "vkontakte"].includes(clean)) return "vk";
+    if (["instagram", "ig", "inst", "инстаграм"].includes(clean)) return "instagram";
+    if (["facebook", "fb", "фейсбук"].includes(clean)) return "facebook";
+    return null;
   }
 
   static Column(index: number) {

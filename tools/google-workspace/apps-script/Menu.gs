@@ -1,5 +1,14 @@
 function onOpen() {
   const ui = SpreadsheetApp.getUi();
+  const syncMenu = ui
+    .createMenu('Sync (Синхронизация)')
+    .addItem('Sync media from Drive (Синхронизировать медиа из Drive)', 'syncMediaFromDrive')
+    .addItem('Remove missing MEDIA rows (Удалить missing-строки MEDIA)', 'removeMissingMediaRows')
+    .addSeparator()
+    .addItem('Sync post IDs (Синхронизировать post_id)', 'syncPostIds')
+    .addSeparator()
+    .addItem('Refresh post previews (Обновить превью постов)', 'refreshPostPreviews');
+
   const sortMenu = ui
     .createMenu('Sort (Сортировка)')
     .addItem('POSTS by date/time (POSTS по дате/времени)', 'sortPostsByDateTime')
@@ -12,9 +21,7 @@ function onOpen() {
   SpreadsheetApp.getUi()
     .createMenu(`Content Planner v${CONTENT_PLANNER_VERSION} (Контент-планер)`)
     .addItem('Setup sheets (Настроить листы)', 'setupSheets')
-    .addItem('Sync media from Drive (Синхронизировать медиа из Drive)', 'syncMediaFromDrive')
-    .addItem('Refresh post previews (Обновить превью постов)', 'refreshPostPreviews')
-    .addItem('Refresh media usage (Обновить использование медиа)', 'refreshMediaUsage')
+    .addSubMenu(syncMenu)
     .addSubMenu(sortMenu)
     .addSeparator()
     .addItem('Open media links for selected post (Открыть медиа выбранного поста)', 'openMediaLinksForSelectedPost')

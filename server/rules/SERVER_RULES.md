@@ -53,9 +53,9 @@ Recommended `POSTS` columns:
 post_id
 date
 time
-title
-text
 platforms
+info/photo/context
+text
 media_ids
 preview_1
 preview_2
@@ -68,42 +68,49 @@ preview_8
 preview_9
 preview_10
 status
-post_type
-publish_at
-attempt
-lock_until
+telegram_status
+telegram_lock_until
+telegram_published_at
 telegram_message_id
 telegram_url
-vk_post_id
-vk_url
-instagram_media_id
-instagram_url
-facebook_post_id
-facebook_url
-last_error
-last_response
-updated_at
+telegram_error
+telegram_response
 ```
 
 Statuses:
 
-- `draft` - ignore.
-- `ready` - can be published when `publish_at` or `date` + `time` is empty or in the past.
-- `processing` - temporary lock while server publishes.
-- `posted` - all requested platforms succeeded.
+- empty status - ignored by real autoposting.
+- `template` - reusable row/template. Ignored by real autoposting.
+- `draft` - normal editable/default state. Ignored by real autoposting.
+- `ready` - the only manual status that allows real autoposting.
+- `processing` - server is publishing at least one enabled platform.
+- `posted` - all enabled requested platforms succeeded.
 - `partial` - at least one platform succeeded and at least one failed/skipped.
 - `error` - no requested platform succeeded.
+- `skipped` - due post had no runnable enabled platform.
 
 Rules:
 
 - `post_id` is our internal unique row key.
+- Google Apps Script owns `post_id` generation for editable rows. It builds a readable deterministic ID from `date`, `time`, `platforms`, `text`, and `media_ids`; if one of the required scheduling fields is missing, the script clears `post_id`.
+- Once a row is sealed by `processing`, `posted`, `done`, `partial`, or a platform message/post id, Apps Script must not regenerate `post_id`.
+- Duplicate or missing `post_id` values are still highlighted red as a safety check.
+- Real posting eligibility requires `status=ready` plus `date` + `time` in the publish window.
+- `date`, `time`, `platforms`, and `post_id` are required for autoposting. Rows missing any of them are ignored.
+- `text` is optional when `media_ids` exists, and `media_ids` is optional when `text` exists. Rows with neither text nor media are ignored.
+- Apps Script marks `*date_marker` purple when a `ready` row is invalid and will not publish.
+- `autopost.publish_window_minutes` defines how far back the server may publish missed posts after downtime.
+- `autopost.future_grace_seconds` defines a small forward tolerance around the current check.
 - `media_ids` are resolved through the `MEDIA` sheet.
+- `platforms` accepts comma, semicolon, or newline separators. Supported aliases: `telegram`/`tg`/`телеграм`, `vk`/`вк`, `instagram`/`ig`/`inst`, `facebook`/`fb`.
 - `MEDIA.media_id` uses readable prefixes: `IMG_001`, `IMG_002`, `VID_0001`, `VID_0002`.
 - The media ID prefix is only a human hint. Server media handling must use `MEDIA.type` / `MEDIA.mime_type` / downloaded file metadata.
-- Network IDs are written only after successful network responses.
+- `MEDIA.preview_url` is only for spreadsheet preview formulas. It must not be used as a publishing source.
+- Platform IDs are written only after successful platform responses.
 - Before publishing to a platform, server checks whether that platform ID already exists.
+- Each platform owns its own status/id/error/response columns. Current sync creates only Telegram platform columns; VK/Instagram/Facebook columns are added when those publishers are implemented.
 - Batch read/write is preferred. Do not update cells one-by-one in loops if a batch is possible.
-- Store raw network response in `last_response` only as compact JSON.
+- Store raw Telegram response in `telegram_response` only as compact JSON.
 
 ## Runtime files and Docker
 
@@ -112,6 +119,7 @@ Rules:
 - Germany standalone compose mounts `${REMOTE_DIR}/tmp` to `/app/tmp`.
 - Autopost files use `AUTOPOST_TMP_DIR`, default `/app/tmp/autopost` in Docker and `server/tmp/autopost` locally.
 - Media work files use `MEDIA_WORK_DIR`, default `/app/tmp/work` in Docker and `server/tmp/work` locally.
+- Private Google Drive media is downloaded to the source folder on the current host before posting. Publishers must use the platform-normalized files from the platform folder, not direct private Drive URLs.
 - Host-side processing scripts live in `scripts/media` and are mounted read-only to `/app/scripts/media`.
 - Deploy scripts must create `private/tg_sessions`, `tmp/media`, `tmp/autopost`, `tmp/work`, `tmp/logs`, and `scripts/media` before starting Docker.
 - Containers should use `restart: unless-stopped`; if the process crashes, Docker restarts it without deleting host-mounted media.
@@ -124,7 +132,9 @@ General media pipeline:
 - Every social network has its own media preparation step because size limits, aspect-ratio rules, codecs, containers, captions, and upload flows differ.
 - The source folder keeps original files downloaded from Google Drive.
 - The platform folder keeps only files already normalized for the selected network.
-- A publisher must not silently downgrade unsupported media to a document/file upload. If media cannot be converted to the network format, the post fails before sending.
+- A publisher must not silently downgrade unsupported media to a document/file upload.
+- If one media item is missing or cannot be converted to the network format, skip only that media item and keep publishing the remaining valid media/text. Fail the post only when nothing publishable remains.
+- After a successful platform publication, delete the temp folder for that exact publication run. If publication fails, keep the folder and manifest for diagnostics.
 
 Telegram:
 
@@ -157,7 +167,15 @@ Facebook:
 ## Tech Telegram group
 
 - Startup, lead intake, autopost checks, successful posts, and errors go to tech chat.
+- `TELEGRAM_STARTUP_STATUS_ENABLED=false` disables only the startup message. Use it for local development so local restarts do not look like VPS restarts.
 - Repeating "no posts" status should edit the previous tech message where possible.
+- The repeating autopost status is a heartbeat marker only: last check time, window, and whether there are due posts.
+- If another tech event appears after the heartbeat marker, the next heartbeat should create a fresh marker below it and delete the old marker when possible.
+- Real autopost events must be separate messages:
+  - start: UID, row, runnable platforms, planned time, text length, planned media count;
+  - success: one message per platform that actually published, with post/message id, URL, media count, and text length;
+  - error: one message per platform that actually failed, with UID, row, and the platform error.
+- Do not send tech-chat noise for disabled, unconfigured, or non-selected networks.
 
 ## DeepSeek
 

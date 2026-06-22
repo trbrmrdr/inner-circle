@@ -7,12 +7,14 @@ function ResolveServerPath(rootDir: string, value: string) {
 
 export class ServerConfig {
   static NODE_ENV = Env.Str("NODE_ENV", "development");
+  static TIMEZONE = Env.Str("TZ", Intl.DateTimeFormat().resolvedOptions().timeZone || "system");
   static PORT = Env.Num("SERVER_PORT", 4100);
   static PUBLIC_BASE_URL = Env.Str("PUBLIC_BASE_URL", "");
   static PUBLIC_HOST = Env.Str("PUBLIC_HOST", "");
   static AUTOPOST_ENABLED = Env.Bool("AUTOPOST_ENABLED", false);
   static AUTOPOST_INTERVAL_MS = Env.Num("AUTOPOST_INTERVAL_MS", 60_000);
-  static AUTOPOST_BATCH_LIMIT = Env.Num("AUTOPOST_BATCH_LIMIT", 3);
+  static AUTOPOST_PUBLISH_WINDOW_MINUTES = Env.Num("AUTOPOST_PUBLISH_WINDOW_MINUTES", 180);
+  static AUTOPOST_FUTURE_GRACE_SECONDS = Env.Num("AUTOPOST_FUTURE_GRACE_SECONDS", 30);
   static LEAD_ROUTE_TOKEN = Env.Str("LEAD_ROUTE_TOKEN", "");
   static ROOT_DIR = path.resolve(__dirname, "../../");
   static TMP_DIR = ResolveServerPath(this.ROOT_DIR, Env.Str("SERVER_TMP_DIR", "./tmp"));

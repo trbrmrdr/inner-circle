@@ -8,6 +8,7 @@ function setupPostsSheet_() {
 
   ensureColumns_(sheet, POSTS_COLUMNS);
   applyPostsLayout_(sheet);
+  syncPostIds_();
   updateDateMarkers_();
   validatePostIds_();
 }
@@ -25,13 +26,16 @@ function applyPostsLayout_(sheet) {
   sheet.setFrozenRows(1);
 
   setWidth_(sheet, cols['*date_marker'], 28);
-  setWidth_(sheet, cols.post_id, 90);
+  setWidth_(sheet, cols.post_id, 150);
   setWidth_(sheet, cols.date, 110);
   setWidth_(sheet, cols.time, 80);
   setWidth_(sheet, cols.platforms, 180);
+  setWidth_(sheet, cols['info/photo/context'], 220);
   setWidth_(sheet, cols.text, 420);
   setWidth_(sheet, cols.media_ids, 260);
   setWidth_(sheet, cols.status, 120);
+
+  applyHeaderNotes_(sheet, cols, POSTS_HEADER_NOTES);
 
   for (let i = 1; i <= MAX_PREVIEWS; i++) {
     setWidth_(sheet, cols[`preview_${i}`], 120);
@@ -46,6 +50,14 @@ function applyPostsLayout_(sheet) {
   }
 
   applyStatusFormatting_(sheet);
+}
+
+function applyHeaderNotes_(sheet, cols, notes) {
+  Object.keys(notes || {}).forEach(name => {
+    if (cols[name]) {
+      sheet.getRange(1, cols[name]).setNote(notes[name]);
+    }
+  });
 }
 
 function applyMediaLayout_(sheet) {

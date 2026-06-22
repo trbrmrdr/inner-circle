@@ -53,6 +53,7 @@ class TelegramAutopostTestCli {
       console.log(`Source dir: ${prepared.sourceDir}`);
       console.log(`Telegram dir: ${prepared.platformDir}`);
       console.log(`Manifest: ${prepared.manifestPath}`);
+      this.PrintWarnings(prepared.warnings || []);
       this.PrintPreparedMedia(prepared.media);
 
       if (prepareOnly) {
@@ -61,6 +62,7 @@ class TelegramAutopostTestCli {
           prepareOnly: true,
           post_id: task.post_uid,
           media: prepared.media.length,
+          warnings: prepared.warnings || [],
           manifestPath: prepared.manifestPath,
           sheetsChanged: false,
           telegramSent: false,
@@ -163,6 +165,12 @@ class TelegramAutopostTestCli {
       const notes = item.notes?.length ? ` | ${item.notes.join(",")}` : "";
       console.log(`- ${item.media_id}: ${item.asset_type} | ${item.filename} | ${sizeMb} MB${dimensions}${converted}${notes}`);
     });
+  }
+
+  static PrintWarnings(warnings: string[]) {
+    if (warnings.length === 0) return;
+    console.log("Warnings:");
+    warnings.forEach((warning) => console.log(`- ${warning}`));
   }
 
   static ArgValue(name: string) {

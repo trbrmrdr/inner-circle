@@ -11,6 +11,7 @@ import { VkConfig } from "./config/VkConfig";
 import { AutoPostRunner } from "./core/AutoPostRunner";
 import { HttpHelper } from "./core/HttpHelper";
 import { TechLog } from "./core/TechLog";
+import { TimeHelper } from "./core/TimeHelper";
 import { ApiRoutes } from "./routes";
 
 [
@@ -54,7 +55,9 @@ app.use((error: unknown, _req: express.Request, res: express.Response, _next: ex
 app.listen(ServerConfig.PORT, () => {
   console.log(`[server] listening on ${ServerConfig.PORT}`);
   if (ServerConfig.AUTOPOST_ENABLED) AutoPostRunner.Start();
-  TechLog.Status(StartupStatusText()).catch(() => undefined);
+  if (TelegramConfig.STARTUP_STATUS_ENABLED) {
+    TechLog.Status(StartupStatusText()).catch(() => undefined);
+  }
 });
 
 function StartupStatusText() {
@@ -63,15 +66,20 @@ function StartupStatusText() {
   return [
     "Сервер запущен.",
     `Node env: ${ServerConfig.NODE_ENV}`,
+    `Timezone: ${ServerConfig.TIMEZONE}`,
+    `Local time: ${TimeHelper.NowLocal()}`,
     `Public URL: ${ServerConfig.PUBLIC_BASE_URL || "-"}`,
     `Public host: ${ServerConfig.PUBLIC_HOST || "-"}`,
     `Port: ${ServerConfig.PORT}`,
     "",
     `Autopost worker: ${ServerConfig.AUTOPOST_ENABLED ? "on" : "off"}`,
-    `Autopost interval: ${ServerConfig.AUTOPOST_INTERVAL_MS} ms`,
+    `Autopost interval default: ${ServerConfig.AUTOPOST_INTERVAL_MS} ms`,
+    `Autopost publish window default: ${ServerConfig.AUTOPOST_PUBLISH_WINDOW_MINUTES} min`,
+    `Autopost future grace default: ${ServerConfig.AUTOPOST_FUTURE_GRACE_SECONDS} sec`,
     `Google Sheets: ${GoogleConfig.IsReady() ? "ready" : "off/not ready"}`,
     "",
     `Telegram tech: ${TelegramConfig.IsTechReady() ? "ready" : "off/not ready"}`,
+    `Telegram startup status: ${TelegramConfig.STARTUP_STATUS_ENABLED ? "on" : "off"}`,
     `Telegram public posting: ${TelegramConfig.IsBotReady() && TelegramConfig.PUBLIC_CHAT_ID ? "ready" : "off/not ready"}`,
     `Email: ${EmailConfig.IsReady() ? `ready (${readyEmailProviders})` : "off/not ready"}`,
     `DeepSeek: ${DeepSeekConfig.IsReady() ? "ready" : "off/not ready"}`,

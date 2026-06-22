@@ -3,8 +3,9 @@ import axios from "axios";
 import FormData from "form-data";
 import { TelegramConfig } from "../config/TelegramConfig";
 import { PreparedMedia, PreparedPost, PostTask, PublishResult, ServicePlatform } from "../types/autopost";
+import { AiTextHelper } from "../core/AiTextHelper";
 import { HttpHelper } from "../core/HttpHelper";
-import { MediaPrepareHelper } from "../core/MediaPrepareHelper";
+import { MediaPipeline } from "../media/MediaPipeline";
 
 export class TelegramPublisher {
   static async SendTechMessage(text: string): Promise<PublishResult> {
@@ -48,51 +49,52 @@ export class TelegramPublisher {
     };
   }
 
-  static async PublishPost(task: PostTask, text: string): Promise<PublishResult> {
+  static async DeleteTechMessage(messageId: string): Promise<PublishResult> {
+    if (!TelegramConfig.IsTechReady()) {
+      return { ok: false, disabled: true, platform: "telegram-tech", message: "Telegram tech bot is not configured" };
+    }
+
+    const result = await this.Call("deleteMessage", {
+      chat_id: TelegramConfig.TECH_CHAT_ID,
+      message_id: messageId,
+    });
+
+    return {
+      ok: true,
+      platform: "telegram-tech",
+      id: messageId,
+      raw: result,
+    };
+  }
+
+  static async PublishPost(task: PostTask, text = ""): Promise<PublishResult> {
     if (!TelegramConfig.IsBotReady() || !TelegramConfig.PUBLIC_CHAT_ID) {
       return { ok: false, disabled: true, platform: "telegram", message: "Telegram public bot is not configured" };
     }
 
-    const mediaUrls = MediaPrepareHelper.NormalizeUrls(task);
-    if (mediaUrls.length === 0 || task.post_type === "text") {
-      const result = await this.Call("sendMessage", {
-        chat_id: TelegramConfig.PUBLIC_CHAT_ID,
-        text: this.Limit(text, TelegramConfig.MESSAGE_TEXT_LIMIT),
-        parse_mode: TelegramConfig.PARSE_MODE,
-        disable_web_page_preview: false,
-      });
-
-      return this.Result(result);
+    const preparedText = text.trim()
+      ? text
+      : task.text.trim()
+        ? (await AiTextHelper.PreparePostText(task)).telegram
+        : "";
+    const prepared = await MediaPipeline.PrepareTelegramPost(task, preparedText);
+    const result = this.WithPreparedMeta(
+      await this.PublishPreparedPostToChat(TelegramConfig.PUBLIC_CHAT_ID, prepared, "telegram"),
+      prepared,
+    );
+    if ((prepared.warnings || []).length > 0) {
+      result.message = `Published with ${prepared.warnings?.length || 0} media warning(s)`;
     }
 
-    if (mediaUrls.length > 1) {
-      const media = mediaUrls.slice(0, TelegramConfig.MEDIA_GROUP_LIMIT).map((url, index) => ({
-        type: MediaPrepareHelper.IsVideo(url) ? "video" : "photo",
-        media: url,
-        caption: index === 0 ? this.MediaCaption(text) : undefined,
-        parse_mode: index === 0 ? TelegramConfig.PARSE_MODE : undefined,
-        show_caption_above_media: true,
-      }));
-
-      const result = await this.Call("sendMediaGroup", {
-        chat_id: TelegramConfig.PUBLIC_CHAT_ID,
-        media,
-      });
-
-      return this.Result(result, Array.isArray(result?.result) ? String(result.result[0]?.message_id || "") : "");
+    if (result.ok) {
+      try {
+        MediaPipeline.Cleanup(prepared);
+      } catch (error) {
+        this.AddRawWarning(result, `temp cleanup failed: ${HttpHelper.ErrorMessage(error)}`);
+      }
     }
 
-    const firstMedia = mediaUrls[0];
-    const method = MediaPrepareHelper.IsVideo(firstMedia) ? "sendVideo" : "sendPhoto";
-    const result = await this.Call(method, {
-      chat_id: TelegramConfig.PUBLIC_CHAT_ID,
-      [method === "sendVideo" ? "video" : "photo"]: firstMedia,
-      caption: this.MediaCaption(text),
-      parse_mode: TelegramConfig.PARSE_MODE,
-      show_caption_above_media: true,
-    });
-
-    return this.Result(result);
+    return result;
   }
 
   static async PublishPreparedPostToTech(prepared: PreparedPost): Promise<PublishResult> {
@@ -112,6 +114,10 @@ export class TelegramPublisher {
     this.ValidatePreparedMedia(prepared.media);
 
     if (prepared.media.length === 0) {
+      if (!text) {
+        throw new Error("Telegram post has no text and no prepared media.");
+      }
+
       const result = await this.Call("sendMessage", {
         chat_id: chatId,
         text: this.Limit(text, TelegramConfig.MESSAGE_TEXT_LIMIT),
@@ -119,7 +125,7 @@ export class TelegramPublisher {
         disable_web_page_preview: false,
       });
 
-      return this.Result(result, "", platform);
+      return this.WithMessageUrl(this.Result(result, "", platform), chatId);
     }
 
     if (prepared.media.length > TelegramConfig.MEDIA_GROUP_LIMIT) {
@@ -128,11 +134,14 @@ export class TelegramPublisher {
 
     if (prepared.media.length > 1) {
       const result = await this.SendMediaGroupFiles(chatId, prepared.media, text);
-      return this.Result(result, Array.isArray(result?.result) ? String(result.result[0]?.message_id || "") : "", platform);
+      return this.WithMessageUrl(
+        this.Result(result, Array.isArray(result?.result) ? String(result.result[0]?.message_id || "") : "", platform),
+        chatId,
+      );
     }
 
     const result = await this.SendSingleMedia(chatId, prepared.media[0], text);
-    return this.Result(result, "", platform);
+    return this.WithMessageUrl(this.Result(result, "", platform), chatId);
   }
 
   static async SendSingleMedia(chatId: string, media: PreparedMedia, caption: string) {
@@ -257,6 +266,58 @@ export class TelegramPublisher {
       raw: result,
       message: result?.description,
     };
+  }
+
+  static WithMessageUrl(result: PublishResult, chatId: string) {
+    if (!result.id) return result;
+    return {
+      ...result,
+      url: this.MessageUrl(chatId, result.id),
+    };
+  }
+
+  static WithPreparedMeta(result: PublishResult, prepared: PreparedPost) {
+    const stats = this.PreparedStats(prepared);
+    return {
+      ...result,
+      stats,
+      raw: {
+        telegram: result.raw,
+        warnings: prepared.warnings || [],
+        media: prepared.media.map((item) => item.media_id),
+        stats,
+        manifestPath: prepared.manifestPath,
+      },
+    };
+  }
+
+  static PreparedStats(prepared: PreparedPost) {
+    const photoCount = prepared.media.filter((item) => item.asset_type === "photo").length;
+    const videoCount = prepared.media.filter((item) => item.asset_type === "video").length;
+    return {
+      textLength: prepared.text.length,
+      mediaCount: prepared.media.length,
+      photoCount,
+      videoCount,
+      warningCount: prepared.warnings?.length || 0,
+    };
+  }
+
+  static AddRawWarning(result: PublishResult, message: string) {
+    if (!result.raw || typeof result.raw !== "object" || Array.isArray(result.raw)) {
+      result.raw = { value: result.raw, warnings: [message] };
+      return;
+    }
+
+    const raw = result.raw as { warnings?: string[] };
+    raw.warnings = [...(raw.warnings || []), message];
+  }
+
+  static MessageUrl(chatId: string, messageId: string) {
+    if (!messageId) return "";
+    if (chatId.startsWith("@")) return `https://t.me/${chatId.slice(1)}/${messageId}`;
+    if (chatId.startsWith("-100")) return `https://t.me/c/${chatId.slice(4)}/${messageId}`;
+    return "";
   }
 
   static Limit(text: string, max: number) {
