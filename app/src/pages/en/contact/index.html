@@ -1,0 +1,40 @@
+---
+lang: en
+title: Request and Contact - Inner Circle
+description: Inner Circle request and contact details: phone, Telegram, Instagram, VK, email and form for discussing a visit.
+bodyClass: _836ebc inner-circle-page-contact
+ALT_LANG_HREF: /ru/kontakt/
+---
+{{> global/background.html }}
+	<main class="_7abbf3" data-background="green" data-animate="true">
+		<div class="_b28a1c">
+			<div class="_8e32b5"></div>
+
+		<div class="_fddeb5 _b3c48e">
+			<div class="_09d861"><div class="_30ea2f _76b310"><h1>Request.</h1></div></div>
+				<div class="_756826"><div class="_936645 _76b310"><p>Tell us why you want to come.</p></div><div class="_b02a17 _76b310"><p>We need to understand not only the date and number of guests, but the purpose of the visit: what should happen, what rhythm you need, whether there will be a night, table, sauna, screen, sound or a closed meeting.</p></div><div class="_d43f79 _76b310"><ul><li>Who is coming.</li><li>Why.</li><li>What rhythm<br />is needed.</li></ul></div><div class="_783e33 _76b310 inner-circle-contact-hero-actions"><ul><li><a href="tel:+79816991877">Call</a></li><li><a href="https://t.me/tr_br_mr_dr" target="_blank" rel="noopener noreferrer">Telegram</a></li><li><a href="https://www.instagram.com/inner_circle_spb/" target="_blank" rel="noopener noreferrer">Instagram</a></li><li><a href="https://vk.com/inner_circle_spb" target="_blank" rel="noopener noreferrer">VK</a></li></ul></div></div>
+		</div>
+		<div class="_75ecff">
+			<form class="_231c65" name="inner-circle-request-en" accept-charset="utf-8" action="/api/lead" method="post" novalidate data-lead-form="inner-circle" data-lead-endpoints="https://api.inner-circle.spi.ski/api/lead,https://api2.inner-circle.spi.ski/api/lead" data-recaptcha-site-key="6LdRqCktAAAAAEN537qTZGibtAfGADMHQvsxm4pe" data-recaptcha-badge="bottomright" data-sending-text="Sending..." data-redirect-path="/en/form-successfully-submitted/">
+			<fieldset class="_670645">
+				<label class="_75b9fb _78e074 _76b310 _42a9b4 _82f446"><span class="_62a0c1">Name*</span><input class="_a2980d" type="text" name="name" placeholder="How should we address you" required /></label>
+				<label class="_4a9c7d _78e074 _76b310 _42a9b4 _c7d675"><span class="_62a0c1">E-mail</span><input class="_a2980d" type="text" name="email" inputmode="email" autocomplete="email" placeholder="name@email.com" /></label>
+				<label class="_fdbdcc _78e074 _76b310 _42a9b4 _82f446"><span class="_62a0c1">Phone</span><input class="_a2980d" type="tel" name="phone" inputmode="tel" autocomplete="tel" placeholder="+7 981 699 1877" maxlength="18" /></label>
+				<label class="_75b9fb _78e074 _76b310 _42a9b4 _82f446"><span class="_62a0c1">Telegram</span><input class="_a2980d" type="text" name="telegram" inputmode="text" autocomplete="off" placeholder="@username" /></label>
+				<label class="_75b9fb _78e074 _76b310 _42a9b4 _82f446"><span class="_62a0c1">Preferred date*</span><input class="_a2980d" type="date" name="date" required /></label>
+				<label class="_75b9fb _78e074 _76b310 _42a9b4 _82f446"><span class="_62a0c1">Number of guests</span><input class="_a2980d" type="text" name="guests" placeholder="4" inputmode="numeric" autocomplete="off" /></label>
+				<label class="_4e306b _78e074 _76b310 _42a9b4 _c7d675"><span class="_62a0c1">Scenario</span><textarea class="_f26d0f _a2980d" name="scenario" placeholder="Tell us what should happen: work, meeting, evening, overnight stay, table, sauna, screen, sound, mapping." rows="7" required></textarea></label>
+				<label class="_0479c5 _76b310 _42a9b4 _c7d675"><svg class="_612cd4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M512 512V0H0v512h512ZM492.308 19.692v472.616H19.692V19.692h472.616Z" /><path class="_4a10db" d="M91.582 245.813 216.993 368.31l203.513-203.814-13.935-13.915L216.82 340.614 105.341 231.726l-13.759 14.087Z" /></svg><span class="_4f669e">I agree that we may contact me to discuss the visit scenario.</span><input class="_4ab76c" type="checkbox" name="consent" required /></label>
+				<input type="hidden" name="_subject" id="email-subject" value="Inner Circle request" />
+			</fieldset>
+			<button class="_c4a5ae _76b310" type="submit">Send request</button>
+			</form>
+			<div class="_695ee5"></div>
+		</div>
+		{{> sections/contact/contact-map.en.html }}
+{{> footers/footer.inner-circle.en.html }}
+		{{> headers/header.en.html }}
+
+
+	</main>
+{{> loaders/loader.inner-circle.html }}

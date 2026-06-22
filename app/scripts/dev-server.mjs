@@ -44,6 +44,10 @@ function runBuild({ notify = false } = {}) {
   return new Promise(resolve => {
     const child = spawn(process.execPath, ["scripts/build-site.mjs"], {
       cwd: appRoot,
+      env: {
+        ...process.env,
+        SITE_BUILD_MODE: "development"
+      },
       stdio: "inherit"
     });
 

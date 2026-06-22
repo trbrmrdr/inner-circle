@@ -14,6 +14,8 @@ const buildLockRoot = path.join(appRoot, ".build.lock");
 const partialsRoot = path.join(srcRoot, "partials");
 const layoutPath = path.join(srcRoot, "layouts", "default.html");
 const buildVersion = process.env.BUILD_VERSION || String(Date.now());
+const buildMode = process.env.SITE_BUILD_MODE || "production";
+const includeOriginalPages = buildMode !== "production";
 
 const styleOrder = ["legacy", "base", "components", "sections", "features", "pages"];
 
@@ -88,14 +90,32 @@ async function collectStyleFiles() {
   return files;
 }
 
+function routeFromPageFile(pagesRoot, file) {
+  return pageRouteFromRelative(path.relative(pagesRoot, file));
+}
+
 async function collectRoutes(pageFiles) {
   const routesPath = path.join(srcRoot, "data", "routes.json");
+  const pagesRoot = path.join(srcRoot, "pages");
 
   try {
-    return JSON.parse(await fs.readFile(routesPath, "utf8"));
+    const routes = JSON.parse(await fs.readFile(routesPath, "utf8"));
+    const routeSet = new Set(routes);
+
+    if (includeOriginalPages) {
+      for (const file of pageFiles) {
+        const route = routeFromPageFile(pagesRoot, file);
+        if (route.startsWith("/original/")) {
+          routeSet.add(route);
+        }
+      }
+    }
+
+    return [...routeSet].sort((a, b) => a.localeCompare(b));
   } catch {
     return pageFiles
-      .map(file => pageRouteFromRelative(path.relative(path.join(srcRoot, "pages"), file)))
+      .map(file => routeFromPageFile(pagesRoot, file))
+      .filter(route => includeOriginalPages || !route.startsWith("/original/"))
       .sort();
   }
 }
@@ -122,9 +142,12 @@ async function buildJs() {
 
 async function buildPages() {
   const pagesRoot = path.join(srcRoot, "pages");
-  const pageFiles = await listFiles(pagesRoot, file => file.endsWith(".html"));
+  const allPageFiles = await listFiles(pagesRoot, file => file.endsWith(".html"));
   const layout = await fs.readFile(layoutPath, "utf8");
-  const routesHead = renderRoutesHead(await collectRoutes(pageFiles));
+  const routes = await collectRoutes(allPageFiles);
+  const routeSet = new Set(routes);
+  const pageFiles = allPageFiles.filter(file => routeSet.has(routeFromPageFile(pagesRoot, file)));
+  const routesHead = renderRoutesHead(routes);
 
   for (const file of pageFiles) {
     const relative = path.relative(pagesRoot, file);
@@ -143,7 +166,8 @@ async function buildPages() {
       TITLE: escapeHtml(data.title || ""),
       LANG: escapeHtml(data.lang || "ru"),
       BODY_CLASS: escapeHtml(bodyClass),
-      BUILD_VERSION: escapeHtml(buildVersion)
+      BUILD_VERSION: escapeHtml(buildVersion),
+      ORIGINAL_NAV_LINK: includeOriginalPages ? ' / <a href="/original/">OR</a>' : ""
     }, { partialsRoot });
 
     const target = path.join(distRoot, relative);
@@ -175,7 +199,7 @@ export async function buildSite() {
     await buildCss();
     await buildJs();
     const pageCount = await buildPages();
-    console.log(`Built dist from src: ${pageCount} pages, version ${buildVersion}`);
+    console.log(`Built dist from src: ${pageCount} pages, mode ${buildMode}, version ${buildVersion}`);
   } finally {
     await releaseBuildLock();
   }
