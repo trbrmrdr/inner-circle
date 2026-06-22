@@ -37,6 +37,7 @@
     "___________comment_sheets": "Проверить или синхронизировать удаленную Google таблицу. Другой env-профиль можно передать через ENV_FILE.",
     "sheets:sync": "tsx scripts/sync-google-sheets.ts",
     "sheets:check": "tsx scripts/sync-google-sheets.ts --dry-run",
+    "sheets:cleanup-vk": "tsx scripts/cleanup-paused-vk-sheets.ts",
 
     "___________comment_email": "Проверить отправку email через все включенные SMTP-провайдеры из env/local.env.",
     "email:test": "ENV_FILE=env/local.env tsx scripts/test-email.ts",
@@ -50,10 +51,21 @@
     "telegram:chat": "tsx scripts/telegram-chat-id.ts get-chat",
     "telegram:test": "tsx scripts/telegram-chat-id.ts send-test",
 
+    "___________comment_vk": "Получить числовой VK_GROUP_ID по короткому имени или ссылке группы.",
+    "vk:group-id": "ENV_FILE=env/local.env tsx scripts/vk-group-id.ts",
+    "vk:group-id:moscow": "ENV_FILE=env/moscow.env tsx scripts/vk-group-id.ts",
+    "vk:group-id:germany": "ENV_FILE=env/germany.env tsx scripts/vk-group-id.ts",
+    "vk:oauth:start": "ENV_FILE=env/local.env tsx scripts/vk-oauth-start.ts",
+    "vk:oauth:start:moscow": "ENV_FILE=env/moscow.env tsx scripts/vk-oauth-start.ts",
+    "vk:oauth:start:germany": "ENV_FILE=env/germany.env tsx scripts/vk-oauth-start.ts",
+
     "___________comment_autopost": "Тестовый автопостинг выбранного поста в Telegram tech group без изменения Google Sheets.",
     "autopost:telegram:test": "ENV_FILE=env/local.env tsx scripts/test-telegram-autopost.ts",
     "autopost:telegram:test:moscow": "ENV_FILE=env/moscow.env tsx scripts/test-telegram-autopost.ts",
-    "autopost:telegram:test:germany": "ENV_FILE=env/germany.env tsx scripts/test-telegram-autopost.ts"
+    "autopost:telegram:test:germany": "ENV_FILE=env/germany.env tsx scripts/test-telegram-autopost.ts",
+    "autopost:vk:test": "ENV_FILE=env/local.env tsx scripts/test-vk-autopost.ts",
+    "autopost:vk:test:moscow": "ENV_FILE=env/moscow.env tsx scripts/test-vk-autopost.ts",
+    "autopost:vk:test:germany": "ENV_FILE=env/germany.env tsx scripts/test-vk-autopost.ts"
   },
   "dependencies": {
     "axios": "^1.12.2",

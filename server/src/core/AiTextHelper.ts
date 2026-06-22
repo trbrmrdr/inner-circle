@@ -8,7 +8,6 @@ import { HttpHelper } from "./HttpHelper";
 interface DeepSeekRuntimeSettings {
   enabled: boolean;
   telegramPrompt: string;
-  vkPrompt: string;
 }
 
 export class AiTextHelper {
@@ -22,17 +21,13 @@ export class AiTextHelper {
 
     const telegramLimit = this.TelegramLimit(task);
     const prompt = [
-      "Rewrite the source text for social media autoposting and return strict JSON.",
-      "Return only JSON with keys telegram and vk.",
+      "Rewrite the source text for Telegram autoposting and return strict JSON.",
+      "Return only JSON with key telegram.",
       "Keep meaning, facts, names, prices and contacts unchanged.",
       `Telegram output must be <= ${telegramLimit} characters.`,
-      "VK should be readable without HTML.",
       "",
       "Telegram-specific prompt:",
       this.TelegramPrompt(telegramLimit, settings.telegramPrompt),
-      "",
-      "VK-specific prompt:",
-      this.VkPrompt(settings.vkPrompt),
       "",
       `Post type: ${task.post_type || ""}`,
       `Telegram media count: ${this.TelegramMediaCount(task)}`,
@@ -69,7 +64,7 @@ export class AiTextHelper {
 
       return {
         telegram: this.ToTelegramText(parsed.telegram, fallback.telegram, telegramLimit),
-        vk: this.ToText(parsed.vk, fallback.vk),
+        vk: fallback.vk,
         instagram: fallback.instagram,
         facebook: fallback.facebook,
       };
@@ -123,7 +118,6 @@ export class AiTextHelper {
       const loaded = {
         enabled: this.Bool(settings, "deepseek.enabled", DeepSeekConfig.ENABLED),
         telegramPrompt: this.Str(settings, "deepseek.telegram.prompt", ""),
-        vkPrompt: this.Str(settings, "deepseek.vk.prompt", ""),
       };
       this.SettingsCache = { loadedAt: now, settings: loaded };
       return loaded;
@@ -131,7 +125,6 @@ export class AiTextHelper {
       const fallback = {
         enabled: DeepSeekConfig.ENABLED,
         telegramPrompt: "",
-        vkPrompt: "",
       };
       this.SettingsCache = { loadedAt: now, settings: fallback };
       return fallback;

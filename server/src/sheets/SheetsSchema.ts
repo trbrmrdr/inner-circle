@@ -84,7 +84,7 @@ export class SheetsSchema {
     {
       name: "platforms",
       required: true,
-      note: "telegram, vk, instagram, facebook.",
+      note: "telegram. VK/Instagram/Facebook are paused until their publishers are enabled again.",
       headerNote: [
         "Платформы для публикации.",
         "",
@@ -94,8 +94,7 @@ export class SheetsSchema {
         "точка с запятой, запятая или перенос строки.",
         "",
         "ПРИМЕР:",
-        "[Telegram; VK; Instagram]",
-        "[Telegram;VK;Instagram]",
+        "[Telegram]",
         "",
         "Регистр неважен:",
         "[Telegram] и [telegram] работают одинаково.",
@@ -104,11 +103,9 @@ export class SheetsSchema {
         "",
         "ЗНАЧЕНИЯ:",
         "[Telegram], [TG], [телеграм]",
-        "[VK], [ВК]",
-        "[Instagram], [IG], [Inst], [инстаграм]",
-        "[Facebook], [FB], [фейсбук]",
         "",
         "Публикуются только включенные и настроенные платформы.",
+        "VK/Instagram/Facebook сейчас не создаются в таблице и игнорируются, пока выключены в env.",
       ].join("\n"),
     },
     { name: "info/photo/context" },
@@ -185,13 +182,6 @@ export class SheetsSchema {
     { name: "telegram_url" },
     { name: "telegram_error" },
     { name: "telegram_response" },
-    { name: "vk_status" },
-    { name: "vk_lock_until" },
-    { name: "vk_published_at" },
-    { name: "vk_post_id" },
-    { name: "vk_url" },
-    { name: "vk_error" },
-    { name: "vk_response" },
   ];
 
   static MediaBaseColumns: SheetColumn[] = [
@@ -416,23 +406,6 @@ export class SheetsSchema {
         "русская версия prompt для понимания смысла и редактирования.",
       ].join("\n"),
       DeepSeekPrompts.TELEGRAM_RU,
-    ],
-    [
-      "deepseek.vk.prompt",
-      DeepSeekPrompts.VK_EN,
-      [
-        "Рабочий prompt для подготовки VK-текста через DeepSeek.",
-        "",
-        "ФОРМАТ VALUE:",
-        "английский prompt, который сервер отправляет в DeepSeek.",
-        "",
-        "ВАЖНО:",
-        "если value пустой, сервер использует default VK prompt из кода.",
-        "",
-        "value_ru:",
-        "русская версия prompt для понимания смысла и редактирования.",
-      ].join("\n"),
-      DeepSeekPrompts.VK_RU,
     ],
   ];
 

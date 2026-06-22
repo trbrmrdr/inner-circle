@@ -229,7 +229,7 @@ export class AutoPostRunner {
     }
 
     if (!this.PlatformReady(platform)) {
-      return { ok: true, skipped: true, disabled: true, platform, message: `${platform} is disabled or not configured` };
+      return null;
     }
 
     try {

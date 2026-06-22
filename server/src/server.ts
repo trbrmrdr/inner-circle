@@ -27,7 +27,7 @@ app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, x-lead-token");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, x-lead-token, x-vk-oauth-token, Authorization");
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
   if (req.method === "OPTIONS") {
     res.status(204).end();

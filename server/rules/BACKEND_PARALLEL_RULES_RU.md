@@ -228,11 +228,16 @@ DeepSeek работает только когда оба значения вкл
 английский prompt, `value_ru` - русская версия для понимания. Пустой prompt в
 `value` означает default prompt из серверного кода.
 
-Prompt-ы реализованных платформ хранятся отдельно:
-`deepseek.telegram.prompt`, `deepseek.vk.prompt`.
-Для VK формат результата - plain text для `wall.post.message`, без Telegram
-HTML/Markdown. Для будущих сетей prompt-строки добавляются в `SETTINGS` только
-после реализации publisher/media pipeline/runtime-колонок и тестовой команды.
+Prompt-ы реализованных и включенных платформ хранятся отдельно. Сейчас в
+Google `SETTINGS` создается только `deepseek.telegram.prompt`.
+
+VK автопостинг заморожен: новый VK ID OAuth не выдал `wall` scope для
+`wall.post`. Код publisher/OAuth/media pipeline можно оставить для будущей
+разморозки, но `deepseek.vk.prompt` и VK runtime-колонки в Google Sheets не
+создаем, пока `VK_ENABLED=false`.
+
+Для будущих сетей prompt-строки добавляются в `SETTINGS` только после
+реализации publisher/media pipeline/runtime-колонок и тестовой команды.
 
 `MEDIA.preview_url` используется только для превью в таблице. Для публикации
 используются `file_id`, `media_url` или `public_url`.

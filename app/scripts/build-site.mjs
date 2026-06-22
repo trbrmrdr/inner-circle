@@ -16,6 +16,14 @@ const layoutPath = path.join(srcRoot, "layouts", "default.html");
 const buildVersion = process.env.BUILD_VERSION || String(Date.now());
 const buildMode = process.env.SITE_BUILD_MODE || "production";
 const includeOriginalPages = buildMode !== "production";
+const productionPublicExcludes = new Set([
+  "en",
+  "images.prismic.io",
+  "logo-original-schloss-freudenfels.svg",
+  "ru",
+  "schloss-freudenfels.cdn.prismic.io",
+  "unpublished"
+]);
 
 const styleOrder = ["legacy", "base", "components", "sections", "features", "pages"];
 
@@ -189,13 +197,21 @@ function normalizeContext(data) {
   return context;
 }
 
+function shouldCopyPublicAsset(source) {
+  if (includeOriginalPages) return true;
+
+  const relative = path.relative(publicRoot, source);
+  const topLevelName = relative.split(path.sep)[0];
+  return !productionPublicExcludes.has(topLevelName);
+}
+
 export async function buildSite() {
   const releaseBuildLock = await acquireBuildLock();
 
   try {
     await fs.rm(distRoot, { recursive: true, force: true });
     await ensureDir(distRoot);
-    await copyDir(publicRoot, distRoot);
+    await copyDir(publicRoot, distRoot, shouldCopyPublicAsset);
     await buildCss();
     await buildJs();
     const pageCount = await buildPages();

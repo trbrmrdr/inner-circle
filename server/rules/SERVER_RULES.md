@@ -77,13 +77,6 @@ telegram_message_id
 telegram_url
 telegram_error
 telegram_response
-vk_status
-vk_lock_until
-vk_published_at
-vk_post_id
-vk_url
-vk_error
-vk_response
 ```
 
 Statuses:
@@ -111,16 +104,15 @@ Rules:
 - `autopost.publish_window_minutes` defines how far back the server may publish missed posts after downtime.
 - `autopost.future_grace_seconds` defines a small forward tolerance around the current check.
 - `media_ids` are resolved through the `MEDIA` sheet.
-- `platforms` accepts comma, semicolon, or newline separators. Supported aliases: `telegram`/`tg`/`телеграм`, `vk`/`вк`, `instagram`/`ig`/`inst`, `facebook`/`fb`.
+- `platforms` accepts comma, semicolon, or newline separators. Current managed platform is `telegram`/`tg`/`телеграм`. VK/Instagram/Facebook are ignored while disabled.
 - `MEDIA.media_id` uses readable prefixes: `IMG_001`, `IMG_002`, `VID_0001`, `VID_0002`.
 - The media ID prefix is only a human hint. Server media handling must use `MEDIA.type` / `MEDIA.mime_type` / downloaded file metadata.
 - `MEDIA.preview_url` is only for spreadsheet preview formulas. It must not be used as a publishing source.
 - Platform IDs are written only after successful platform responses.
 - Before publishing to a platform, server checks whether that platform ID already exists.
-- Each platform owns its own status/id/error/response columns. Current sync creates Telegram and VK platform columns; Instagram/Facebook columns are added when those publishers are implemented.
+- Each enabled platform owns its own status/id/error/response columns. Current sync creates Telegram platform columns only.
 - Batch read/write is preferred. Do not update cells one-by-one in loops if a batch is possible.
 - Store raw Telegram response in `telegram_response` only as compact JSON.
-- Store raw VK response in `vk_response` only as compact JSON.
 
 ## Runtime files and Docker
 
@@ -166,6 +158,10 @@ Instagram:
 
 VK:
 
+- VK autopost is frozen. New VK ID OAuth returned `vkid.personal_info photos`
+  without `wall`, so `wall.post` cannot be called.
+- Keep the publisher/OAuth/media code for a future token with `wall/photos/video`,
+  but do not create VK columns or VK DeepSeek settings while `VK_ENABLED=false`.
 - Direct VK API calls are enough for the first version.
 - `VK_GROUP_ID` is the positive numeric community ID only. Do not add a second owner env value; VK `wall.post.owner_id` is computed as `-VK_GROUP_ID` inside `VkPublisher`.
 - Media posting requires a VK user token for a user who can post as the community. The token must have the wall/photo/video permissions needed by the used methods.

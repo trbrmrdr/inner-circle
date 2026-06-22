@@ -4,6 +4,7 @@ import FormData from "form-data";
 import { VkConfig } from "../config/VkConfig";
 import { AiTextHelper } from "../core/AiTextHelper";
 import { HttpHelper } from "../core/HttpHelper";
+import { VkOAuthService } from "../core/VkOAuthService";
 import { MediaPipeline } from "../media/MediaPipeline";
 import { PostTask, PreparedMedia, PreparedPost, PublishResult } from "../types/autopost";
 
@@ -162,7 +163,7 @@ export class VkPublisher {
 
   static async Method(method: string, params: Record<string, unknown>) {
     const search = new URLSearchParams();
-    search.set("access_token", VkConfig.ACCESS_TOKEN);
+    search.set("access_token", await VkOAuthService.GetAccessToken());
     search.set("v", VkConfig.API_VERSION);
 
     Object.entries(params).forEach(([key, value]) => {
